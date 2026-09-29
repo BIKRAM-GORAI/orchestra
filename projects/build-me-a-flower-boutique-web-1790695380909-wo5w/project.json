@@ -1,0 +1,17 @@
+{
+  "id": "build-me-a-flower-boutique-web-1790695380909-wo5w",
+  "name": "build me a flower boutique web",
+  "prompt": "build me a flower boutique website",
+  "createdAt": "2026-09-29T15:23:00.911Z",
+  "updatedAt": "2026-09-29T15:23:00.912Z",
+  "status": "created",
+  "version": 1,
+  "files": [
+    "index.html"
+  ],
+  "managerPlan": null,
+  "specialistOutputs": {},
+  "unifiedSpec": null,
+  "qaReport": null,
+  "history": []
+}

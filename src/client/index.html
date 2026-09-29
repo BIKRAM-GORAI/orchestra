@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Orchestra — Multi-Agent AI Orchestration Platform</title>
+  <meta name="description" content="State of the art multi-agent AI platform orchestrating specialized reasoning agents to build software with live preview and human-in-the-loop editing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Agent Orchestra</span>
+          <span class="brand-subtitle">Autonomous Multi-Agent AI Platform</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-pill project-selector-pill" id="projectPill">
+          <span class="status-label">Project:</span>
+          <select id="projectSelect" class="project-dropdown">
+            <option value="">Active Workspace</option>
+          </select>
+          <button id="newProjectBtn" class="pill-action-btn" title="Create Fresh Project">+ New</button>
+        </div>
+        <div class="status-pill" id="modelPill">
+          <span class="status-dot"></span>
+          <span class="status-label">Model:</span>
+          <span class="status-value" id="currentModelDisplay">gemini-3.5-flash</span>
+        </div>
+        <div class="status-pill" id="providerPill">
+          <span class="status-label">Provider:</span>
+          <span class="status-value" id="providerDisplay">Google AI Studio</span>
+        </div>
+        <div class="status-pill" id="apiStatusPill">
+          <span class="status-dot ping-dot" id="apiStatusDot"></span>
+          <span class="status-label">Gateway:</span>
+          <span class="status-value" id="apiStatusText">Connecting...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main 3-Column Dashboard -->
+    <main class="dashboard-grid">
+      <!-- LEFT: Agent Registry & Playground -->
+      <aside class="panel left-panel" id="agentPlaygroundPanel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <h2 class="panel-title">Agent Registry</h2>
+            <span class="badge" id="agentCountBadge">6 Agents</span>
+          </div>
+          <p class="panel-desc">Logical roles decoupled from inference engines</p>
+        </div>
+
+        <div class="agent-cards-list" id="agentCardsContainer">
+          <!-- Manager Card -->
+          <div class="agent-card idle" id="agent-card-manager" data-agent="manager">
+            <div class="agent-card-header">
+              <div class="agent-identity">
+                <span class="agent-emoji">👑</span>
+                <div>
+                  <h3 class="agent-name">Manager</h3>
+                  <span class="agent-role">Orchestration & Synthesis</span>
+                </div>
+              </div>
+              <span class="agent-state-badge" id="badge-manager">IDLE</span>
+            </div>
+            <p class="agent-skills-summary">Intent understanding, task decomposition, agent selection, specification synthesis</p>
+            <div class="agent-meta">
+              <span class="agent-model-tag" id="agent-model-manager">Model: gemini-3.5-flash</span>
+            </div>
+          </div>
+
+          <!-- Designer Card -->
+          <div class="agent-card idle" id="agent-card-designer" data-agent="designer">
+            <div class="agent-card-header">
+              <div class="agent-identity">
+                <span class="agent-emoji">🎨</span>
+                <div>
+                  <h3 class="agent-name">Designer</h3>
+                  <span class="agent-role">UI/UX & Visual Direction</span>
+                </div>
+              </div>
+              <span class="agent-state-badge" id="badge-designer">IDLE</span>
+            </div>
+            <p class="agent-skills-summary">Color harmony, typography, layout, spacing, responsive behavior, interaction styling</p>
+            <div class="agent-meta">
+              <span class="agent-model-tag" id="agent-model-designer">Model: gemini-3.5-flash</span>
+            </div>
+          </div>
+
+          <!-- Frontend Architect Card -->
+          <div class="agent-card idle" id="agent-card-frontend_architect" data-agent="frontend_architect">
+            <div class="agent-card-header">
+              <div class="agent-identity">
+                <span class="agent-emoji">📐</span>
+                <div>
+                  <h3 class="agent-name">Frontend Architect</h3>
+                  <span class="agent-role">Technical Strategy</span>
+                </div>
+              </div>
+              <span class="agent-state-badge" id="badge-frontend_architect">IDLE</span>
+            </div>
+            <p class="agent-skills-summary">Semantic DOM, CSS architecture, JavaScript state machines, single-file constraints</p>
+            <div class="agent-meta">
+              <span class="agent-model-tag" id="agent-model-frontend_architect">Model: gemini-3.5-flash</span>
+            </div>
+          </div>
+
+          <!-- Feature Architect Card -->
+          <div class="agent-card idle" id="agent-card-feature_architect" data-agent="feature_architect">
+            <div class="agent-card-header">
+              <div class="agent-identity">
+                <span class="agent-emoji">⚡</span>
+                <div>
+                  <h3 class="agent-name">Feature Architect</h3>
+                  <span class="agent-role">Behavior & User Flows</span>
+                </div>
+              </div>
+              <span class="agent-state-badge" id="badge-feature_architect">IDLE</span>
+            </div>
+            <p class="agent-skills-summary">Feature decomposition, interaction models, edge cases, state management</p>
+            <div class="agent-meta">
+              <span class="agent-model-tag" id="agent-model-feature_architect">Model: gemini-3.5-flash</span>
+            </div>
+          </div>
+
+          <!-- Coding Agent Card -->
+          <div class="agent-card idle" id="agent-card-coding_agent" data-agent="coding_agent">
+            <div class="agent-card-header">
+              <div class="agent-identity">
+                <span class="agent-emoji">💻</span>
+                <div>
+                  <h3 class="agent-name">Coding Agent</h3>
+                  <span class="agent-role">Implementation Owner</span>
+                </div>
+              </div>
+              <span class="agent-state-badge" id="badge-coding_agent">IDLE</span>
+            </div>
+            <p class="agent-skills-summary">Sole generator of index.html, minimal-change preservation during edits, full synthesis</p>
+            <div class="agent-meta">
+              <span class="agent-model-tag" id="agent-model-coding_agent">Model: gemini-3.5-flash</span>
+            </div>
+          </div>
+
+          <!-- QA Agent Card -->
+          <div class="agent-card idle" id="agent-card-qa" data-agent="qa">
+            <div class="agent-card-header">
+              <div class="agent-identity">
+                <span class="agent-emoji">🛡️</span>
+                <div>
+                  <h3 class="agent-name">QA Agent</h3>
+                  <span class="agent-role">Quality & Verification</span>
+                </div>
+              </div>
+              <span class="agent-state-badge" id="badge-qa">IDLE</span>
+            </div>
+            <p class="agent-skills-summary">Static inspection, functional validation, DOM checks, structured issues audit</p>
+            <div class="agent-meta">
+              <span class="agent-model-tag" id="agent-model-qa">Model: gemini-3.5-flash</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER: Orchestration Workflow & Activity -->
+      <section class="panel center-panel" id="orchestrationPanel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <h2 class="panel-title">Orchestration Flow</h2>
+            <span class="status-indicator-tag" id="orchestratorStatusTag">Ready for Task</span>
+          </div>
+          <p class="panel-desc">Multi-agent execution graph and live communication logs</p>
+        </div>
+
+        <!-- Task Input Box -->
+        <div class="prompt-box-card">
+          <label for="promptInput" class="prompt-label">Software / Product Goal</label>
+          <div class="prompt-input-wrapper">
+            <textarea id="promptInput" rows="3" placeholder="e.g. Build me a modern sports ecommerce website with dark theme, search, filtering, and cart..."></textarea>
+            <div class="prompt-actions">
+              <button type="button" class="btn btn-secondary" id="samplePromptBtn">Load Example</button>
+              <button type="button" class="btn btn-primary" id="startOrchestrationBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Launch Orchestra
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Flow Pipeline -->
+        <div class="pipeline-section">
+          <h4 class="section-label">Execution Pipeline</h4>
+          <div class="pipeline-flow" id="pipelineFlow">
+            <div class="flow-step" id="step-user"><span class="flow-num">1</span>User Request</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step" id="step-manager-plan"><span class="flow-num">2</span>Manager Plan</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step" id="step-specialists"><span class="flow-num">3</span>Parallel Specialists</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step" id="step-synthesis"><span class="flow-num">4</span>Manager Synthesis</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step" id="step-coder"><span class="flow-num">5</span>Coding Agent</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step" id="step-qa"><span class="flow-num">6</span>QA Audit</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step" id="step-preview"><span class="flow-num">7</span>Live Preview</div>
+          </div>
+        </div>
+
+        <!-- QA Audit Results Card -->
+        <div class="qa-audit-card" id="qaAuditCard" style="display: none;">
+          <div class="qa-audit-header">
+            <div class="qa-title-wrap">
+              <span class="qa-icon">🛡️</span>
+              <h4 class="qa-title">QA Verification Audit</h4>
+            </div>
+            <span class="badge" id="qaVerdictBadge">PASSED</span>
+          </div>
+          <p class="qa-summary-text" id="qaSummaryText">Inspecting generated code integrity...</p>
+          <div class="qa-issues-list" id="qaIssuesList"></div>
+        </div>
+
+        <!-- Live Terminal / Logs -->
+        <div class="terminal-card">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <span class="terminal-title">Orchestration Logs & Stream</span>
+            <button class="terminal-clear-btn" id="clearLogsBtn">Clear</button>
+          </div>
+          <div class="terminal-body" id="terminalLogs">
+            <div class="log-line info">[ORCHESTRA] System initialized. Ready for instructions.</div>
+            <div class="log-line info">[CONFIG] Model: moonshotai/kimi-k3 via NVIDIA NIM</div>
+            <div class="log-line muted">[TIP] Enter a prompt above or click "Load Example" to begin.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Live Website Preview & Human Feedback -->
+      <aside class="panel right-panel" id="previewPanel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <h2 class="panel-title">Live Preview</h2>
+            <div class="viewport-toggles">
+              <button class="viewport-btn active" data-width="100%" title="Desktop View" id="vpDesktop">🖥️</button>
+              <button class="viewport-btn" data-width="768px" title="Tablet View" id="vpTablet">📱</button>
+              <button class="viewport-btn" data-width="375px" title="Mobile View" id="vpMobile">📲</button>
+              <button class="viewport-btn" title="Refresh Preview" id="refreshPreviewBtn">↻</button>
+            </div>
+          </div>
+          <p class="panel-desc">Sandboxed live rendering of generated <code>index.html</code></p>
+        </div>
+
+        <!-- Preview Frame Wrapper -->
+        <div class="preview-viewport-wrap" id="previewWrap">
+          <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-same-origin allow-modals" title="Generated Project Preview"></iframe>
+        </div>
+
+        <!-- Human in the loop feedback card -->
+        <div class="feedback-card" id="feedbackCard">
+          <div class="feedback-header">
+            <h4 class="feedback-title">Human Feedback & Minimal-Change Editing</h4>
+            <span class="badge info">V1 Direct-to-Coder</span>
+          </div>
+          <p class="feedback-desc">Request precise modifications. Unrelated layout, styling, and functionality are strictly preserved.</p>
+          <div class="feedback-input-row">
+            <input type="text" id="feedbackInput" placeholder="e.g. Change the primary color to cyan and add a wishlist button" />
+            <button type="button" class="btn btn-accent" id="applyFeedbackBtn">
+              Apply Edit
+            </button>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

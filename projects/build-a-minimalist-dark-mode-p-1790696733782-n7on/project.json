@@ -1,0 +1,17 @@
+{
+  "id": "build-a-minimalist-dark-mode-p-1790696733782-n7on",
+  "name": "Build a minimalist dark-mode p",
+  "prompt": "Build a minimalist dark-mode portfolio landing page for an AI engineer with hero title, bio, skills grid, and contact button.",
+  "createdAt": "2026-09-29T15:45:33.782Z",
+  "updatedAt": "2026-09-29T15:45:33.782Z",
+  "status": "created",
+  "version": 1,
+  "files": [
+    "index.html"
+  ],
+  "managerPlan": null,
+  "specialistOutputs": {},
+  "unifiedSpec": null,
+  "qaReport": null,
+  "history": []
+}

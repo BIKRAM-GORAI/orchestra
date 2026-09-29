@@ -1,0 +1,209 @@
+import EventEmitter from 'events';
+import { modelGateway } from '../gateway/modelGateway.js';
+
+export const AGENT_STATES = {
+  IDLE: 'idle',
+  THINKING: 'thinking',
+  WORKING: 'working',
+  STREAMING: 'streaming',
+  COMPLETED: 'completed',
+  ERROR: 'error',
+  RETRYING: 'retrying',
+};
+
+/**
+ * Base Agent
+ * 
+ * Logical entity encapsulating:
+ * - Identity (id, name, emoji, role)
+ * - Skills & capabilities
+ * - Configured model assignment (decoupled from inference)
+ * - System instructions and output schema
+ * - Strict state machine lifecycle
+ */
+export class BaseAgent extends EventEmitter {
+  constructor({
+    id,
+    name,
+    emoji = '🤖',
+    role,
+    description,
+    skills = [],
+    model = 'kimi-k3',
+    systemPrompt = '',
+    outputSchema = null,
+  }) {
+    super();
+    if (!id || !name) {
+      throw new Error('Agent requires both "id" and "name"');
+    }
+    this.id = id;
+    this.name = name;
+    this.emoji = emoji;
+    this.role = role;
+    this.description = description;
+    this.skills = skills;
+    this.modelId = model;
+    this.systemPrompt = systemPrompt;
+    this.outputSchema = outputSchema;
+
+    this.state = AGENT_STATES.IDLE;
+    this.lastOutput = null;
+    this.lastError = null;
+  }
+
+  /**
+   * Transition state and notify listeners
+   */
+  setState(newState, payload = {}) {
+    this.state = newState;
+    this.emit('state', {
+      agentId: this.id,
+      state: newState,
+      timestamp: new Date().toISOString(),
+      ...payload,
+    });
+  }
+
+  /**
+   * Set or update assigned model ID
+   */
+  setModel(newModelId) {
+    this.modelId = newModelId;
+  }
+
+  /**
+   * Reset state to IDLE
+   */
+  reset() {
+    this.state = AGENT_STATES.IDLE;
+    this.lastOutput = null;
+    this.lastError = null;
+    this.emit('state', { agentId: this.id, state: AGENT_STATES.IDLE });
+  }
+
+  /**
+   * Format messages for the model gateway
+   */
+  buildMessages(userInput, context = {}) {
+    const messages = [];
+
+    let sys = this.systemPrompt;
+    if (this.outputSchema) {
+      sys += `\n\nCRITICAL OUTPUT REQUIREMENT:\nYou MUST respond ONLY with valid JSON conforming to the following structure. Do not wrap with conversational filler or markdown explanations outside the JSON object.\nExpected Schema:\n${JSON.stringify(this.outputSchema, null, 2)}`;
+    }
+
+    if (sys) {
+      messages.push({ role: 'system', content: sys });
+    }
+
+    let userContent = typeof userInput === 'string' ? userInput : JSON.stringify(userInput, null, 2);
+    if (context && Object.keys(context).length > 0) {
+      userContent = `[CONTEXT]:\n${JSON.stringify(context, null, 2)}\n\n[TASK]:\n${userContent}`;
+    }
+
+    messages.push({ role: 'user', content: userContent });
+    return messages;
+  }
+
+  /**
+   * Parse structured JSON from model text
+   */
+  parseStructuredOutput(rawText) {
+    if (!this.outputSchema) return rawText;
+
+    let cleaned = rawText.trim();
+    // Strip markdown code fences if model returned ```json ... ```
+    if (cleaned.startsWith('```')) {
+      const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (match) cleaned = match[1].trim();
+    }
+
+    try {
+      return JSON.parse(cleaned);
+    } catch (err) {
+      console.warn(`[AGENT ${this.id}] Failed to parse JSON output directly:`, err.message);
+      // Attempt to extract the first balanced { ... } object
+      const start = cleaned.indexOf('{');
+      const end = cleaned.lastIndexOf('}');
+      if (start !== -1 && end !== -1 && end > start) {
+        try {
+          return JSON.parse(cleaned.slice(start, end + 1));
+        } catch (_) {}
+      }
+      return { raw: rawText, parseError: err.message };
+    }
+  }
+
+  /**
+   * Execute agent task using the configured Model Gateway
+   */
+  async execute({
+    input,
+    context = {},
+    parameters = {},
+    onChunk = null,
+    onStateChange = null,
+    gateway = modelGateway,
+  } = {}) {
+    this.setState(AGENT_STATES.WORKING, { model: this.modelId });
+    this.lastError = null;
+
+    const messages = this.buildMessages(input, context);
+
+    try {
+      const result = await gateway.generate({
+        modelId: this.modelId,
+        messages,
+        parameters,
+        onChunk: (chunk) => {
+          if (this.state !== AGENT_STATES.STREAMING) {
+            this.setState(AGENT_STATES.STREAMING, { model: this.modelId });
+          }
+          if (onChunk) onChunk(chunk);
+        },
+        onStateChange: (state, details) => {
+          if (state === 'retrying') {
+            this.setState(AGENT_STATES.RETRYING, details);
+          }
+          if (onStateChange) onStateChange(state, details);
+        },
+      });
+
+      const parsed = this.parseStructuredOutput(result.text);
+      this.lastOutput = {
+        result: parsed,
+        rawText: result.text,
+        reasoningText: result.reasoningText,
+        model: result.model,
+        durationMs: result.durationMs,
+        attempts: result.attempts,
+      };
+
+      this.setState(AGENT_STATES.COMPLETED, {
+        durationMs: result.durationMs,
+        attempts: result.attempts,
+      });
+
+      return this.lastOutput;
+    } catch (error) {
+      this.lastError = error;
+      this.setState(AGENT_STATES.ERROR, { error: error.message });
+      throw error;
+    }
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      emoji: this.emoji,
+      role: this.role,
+      description: this.description,
+      skills: this.skills,
+      model: this.modelId,
+      modelId: this.modelId,
+      state: this.state,
+    };
+  }
+}
