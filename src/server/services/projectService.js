@@ -144,3 +144,37 @@ export async function listProjects() {
   // Sort newest first
   return projects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
+
+export async function getProjectFiles(projectId) {
+  const projectDir = path.join(config.projectsDir, projectId);
+  try {
+    const entries = await fs.readdir(projectDir, { withFileTypes: true });
+    const files = [];
+    for (const entry of entries) {
+      if (entry.isFile()) {
+        const stats = await fs.stat(path.join(projectDir, entry.name));
+        files.push({
+          name: entry.name,
+          size: stats.size,
+          updatedAt: stats.mtime.toISOString(),
+          extension: path.extname(entry.name).slice(1) || 'txt'
+        });
+      }
+    }
+    return files;
+  } catch (err) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  }
+}
+
+export async function getProjectFileContent(projectId, filename) {
+  const safeFilename = path.basename(filename);
+  const filePath = path.join(config.projectsDir, projectId, safeFilename);
+  try {
+    return await fs.readFile(filePath, 'utf-8');
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  }
+}

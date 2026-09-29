@@ -5,7 +5,7 @@ import { MODEL_REGISTRY, MODEL_POLICIES } from '../config/models.js';
 import { modelGateway } from '../gateway/modelGateway.js';
 import { agentRegistry } from '../agents/agentRegistry.js';
 import { orchestrator } from '../orchestrator/orchestrator.js';
-import { listProjects, getProject, getProjectHtml, createProject } from '../services/projectService.js';
+import { listProjects, getProject, getProjectHtml, createProject, getProjectFiles, getProjectFileContent } from '../services/projectService.js';
 
 export const router = express.Router();
 
@@ -189,16 +189,6 @@ router.post('/orchestrate/feedback', async (req, res) => {
   }
 });
 
-// Live Preview content endpoint (defaults to workspace/index.html or active project)
-router.get('/preview', async (req, res) => {
-  try {
-    const content = await fs.readFile(config.workspaceIndexHtml, 'utf-8');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(content);
-  } catch (error) {
-    res.status(500).send(`<h3>Error reading preview file: ${error.message}</h3>`);
-  }
-});
 
 // Gateway Test Endpoint (POST JSON)
 router.post('/gateway/test', async (req, res) => {
@@ -298,6 +288,85 @@ router.get('/projects/:id', async (req, res) => {
   }
 });
 
+router.get('/preview', async (req, res) => {
+  try {
+    if (req.query.starter !== 'true') {
+      const projects = await listProjects();
+      if (projects.length > 0) {
+        const html = await getProjectHtml(projects[0].id);
+        if (html) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          return res.send(html);
+        }
+      }
+    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New Project Setup | Agent Orchestra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F8FAFC;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: #0F172A;
+    }
+    .starter-card {
+      text-align: center;
+      max-width: 520px;
+      padding: 40px 32px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+    .starter-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #2563EB;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+      color: #0F172A;
+    }
+    p {
+      font-size: 0.88rem;
+      color: #64748B;
+      line-height: 1.6;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="starter-card">
+    <span class="starter-badge">BRAND NEW SETUP</span>
+    <h2>Ready for Project Directives</h2>
+    <p>Type your vision in the prompt dispatcher (e.g. <em>"Create a modern agency website for KARVAAN LABS..."</em>) and click <strong>Launch</strong> to assemble the specialist team and generate your application.</p>
+  </div>
+</body>
+</html>`);
+  } catch (err) {
+    res.status(500).send(`<h3>Error reading preview: ${err.message}</h3>`);
+  }
+});
+
 router.get('/projects/:id/preview', async (req, res) => {
   try {
     const html = await getProjectHtml(req.params.id);
@@ -308,4 +377,24 @@ router.get('/projects/:id/preview', async (req, res) => {
     res.status(500).send(`<h3>Error reading project: ${err.message}</h3>`);
   }
 });
+
+router.get('/projects/:id/files', async (req, res) => {
+  try {
+    const files = await getProjectFiles(req.params.id);
+    res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/projects/:id/files/:filename', async (req, res) => {
+  try {
+    const content = await getProjectFileContent(req.params.id, req.params.filename);
+    if (content === null) return res.status(404).json({ error: 'File not found' });
+    res.json({ filename: req.params.filename, content });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 

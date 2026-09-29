@@ -1,0 +1,17 @@
+{
+  "id": "create-a-live-chatbot-system-f-1790702221569-ifmg",
+  "name": "create a live chatbot system f",
+  "prompt": "create a live chatbot system for multiple user with different tabs",
+  "createdAt": "2026-09-29T17:17:01.570Z",
+  "updatedAt": "2026-09-29T17:17:01.570Z",
+  "status": "created",
+  "version": 1,
+  "files": [
+    "index.html"
+  ],
+  "managerPlan": null,
+  "specialistOutputs": {},
+  "unifiedSpec": null,
+  "qaReport": null,
+  "history": []
+}

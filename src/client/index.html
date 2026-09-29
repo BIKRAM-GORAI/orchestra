@@ -3,277 +3,574 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Orchestra — Autonomous Multi-Agent Software Studio</title>
-  <meta name="description" content="Gamified multi-agent AI orchestration platform where specialized logical agents collaborate in an animated atelier to generate complete web applications with live preview.">
+  <title>Agent Orchestra — Autonomous Multi-Agent Workspace & Studio</title>
+  <meta name="description" content="Autonomous multi-agent virtual workplace with 2.5D animated office and professional developer operations.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./index.css">
+  <script src="./vendor/pixi.min.js"></script>
+  <script src="./vendor/lucide.min.js"></script>
+  <script src="./vendor/motion.js"></script>
 </head>
-<body>
+<body class="light-theme">
   <div class="app-layout">
-    <!-- Top Navigation Bar (Warm Luxury Editorial Aesthetic) -->
+    <!-- Top Navigation Bar -->
     <header class="app-header">
       <div class="header-left">
         <div class="brand-wrap">
           <div class="brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
           </div>
           <div class="brand-text">
-            <span class="brand-title">Agent <em>Orchestra</em></span>
-            <span class="brand-subtitle">Autonomous Multi-Agent Studio</span>
+            <span class="brand-title">Agent Orchestra</span>
+            <span class="brand-badge">ATELIER</span>
           </div>
         </div>
-
-        <!-- Active Project Badge (Top Left Display) -->
-        <div class="active-project-tag" id="activeProjectTag">
-          <span class="tag-label">Active:</span>
-          <span class="tag-val" id="activeProjectNameDisplay">Flourela — Flower Boutique</span>
-        </div>
       </div>
 
-      <!-- Quick Prompt Launcher in Header -->
-      <div class="header-prompt-bar">
-        <input type="text" id="promptInput" class="header-prompt-input" placeholder="Describe a website or web app to create (e.g. 'Artisan coffee roastery with bean customizer and tasting notes')..." />
-        <button type="button" class="btn btn-sm btn-ghost" id="samplePromptBtn" title="Load example specification">Load Example</button>
-        <button type="button" class="btn btn-sm btn-primary" id="startOrchestrationBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          <span>Launch Orchestra</span>
-        </button>
+      <!-- Centered Navigation Tabs with Lucide Icons -->
+      <div class="header-center">
+        <nav class="top-nav-tabs" role="tablist">
+          <button class="nav-tab-btn active" data-tab="office" id="navOffice">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+            </span>
+            <span>Office</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="tasks" id="navTasks">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v11"/><path d="M12 5v6"/><path d="M18 5v14"/></svg>
+            </span>
+            <span>Tasks</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="chat" id="navChat">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span>Chat</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="ide" id="navIde">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/></svg>
+            </span>
+            <span>IDE</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="preview" id="navPreview">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+            </span>
+            <span>Preview</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="agents" id="navAgents">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span>Agents</span>
+          </button>
+          <button class="nav-tab-btn" data-tab="activity" id="navActivity">
+            <span class="tab-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </span>
+            <span>Activity</span>
+          </button>
+        </nav>
       </div>
 
-      <!-- Status Indicators -->
+      <!-- Header Right: Project Status & Indicators -->
       <div class="header-right">
-        <div class="status-pill" id="modelPill">
-          <span class="status-dot"></span>
-          <span class="status-label">Model:</span>
-          <span class="status-value" id="currentModelDisplay">Gemini 3.5 Flash</span>
+        <!-- Active Project Dropdown -->
+        <div class="header-pill project-pill" id="activeProjectTag">
+          <span class="pill-dot"></span>
+          <span class="pill-label">Project:</span>
+          <select id="headerProjectSelect" class="header-project-select" aria-label="Select Project">
+            <option value="">No Active Project</option>
+          </select>
         </div>
-        <div class="status-pill" id="providerPill">
-          <span class="status-label">Provider:</span>
-          <span class="status-value" id="providerDisplay">Google AI</span>
+
+        <!-- Agent Count Indicator -->
+        <div class="header-pill agents-count-pill">
+          <span class="status-live-dot"></span>
+          <span class="pill-val" id="headerAgentStats">10 Agents (Active)</span>
         </div>
-        <div class="status-pill" id="apiStatusPill">
-          <span class="status-dot ping-dot" id="apiStatusDot"></span>
-          <span class="status-label">Gateway:</span>
-          <span class="status-value" id="apiStatusText">Ready</span>
+
+        <!-- Model Pill -->
+        <div class="header-pill model-pill" id="modelPill">
+          <span class="pill-label">Model:</span>
+          <span class="pill-val" id="currentModelDisplay">Gemini 3.5 Flash</span>
         </div>
       </div>
     </header>
 
-    <!-- Studio Workspace (Two-Column Layout: Left Atelier & Dock, Right Full-Height Live Preview) -->
-    <main class="studio-layout">
-      <!-- LEFT COLUMN: The Agent Atelier & Tabbed Control Dock -->
-      <aside class="studio-left">
-        <!-- CARD 1: Animated Virtual Office Floor -->
-        <section class="studio-card card-office" id="officeFloorCard">
-          <div class="card-header">
-            <div class="header-title-wrap">
-              <span class="card-icon">🏢</span>
-              <h2 class="card-title">The Agent Atelier & Office Floor</h2>
-              <span class="status-indicator-tag" id="orchestratorStatusTag">Ready for Task</span>
-            </div>
-            <div class="office-legend">
-              <span class="legend-item"><span class="legend-dot" style="background: #D4A359;"></span>Manager Suite</span>
-              <span class="legend-item"><span class="legend-dot" style="background: #5B7B6D;"></span>Dev Den</span>
-              <span class="legend-item"><span class="legend-dot" style="background: #C86D7C;"></span>Design Atelier</span>
-              <span class="legend-item"><span class="legend-dot" style="background: #6B82A8;"></span>QA Lab</span>
-            </div>
-          </div>
-
-          <!-- Canvas Simulation Area -->
-          <div class="office-canvas-container" id="officeCanvasContainer">
-            <canvas id="officeCanvas"></canvas>
-          </div>
-
-          <!-- Execution Pipeline Progress Strip -->
-          <div class="pipeline-strip">
-            <div class="flow-step" id="step-user"><span class="flow-num">1</span>Goal</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-manager-plan"><span class="flow-num">2</span>Manager Plan</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-specialists"><span class="flow-num">3</span>Specialists</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-synthesis"><span class="flow-num">4</span>Synthesis</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-coder"><span class="flow-num">5</span>Coding</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-qa"><span class="flow-num">6</span>QA Audit</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-preview"><span class="flow-num">7</span>Preview</div>
-          </div>
-        </section>
-
-        <!-- CARD 2: Tabbed Control Dock (Telemetry, Targeted Edits, QA Audit, Project Switcher) -->
-        <section class="studio-card card-dock" id="editsSection">
-          <!-- Dock Tab Navigation Header -->
-          <div class="dock-header">
-            <div class="dock-tabs-nav" role="tablist">
-              <button class="dock-tab-btn active" data-tab="telemetry" id="tabBtnTelemetry" role="tab" aria-selected="true">
-                <span class="tab-icon">💬</span>
-                <span>Telemetry</span>
-              </button>
-              <button class="dock-tab-btn" data-tab="edits" id="tabBtnEdits" role="tab" aria-selected="false">
-                <span class="tab-icon">✨</span>
-                <span>Targeted Edits</span>
-              </button>
-              <button class="dock-tab-btn" data-tab="qa" id="tabBtnQA" role="tab" aria-selected="false">
-                <span class="tab-icon">🛡️</span>
-                <span>QA Audit</span>
-              </button>
-              <button class="dock-tab-btn" data-tab="projects" id="tabBtnProjects" role="tab" aria-selected="false">
-                <span class="tab-icon">📁</span>
-                <span>Projects</span>
-              </button>
-            </div>
-
-            <!-- Lock Indicator Badge -->
-            <span class="lock-indicator-badge" id="lockIndicator">
-              <span class="lock-icon">🟢</span>
-              <span class="lock-text">Ready for Edits</span>
-            </span>
-          </div>
-
-          <!-- Tab Content Panes -->
-          <div class="dock-body">
-            <!-- PANE 1: Agent Communications & Telemetry Logs -->
-            <div class="dock-pane active" id="paneTelemetry" role="tabpanel">
-              <div class="pane-toolbar">
-                <div class="pane-caption">
-                  <span class="pulse-indicator"></span>
-                  <span>Live Agent Murmurs, Handover Signals & Stream Log</span>
-                </div>
-                <button class="btn btn-xs btn-ghost" id="clearLogsBtn">Clear Logs</button>
+    <!-- Main Workspace Container -->
+    <main class="app-main">
+      <!-- ===================================================================
+           TAB 1: OFFICE WORKSPACE (Fixed Office Floor 60% + Dual Rows 40%)
+           =================================================================== -->
+      <section class="tab-view active" id="viewOffice">
+        <div class="office-workspace-layout">
+          <!-- FIXED OFFICE FLOOR PANEL (60% WIDTH) -->
+          <div class="office-canvas-panel">
+            <!-- Office Control Bar with Lucide Icons -->
+            <div class="office-control-bar">
+              <div class="office-presets-wrap">
+                <span class="bar-label">Modes:</span>
+                <button class="preset-btn active" data-preset="focus" id="presetFocus">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                  <span>Focus Work</span>
+                </button>
+                <button class="preset-btn" data-preset="coffee" id="presetCoffee">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+                  <span>Coffee Break</span>
+                </button>
+                <button class="preset-btn" data-preset="meeting" id="presetMeeting">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <span>All-Hands</span>
+                </button>
+                <button class="preset-btn" data-preset="free" id="presetFree">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                  <span>Free Roam</span>
+                </button>
               </div>
-              <div class="terminal-body" id="terminalLogs">
-                <div class="log-line info">[ORCHESTRA] Multi-agent studio active. 6 specialized roles in atelier.</div>
-                <div class="log-line info">[CONFIG] Primary Model: Gemini 3.5 Flash via Google AI Studio</div>
-                <div class="log-line murmur">💭 [Thinking] Manager: "Consulting architectural blueprint... no div soup allowed!"</div>
+
+              <!-- Status Notice & Boss Delegation Action -->
+              <div class="office-actions-wrap">
+                <span class="bar-caption" id="presetStatusNotice">Focus Work Active</span>
+                <button class="btn btn-xs btn-outline" id="callToBossBtn" title="Call assigned agent to boss office for briefing">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                  <span>Call to Boss Office</span>
+                </button>
               </div>
             </div>
 
-            <!-- PANE 2: Targeted Human Edits (Minimal Change Rule) -->
-            <div class="dock-pane" id="paneEdits" role="tabpanel">
-              <div class="feedback-group" id="feedbackGroup">
-                <div class="feedback-label-row">
-                  <label for="feedbackInput" class="feedback-label">Human Feedback (Minimal Change Rule)</label>
-                  <span class="badge info">V1 Direct-to-Coder</span>
-                </div>
-                <p class="feedback-subtext">Edits modify <strong>ONLY targeted components</strong>. Working hero, layout, interactive carts, and styling are strictly preserved.</p>
-                
-                <div class="feedback-input-row">
-                  <input type="text" id="feedbackInput" placeholder="e.g. Change primary color to emerald and add customer review cards..." />
-                  <button type="button" class="btn btn-accent" id="applyFeedbackBtn">
-                    Apply Edit
-                  </button>
-                </div>
-
-                <!-- Quick Modification Chips -->
-                <div class="feedback-chips-row">
-                  <span class="chip-label">Quick suggestions:</span>
-                  <button type="button" class="suggestion-chip" data-chip="Add customer review testimonials section with star ratings">+ Review Cards</button>
-                  <button type="button" class="suggestion-chip" data-chip="Switch theme to warm terracotta and sage luxury palette">+ Luxury Palette</button>
-                  <button type="button" class="suggestion-chip" data-chip="Add interactive category filter pills with instant search">+ Search Filters</button>
-                </div>
-              </div>
+            <!-- Fixed Canvas Container -->
+            <div class="fixed-office-stage" id="pixiOfficeContainer">
+              <!-- Canvas injected by pixi-office.js -->
             </div>
 
-            <!-- PANE 3: QA Verification Audit -->
-            <div class="dock-pane" id="paneQA" role="tabpanel">
-              <div class="qa-audit-card" id="qaAuditCard">
-                <div class="qa-audit-header">
-                  <div class="qa-title-wrap">
-                    <span class="qa-icon">🛡️</span>
-                    <h4 class="qa-title">QA Verification Audit</h4>
+            <!-- Floating Agent Identity Inspector Popup -->
+            <aside class="agent-inspector-card" id="agentInspectorCard">
+              <div class="inspector-header">
+                <div class="inspector-identity">
+                  <div class="inspector-avatar" id="inspAvatar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
                   </div>
-                  <span class="badge qa-pass" id="qaVerdictBadge">PASSED</span>
+                  <div class="inspector-title-wrap">
+                    <div class="name-row">
+                      <h3 class="inspector-name" id="inspName">Nova</h3>
+                      <span class="core-tag" id="inspCoreTag">CORE</span>
+                    </div>
+                    <span class="inspector-role" id="inspRole">Frontend Architect</span>
+                  </div>
                 </div>
-                <p class="qa-summary-text" id="qaSummaryText">Inspecting generated code integrity, DOM completeness, and JavaScript handlers...</p>
-                <div class="qa-issues-list" id="qaIssuesList">
-                  <div class="qa-issue-item" style="border-left-color: var(--accent-emerald);">✨ All DOM and script checks validated. Zero critical issues detected.</div>
-                </div>
+                <button class="btn-close-inspector" id="closeInspectorBtn" title="Close">×</button>
               </div>
-            </div>
 
-            <!-- PANE 4: Project Workspace Catalog -->
-            <div class="dock-pane" id="paneProjects" role="tabpanel">
-              <div class="project-selector-group" id="projectSelectorGroup">
-                <div class="project-selector-label-row">
-                  <label for="projectSelect" class="feedback-label">Project Workspace Catalog</label>
-                  <span class="project-count-badge" id="projectCountBadge">Isolated Folders</span>
+              <div class="inspector-body">
+                <div class="insp-row status-row">
+                  <span class="insp-status-badge working" id="inspStatusBadge">● CODING</span>
+                  <span class="insp-quote" id="inspQuote">"Ready for assignments."</span>
                 </div>
-                <p class="feedback-subtext">Each project lives in its own isolated workspace folder with independent versions and snapshots.</p>
-                <div class="project-selector-row">
-                  <select id="projectSelect" class="project-dropdown">
-                    <option value="">Active Workspace</option>
-                  </select>
-                  <button id="newProjectBtn" class="btn btn-secondary" title="Create Fresh Project">
-                    + New Project
+
+                <div class="insp-section">
+                  <span class="section-label">Intelligence Model</span>
+                  <div class="model-badge-row">
+                    <span class="agent-model-tag" id="inspModelTag">Gemini 3.5 Flash (Google AI)</span>
+                  </div>
+                </div>
+
+                <div class="insp-section">
+                  <span class="section-label">Specialist Capabilities</span>
+                  <div class="skills-wrap" id="inspSkillsWrap">
+                    <span class="skill-chip">HTML5</span>
+                    <span class="skill-chip">Vanilla CSS</span>
+                    <span class="skill-chip">Responsive DOM</span>
+                  </div>
+                </div>
+
+                <div class="inspector-actions">
+                  <button class="btn btn-xs btn-outline" id="inspBtnDesk">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+                    <span>Desk</span>
+                  </button>
+                  <button class="btn btn-xs btn-outline" id="inspBtnCoffee">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/></svg>
+                    <span>Coffee</span>
+                  </button>
+                  <button class="btn btn-xs btn-outline" id="inspBtnMeeting">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <span>Meet</span>
+                  </button>
+                  <button class="btn btn-xs btn-primary" id="inspBtnBriefing">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+                    <span>Boss Brief</span>
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-      </aside>
-
-      <!-- RIGHT COLUMN: Dominant Full-Height Live Preview (Hero Feature) -->
-      <section class="studio-card card-preview" id="previewSection">
-        <div class="card-header preview-header">
-          <div class="header-title-wrap">
-            <span class="card-icon">🖥️</span>
-            <h2 class="card-title">Live Preview</h2>
-            <span class="preview-url-badge" id="previewUrlBadge">/api/preview</span>
+            </aside>
           </div>
 
-          <!-- Viewport Mode & Fullscreen Actions -->
-          <div class="preview-actions-bar">
-            <div class="viewport-toggles" role="group" aria-label="Viewport Device Mode">
-              <button class="viewport-btn active" data-mode="desktop" title="Desktop Viewport (100% full width & height)" id="vpDesktop">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                <span>Desktop</span>
-              </button>
-              <button class="viewport-btn" data-mode="tablet" title="Tablet Viewport (768px frame)" id="vpTablet">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>Tablet</span>
-              </button>
-              <button class="viewport-btn" data-mode="mobile" title="Smartphone Device Simulation (390px frame with notch)" id="vpMobile">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>Mobile</span>
-              </button>
+          <!-- OFFICE CONTROL SIDEBAR: Authentic Developer Terminal + Directives Chat -->
+          <aside class="office-control-sidebar">
+            <!-- Row 1: Authentic macOS Developer Terminal (Occupying ~60% height) -->
+            <div class="sidebar-terminal-row">
+              <div class="terminal-window-header">
+                <div class="terminal-traffic-lights">
+                  <span class="term-dot close" title="Close"></span>
+                  <span class="term-dot minimize" title="Minimize"></span>
+                  <span class="term-dot maximize" title="Expand"></span>
+                </div>
+                <div class="terminal-title-center">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="term-title-icon"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+                  <span class="terminal-title-text">zsh — orchestra-telemetry ~ 80×24</span>
+                </div>
+                <button class="btn-clear-logs" id="sidebarClearLogsBtn" title="Clear terminal logs">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <span>Clear</span>
+                </button>
+              </div>
+
+              <!-- Terminal Output Stream -->
+              <div class="sidebar-terminal-scroll" id="sidebarTerminalLogs">
+                <div class="terminal-banner">
+                  <span class="term-banner-prompt">orchestra@agent-atelier:~$</span> telemetry --follow --all
+                </div>
+                <div class="term-entry">
+                  <span class="term-time">00:00:00</span>
+                  <span class="agent-badge badge-sys">SYS</span>
+                  <span class="term-text">Connected to Orchestra Neural Event Bus (v2.4.0-atelier)</span>
+                </div>
+                <div class="term-entry">
+                  <span class="term-time">00:00:00</span>
+                  <span class="agent-badge badge-sys">SYS</span>
+                  <span class="term-text">10 AI specialist agents ready on duty. Telemetry stream live.</span>
+                </div>
+              </div>
+
+              <!-- Terminal Prompt Line with Blinking Block Cursor -->
+              <div class="terminal-prompt-line">
+                <span class="term-prompt-user">orchestra@atelier</span>:<span class="term-prompt-path">~</span>$&nbsp;<span class="terminal-cursor">█</span>
+              </div>
             </div>
 
-            <!-- Open in New Tab Button (Full Screen) -->
-            <button class="btn btn-action-pill" id="openNewTabBtn" title="Open Fullscreen in New Browser Tab">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              <span>Open Tab ↗</span>
-            </button>
+            <!-- Row 2: Team Chat & Directives (Occupying ~40% height) -->
+            <div class="sidebar-chat-row">
+              <div class="sidebar-chat-header">
+                <div class="block-title-wrap">
+                  <span class="chat-header-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+                  </span>
+                  <h3 class="block-title">TEAM DIRECTIVES & CHAT</h3>
+                </div>
+                <!-- Active Agents Strip -->
+                <div class="sidebar-agents-strip" id="agentsRosterStrip">
+                  <!-- Injected by app.js with Lucide icons -->
+                </div>
+              </div>
 
-            <!-- Refresh Preview Button -->
-            <button class="btn btn-action-icon" id="refreshPreviewBtn" title="Reload iframe preview">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            </button>
+              <!-- Chat Message Stream -->
+              <div class="sidebar-chat-stream" id="sidebarChatStream">
+                <div class="chat-msg system">
+                  <div class="msg-avatar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                  </div>
+                  <div class="msg-content">
+                    <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
+                    <div class="msg-body">Agent Orchestra online. 10 specialized agents ready for directives.</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Task Dispatcher Bar -->
+              <div class="sidebar-prompt-dispatcher">
+                <input type="text" id="sidebarPromptInput" placeholder="Direct the team or suggest changes (e.g. 'Add product cards with cart')..." />
+                <button class="btn btn-sm btn-primary" id="sidebarLaunchBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                  <span>Launch</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 2: TASKS KANBAN BOARD
+           =================================================================== -->
+      <section class="tab-view" id="viewTasks">
+        <div class="tasks-workspace">
+          <div class="tab-header-toolbar">
+            <div class="toolbar-left">
+              <h2 class="tab-heading">Sprint Task Board</h2>
+              <span class="tag-subtext">Kanban workflow across autonomous agent roles</span>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-sm btn-primary" id="addTaskBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                <span>Create Task</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="kanban-grid">
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap"><span class="col-status-dot backlog"></span><span class="col-title">BACKLOG</span></div>
+                <span class="col-count">0</span>
+              </div>
+              <div class="kanban-cards-list" id="kanbanBacklogList">
+                <div class="kanban-empty-state">No backlog tasks</div>
+              </div>
+            </div>
+
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap"><span class="col-status-dot progress"></span><span class="col-title">IN PROGRESS</span></div>
+                <span class="col-count">0</span>
+              </div>
+              <div class="kanban-cards-list" id="kanbanProgressList">
+                <div class="kanban-empty-state">No active sprint tasks</div>
+              </div>
+            </div>
+
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap"><span class="col-status-dot review"></span><span class="col-title">REVIEW / QA</span></div>
+                <span class="col-count">0</span>
+              </div>
+              <div class="kanban-cards-list" id="kanbanReviewList">
+                <div class="kanban-empty-state">No pending reviews</div>
+              </div>
+            </div>
+
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <div class="col-title-wrap"><span class="col-status-dot done"></span><span class="col-title">COMPLETED</span></div>
+                <span class="col-count">0</span>
+              </div>
+              <div class="kanban-cards-list" id="kanbanDoneList">
+                <div class="kanban-empty-state">No completed tasks yet</div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <!-- Sandboxed Live Rendering Stage (Full Available Height) -->
-        <div class="preview-stage-container" id="previewStage">
-          <!-- Smartphone / Tablet Simulated Frame Wrapper -->
-          <div class="device-frame desktop-mode" id="previewWrap">
-            <!-- Simulated phone notch/speaker (visible in mobile mode) -->
-            <div class="device-notch-bar" id="deviceNotch">
-              <span class="notch-speaker"></span>
-              <span class="notch-camera"></span>
+      <!-- ===================================================================
+           TAB 3: CHAT (AI OPERATIONS COMMAND CENTER)
+           =================================================================== -->
+      <section class="tab-view" id="viewChat">
+        <div class="chat-workspace">
+          <div class="tab-header-toolbar">
+            <div class="toolbar-left">
+              <h2 class="tab-heading">AI Operations Command Center</h2>
+              <span class="tag-subtext">Direct orchestrator communication & task dispatch</span>
             </div>
-            
-            <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-same-origin allow-modals" title="Generated Project Preview"></iframe>
+            <div class="toolbar-right">
+              <span class="status-indicator-tag" id="chatStatusTag">Ready for Command</span>
+            </div>
+          </div>
 
-            <!-- Simulated home indicator (visible in mobile mode) -->
-            <div class="device-home-bar" id="deviceHomeBar"></div>
+          <div class="chat-container-card">
+            <div class="chat-messages-stream" id="chatMessagesStream">
+              <div class="chat-msg system">
+                <div class="msg-avatar">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                </div>
+                <div class="msg-content">
+                  <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
+                  <div class="msg-body">Agent Orchestra online. 10 specialized roles ready in atelier. Model: Gemini 3.5 Flash.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-quick-chips">
+              <span class="chips-label">Quick Prompts:</span>
+              <button class="chat-chip" data-prompt="Build an artisan flower boutique website with cart">+ Flower Boutique</button>
+              <button class="chat-chip" data-prompt="Add customer review cards with 5-star ratings">+ Reviews Section</button>
+              <button class="chat-chip" data-prompt="Run comprehensive automated test suite and compliance audit">+ Run Tests</button>
+            </div>
+
+            <div class="chat-input-bar">
+              <select class="agent-mention-select" id="chatMentionSelect">
+                <option value="@Team">@Team (All)</option>
+                <option value="@Atlas">@Atlas (Manager)</option>
+                <option value="@Nova">@Nova (Frontend)</option>
+                <option value="@Byte">@Byte (Backend)</option>
+                <option value="@Pixel">@Pixel (Designer)</option>
+                <option value="@Query">@Query (QA)</option>
+              </select>
+              <input type="text" id="chatPromptInput" class="chat-input-field" placeholder="Enter objective or instructions for the team (or use @Agent)..." />
+              <button class="btn btn-primary" id="chatSendBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                <span>Send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 4: IDE (PROJECT FILE SYSTEM EXPLORER & SOURCE VIEWER)
+           =================================================================== -->
+      <section class="tab-view" id="viewIde">
+        <div class="ide-workspace">
+          <div class="tab-header-toolbar">
+            <div class="toolbar-left">
+              <div class="ide-title-wrap">
+                <span class="toolbar-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/></svg>
+                </span>
+                <div>
+                  <h2 class="tab-heading">Project IDE & Source Explorer</h2>
+                  <span class="tag-subtext">Browse project files, HTML blueprints, and assets in real-time</span>
+                </div>
+              </div>
+            </div>
+            <div class="toolbar-right ide-toolbar-actions">
+              <div class="ide-project-selector-wrap">
+                <label for="ideProjectSelect" class="ide-selector-label">Select Project:</label>
+                <select id="ideProjectSelect" class="ide-project-select" aria-label="Select Project for IDE">
+                  <option value="">No Active Project</option>
+                </select>
+              </div>
+              <button class="btn btn-sm btn-outline" id="refreshFilesBtn" title="Refresh files list">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="ide-dual-container">
+            <!-- Left: Project Files Explorer List -->
+            <aside class="ide-file-tree-panel">
+              <div class="tree-panel-header">
+                <span class="tree-title">FILES</span>
+                <span class="tree-count" id="ideFileCount">0 files</span>
+              </div>
+              <div class="tree-panel-body" id="ideFileList">
+                <div class="ide-empty-state">Select or generate a project to view files</div>
+              </div>
+            </aside>
+
+            <!-- Right: File Code & Document Viewer -->
+            <main class="ide-code-viewer-panel">
+              <div class="viewer-header">
+                <div class="viewer-file-info">
+                  <span class="file-icon" id="ideActiveFileIcon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/></svg>
+                  </span>
+                  <span class="viewer-filename" id="ideActiveFilename">Select a file from the explorer</span>
+                  <span class="viewer-badge" id="ideActiveFileExt"></span>
+                </div>
+                <div class="viewer-actions">
+                  <button class="btn btn-xs btn-outline" id="copyCodeBtn" title="Copy file content">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+              <div class="viewer-code-container">
+                <pre class="viewer-code-block"><code id="ideFileContent">// Select a file from the explorer on the left to inspect its contents.</code></pre>
+              </div>
+            </main>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 5: PREVIEW (DEDICATED FULLSCREEN LIVE PREVIEW)
+           =================================================================== -->
+      <section class="tab-view" id="viewPreview">
+        <div class="preview-workspace">
+          <div class="preview-top-toolbar">
+            <div class="preview-toolbar-left">
+              <span class="preview-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+              </span>
+              <h2 class="tab-heading">Live Preview</h2>
+              <span class="preview-url-badge" id="previewUrlBadge">/api/preview</span>
+            </div>
+
+            <div class="preview-toolbar-right">
+              <div class="viewport-toggles">
+                <button class="viewport-btn active" data-mode="desktop" id="vpDesktop">Desktop</button>
+                <button class="viewport-btn" data-mode="tablet" id="vpTablet">Tablet</button>
+                <button class="viewport-btn" data-mode="mobile" id="vpMobile">Mobile</button>
+              </div>
+              <button class="btn btn-action-pill" id="openNewTabBtn">
+                <span>Open Tab</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+              </button>
+              <button class="btn btn-action-icon" id="refreshPreviewBtn" title="Refresh Live Preview">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="preview-stage-container" id="previewStage">
+            <div class="device-frame desktop-mode" id="previewWrap">
+              <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-same-origin allow-modals" title="Project Live Preview"></iframe>
+            </div>
+          </div>
+
+          <div class="preview-feedback-strip" id="editsSection">
+            <div class="feedback-input-row">
+              <span class="feedback-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <span>Minimal-Change Edit:</span>
+              </span>
+              <input type="text" id="feedbackInput" placeholder="e.g. Change primary button color to emerald and add customer review cards..." />
+              <button type="button" class="btn btn-primary" id="applyFeedbackBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <span>Apply Edit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 6: AGENTS (TEAM DOSSIER GRID)
+           =================================================================== -->
+      <section class="tab-view" id="viewAgents">
+        <div class="agents-workspace">
+          <div class="tab-header-toolbar">
+            <div class="toolbar-left">
+              <h2 class="tab-heading">Autonomous Agent Team Directory</h2>
+              <span class="tag-subtext">10 specialized AI employees working in the virtual atelier</span>
+            </div>
+          </div>
+
+          <div class="agents-directory-grid" id="agentsDirectoryGrid">
+            <!-- Dynamically populated by app.js with Lucide icons -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 7: ACTIVITY (CHRONOLOGICAL TIMELINE)
+           =================================================================== -->
+      <section class="tab-view" id="viewActivity">
+        <div class="activity-workspace">
+          <div class="tab-header-toolbar">
+            <div class="toolbar-left">
+              <h2 class="tab-heading">Chronological Activity Timeline</h2>
+              <span class="tag-subtext">Audit trail of all agent actions, deliverables, and build milestones</span>
+            </div>
+          </div>
+
+          <div class="timeline-card">
+            <div class="timeline-list" id="activityTimelineList">
+              <div class="timeline-empty-state">
+                <span class="empty-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </span>
+                <p>No activity recorded yet. Run a prompt or project action to generate audit logs.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

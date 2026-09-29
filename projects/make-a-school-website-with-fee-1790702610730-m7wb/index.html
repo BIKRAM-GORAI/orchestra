@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Global Academy | Excellence in Education</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-primary: #1e3a8a;
+      --color-primary-dark: #172554;
+      --color-secondary: #3b82f6;
+      --color-accent: #f59e0b;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-text-muted: #475569;
+      --color-border: #e2e8f0;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Header & Navigation */
+    #app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      transition: var(--transition-smooth);
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--color-primary);
+    }
+
+    .brand-logo i {
+      font-size: 1.75rem;
+      color: var(--color-accent);
+    }
+
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--color-text);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition-smooth);
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--color-secondary);
+    }
+
+    .nav-cta {
+      background: var(--color-primary);
+      color: white;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition-smooth);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-cta:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--color-primary);
+      cursor: pointer;
+    }
+
+    /* Hero Section */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 8rem 2rem 5rem;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.95), rgba(59, 130, 246, 0.85)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+      color: white;
+      overflow: hidden;
+    }
+
+    .hero-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-content h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      animation: slideUp 0.8s ease-out;
+    }
+
+    .hero-content h1 span {
+      color: var(--color-accent);
+    }
+
+    .hero-content p {
+      font-size: 1.125rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 2rem;
+      animation: slideUp 1s ease-out;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      animation: slideUp 1.2s ease-out;
+    }
+
+    .btn-primary {
+      background: var(--color-accent);
+      color: var(--color-text);
+      padding: 0.8rem 1.75rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition-smooth);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      background: #e08e0b;
+      transform: scale(1.02);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.8rem 1.75rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.02);
+    }
+
+    .hero-visuals {
+      position: relative;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    .hero-card-stack {
+      position: relative;
+      height: 400px;
+    }
+
+    .floating-card {
+      position: absolute;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .floating-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .fc-1 {
+      width: 320px;
+      height: 220px;
+      top: 0;
+      left: 0;
+      border: 4px solid white;
+    }
+
+    .fc-2 {
+      width: 260px;
+      height: 180px;
+      bottom: 0;
+      right: 0;
+      animation-delay: 2s;
+      border: 4px solid white;
+    }
+
+    .fc-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      color: var(--color-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* General Section Styling */
+    section {
+      padding: 6rem 2rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 4rem;
+    }
+
+    .section-tag {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--color-secondary);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--color-text);
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      color: var(--color-text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* About & School Details */
+    #about {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      margin: 4rem auto;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+
+    .about-card {
+      background: var(--color-bg);
+      padding: 2rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      text-align: center;
+      transition: var(--transition-smooth);
+    }
+
+    .about-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-secondary);
+    }
+
+    .about-card i {
+      font-size: 2.5rem;
+      color: var(--color-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    .about-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .about-card p {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Academics / Faculty Grid */
+    .academics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .academic-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-smooth);
+    }
+
+    .academic-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .academic-img {
+      height: 220px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .academic-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: var(--transition-smooth);
+    }
+
+    .academic-card:hover .academic-img img {
+      transform: scale(1.05);
+    }
+
+    .academic-body {
+      padding: 1.75rem;
+    }
+
+    .academic-body h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .academic-body p {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Fees Structure Section */
+    #fees {
+      background: #f1f5f9;
+      border-radius: var(--radius-lg);
+      margin: 4rem auto;
+      border: 1px solid var(--color-border);
+    }
+
+    .fee-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .fee-tab {
+      padding: 0.75rem 1.5rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .fee-tab.active,
+    .fee-tab:hover {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+
+    .fee-table-container {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      overflow-x: auto;
+    }
+
+    .fee-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .fee-table th,
+    .fee-table td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .fee-table th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--color-primary);
+      font-size: 0.95rem;
+    }
+
+    .fee-table td {
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+    }
+
+    .fee-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .fee-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .fee-total-row td {
+      font-weight: 700;
+      color: var(--color-text);
+      background: #f1f5f9;
+    }
+
+    /* Gallery Section */
+    .gallery-filters {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1.25rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 50px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: var(--color-secondary);
+      color: white;
+      border-color: var(--color-secondary);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .gallery-item {
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      height: 260px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-smooth);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.08);
+    }
+
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.8), transparent);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.5rem;
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .gallery-item:hover .gallery-overlay {
+      opacity: 1;
+    }
+
+    .gallery-overlay h4 {
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .gallery-overlay p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.85rem;
+    }
+
+    /* Admissions / Inquiry Form */
+    #admissions {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      margin: 4rem auto;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .admission-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .admission-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--color-secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-content h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .step-content p {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+    }
+
+    .inquiry-form {
+      background: var(--color-bg);
+      padding: 2.5rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      transition: var(--transition-smooth);
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--color-secondary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .form-submit-btn {
+      width: 100%;
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      padding: 0.85rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .form-submit-btn:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Contact Section */
+    #contact {
+      background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+      color: white;
+      border-radius: var(--radius-lg);
+      margin: 4rem auto;
+      padding: 5rem 3rem;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .contact-card i {
+      font-size: 2.25rem;
+      color: var(--color-accent);
+      margin-bottom: 1rem;
+    }
+
+    .contact-card h4 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-card p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+    }
+
+    /* Footer */
+    #app-footer {
+      background: #090d16;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 4rem 2rem 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-col h4 {
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-col p {
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: var(--transition-smooth);
+      font-size: 0.95rem;
+    }
+
+    .footer-links a:hover {
+      color: var(--color-accent);
+      padding-left: 5px;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .social-icons a {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+      text-decoration: none;
+    }
+
+    .social-icons a:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Lightbox Modal */
+    #lightbox-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #lightbox-modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: var(--radius-md);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .lightbox-caption {
+      color: white;
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -50px;
+      right: 0;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .lightbox-close:hover {
+      color: var(--color-accent);
+    }
+
+    /* Toast Notification */
+    #toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .toast {
+      background: var(--color-surface);
+      color: var(--color-text);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      border-left: 4px solid var(--color-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 500;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    .toast.success {
+      border-left-color: #10b981;
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Responsive Media Queries */
+    @media (max-width: 1024px) {
+      .hero-container, .admission-wrapper, .footer-container {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+      .about-grid, .academics-grid, .gallery-grid, .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .hero-visuals {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--color-surface);
+        flex-direction: column;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md);
+      }
+      .nav-menu.active {
+        display: flex;
+      }
+      .mobile-toggle {
+        display: block;
+      }
+      .about-grid, .academics-grid, .gallery-grid, .contact-grid, .footer-container {
+        grid-template-columns: 1fr;
+      }
+      .hero-content h1 {
+        font-size: 2.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="app-header">
+    <div class="nav-container">
+      <a href="#hero" class="brand-logo">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>Apex Global</span>
+      </a>
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="#hero" class="nav-link active">Home</a></li>
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#academics" class="nav-link">Academics</a></li>
+        <li><a href="#fees" class="nav-link">Fees Structure</a></li>
+        <li><a href="#gallery" class="nav-link">Campus Life</a></li>
+        <li><a href="#admissions" class="nav-link">Admissions</a></li>
+        <li><a href="#admissions" class="nav-cta">Apply Now</a></li>
+      </ul>
+      <button class="mobile-toggle" id="mobile-toggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="app-main">
+
+    <!-- Hero Section -->
+    <section id="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="section-tag" style="background: rgba(245, 158, 11, 0.2); color: var(--color-accent);">Admissions Open 2025-26</div>
+          <h1>Empowering Minds, <span>Shaping Futures</span></h1>
+          <p>Welcome to Apex Global Academy. We foster intellectual curiosity, character development, and academic excellence in a vibrant, supportive learning environment.</p>
+          <div class="hero-buttons">
+            <a href="#admissions" class="btn-primary">
+              <i class="fa-solid fa-paper-plane"></i> Enroll Today
+            </a>
+            <a href="#fees" class="btn-secondary">
+              <i class="fa-solid fa-file-invoice-dollar"></i> View Fees
+            </a>
+          </div>
+        </div>
+        <div class="hero-visuals">
+          <div class="hero-card-stack">
+            <div class="floating-card fc-1">
+              <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80" alt="Students in Class">
+            </div>
+            <div class="floating-card fc-2">
+              <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80" alt="Modern Library">
+            </div>
+            <div class="fc-badge">
+              <i class="fa-solid fa-star" style="color: var(--color-accent);"></i> 100% Success Rate
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About & School Details -->
+    <section id="about">
+      <div class="section-header">
+        <span class="section-tag">Why Choose Apex</span>
+        <h2 class="section-title">Nurturing Tomorrow's Leaders</h2>
+        <p class="section-desc">Discover our core pillars built on decades of educational dedication, state-of-the-art infrastructure, and holistic student support.</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <i class="fa-solid fa-award"></i>
+          <h3>Excellence in Academics</h3>
+          <p>Consistently ranking among top institutions with exceptional board examination results and Olympiad accolades.</p>
+        </div>
+        <div class="about-card">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <h3>World-Class Faculty</h3>
+          <p>Dedicated educators with advanced degrees and extensive mentoring experience committed to individual student growth.</p>
+        </div>
+        <div class="about-card">
+          <i class="fa-solid fa-flask"></i>
+          <h3>Advanced Laboratories</h3>
+          <p>Fully equipped STEM labs, robotics workshops, and modern computer suites to promote hands-on experiential learning.</p>
+        </div>
+        <div class="about-card">
+          <i class="fa-solid fa-futbol"></i>
+          <h3>Holistic Development</h3>
+          <p>Extensive sports complexes, performing arts studios, and leadership clubs fostering well-rounded personalities.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Academics / Programs Grid -->
+    <section id="academics">
+      <div class="section-header">
+        <span class="section-tag">Academic Programs</span>
+        <h2 class="section-title">Pathways for Every Stage</h2>
+        <p class="section-desc">Structured curriculums designed to challenge and inspire students from early childhood to higher secondary graduation.</p>
+      </div>
+      <div class="academics-grid">
+        <div class="academic-card">
+          <div class="academic-img">
+            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80" alt="Primary Education">
+          </div>
+          <div class="academic-body">
+            <h3>Primary School (Grades 1 - 5)</h3>
+            <p>Building strong foundational literacy, numeracy, and inquisitive thinking through activity-based learning and creative arts.</p>
+          </div>
+        </div>
+        <div class="academic-card">
+          <div class="academic-img">
+            <img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=600&q=80" alt="Middle School">
+          </div>
+          <div class="academic-body">
+            <h3>Middle School (Grades 6 - 8)</h3>
+            <p>Expanding analytical skills with specialized subject modules, collaborative projects, and early scientific inquiry.</p>
+          </div>
+        </div>
+        <div class="academic-card">
+          <div class="academic-img">
+            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80" alt="Higher Secondary">
+          </div>
+          <div class="academic-body">
+            <h3>Higher Secondary (Grades 9 - 12)</h3>
+            <p>Rigorous college-preparatory tracks in Science, Commerce, and Humanities with dedicated career counseling.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Fees Structure Section -->
+    <section id="fees">
+      <div class="section-header">
+        <span class="section-tag">Transparent Investment</span>
+        <h2 class="section-title">Fee Structure (2025 - 2026)</h2>
+        <p class="section-desc">Select a grade level below to examine comprehensive tuition, activity, and developmental fee schedules.</p>
+      </div>
+
+      <div class="fee-tabs">
+        <button class="fee-tab active" data-level="primary">Primary (Grades 1-5)</button>
+        <button class="fee-tab" data-level="middle">Middle School (Grades 6-8)</button>
+        <button class="fee-tab" data-level="secondary">Higher Secondary (Grades 9-12)</button>
+      </div>
+
+      <div class="fee-table-container">
+        <table class="fee-table">
+          <thead>
+            <tr>
+              <th>Fee Category</th>
+              <th>Frequency</th>
+              <th>Amount (USD)</th>
+            </tr>
+          </thead>
+          <tbody id="fee-table-body">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Animated Photos & Visual Gallery -->
+    <section id="gallery">
+      <div class="section-header">
+        <span class="section-tag">Campus Visuals</span>
+        <h2 class="section-title">Life at Apex Global</h2>
+        <p class="section-desc">Explore our dynamic campus culture, state-of-the-art facilities, and engaging student activities.</p>
+      </div>
+
+      <div class="gallery-filters">
+        <button class="filter-btn active" data-filter="all">All Photos</button>
+        <button class="filter-btn" data-filter="campus">Campus & Labs</button>
+        <button class="filter-btn" data-filter="sports">Sports & Athletics</button>
+        <button class="filter-btn" data-filter="events">Cultural Events</button>
+      </div>
+
+      <div class="gallery-grid" id="gallery-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Admissions & Inquiry Form -->
+    <section id="admissions">
+      <div class="admission-wrapper">
+        <div class="admission-info">
+          <span class="section-tag">Join Our Family</span>
+          <h2 class="section-title" style="text-align: left; margin-bottom: 1.5rem;">Simple Admission Process</h2>
+          <div class="admission-steps">
+            <div class="step-item">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h4>Submit Online Inquiry</h4>
+                <p>Fill out the application inquiry form with student details and preferred grade.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h4>Campus Tour & Interaction</h4>
+                <p>Visit our campus, meet academic heads, and experience our world-class facilities.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h4>Assessment & Enrollment</h4>
+                <p>Complete the grade-appropriate interaction session and formalize admission registration.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inquiry-form">
+          <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Admission Inquiry Form</h3>
+          <form id="inquiry-form">
+            <div class="form-group">
+              <label class="form-label">Parent Full Name</label>
+              <input type="text" class="form-input" id="parent-name" required placeholder="e.g. Robert Smith">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="parent-email" required placeholder="robert@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input" id="parent-phone" required placeholder="+1 (555) 019-2834">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Select Grade Level</label>
+              <select class="form-select" id="inquiry-grade">
+                <option value="Primary">Primary (Grades 1-5)</option>
+                <option value="Middle">Middle School (Grades 6-8)</option>
+                <option value="Secondary">Higher Secondary (Grades 9-12)</option>
+              </select>
+            </div>
+            <button type="submit" class="form-submit-btn">Submit Inquiry</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <div class="contact-grid">
+        <div class="contact-card">
+          <i class="fa-solid fa-location-dot"></i>
+          <h4>Campus Location</h4>
+          <p>123 Education Lane, Knowledge Park, Cityville, ST 12345</p>
+        </div>
+        <div class="contact-card">
+          <i class="fa-solid fa-phone-volume"></i>
+          <h4>Direct Helpline</h4>
+          <p>+1 (800) 555-APEX / +1 (800) 555-2739</p>
+        </div>
+        <div class="contact-card">
+          <i class="fa-solid fa-envelope-open-text"></i>
+          <h4>Official Email</h4>
+          <p>admissions@apexglobal.edu | info@apexglobal.edu</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer id="app-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <a href="#hero" class="brand-logo" style="color: white; margin-bottom: 1rem;">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Apex Global Academy</span>
+        </a>
+        <p>Providing transformative education, instilling ethical values, and building global citizens equipped for tomorrow's challenges.</p>
+        <div class="social-icons">
+          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#academics">Academics</a></li>
+          <li><a href="#fees">Fees Structure</a></li>
+          <li><a href="#gallery">Campus Gallery</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Programs</h4>
+        <ul class="footer-links">
+          <li><a href="#academics">Primary School</a></li>
+          <li><a href="#academics">Middle School</a></li>
+          <li><a href="#academics">Higher Secondary</a></li>
+          <li><a href="#admissions">Admission Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Newsletter</h4>
+        <p>Subscribe to receive institutional updates, event schedules, and academic calendars.</p>
+        <form id="newsletter-form" onsubmit="event.preventDefault(); showToast('Subscribed successfully!', 'success');">
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <input type="email" class="form-input" placeholder="Your email address" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+          </div>
+          <button type="submit" class="form-submit-btn" style="background: var(--color-secondary);">Subscribe</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Apex Global Academy. All rights reserved. Designed for Excellence.</p>
+    </div>
+  </footer>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox-modal">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightbox-close">&times;</button>
+      <img id="lightbox-img" src="" alt="Expanded Photo">
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // Data Store for Fees Structure
+    const feesData = {
+      primary: [
+        { category: "Registration & Admission Fee", frequency: "One-Time", amount: "$350" },
+        { category: "Tuition Fee", frequency: "Per Term (3 terms)", amount: "$1,200" },
+        { category: "Library & Digital Lab Fee", frequency: "Annual", amount: "$250" },
+        { category: "Sports & Activity Fee", frequency: "Annual", amount: "$200" },
+        { category: "Total Estimated Annual Investment", frequency: "Per Year", amount: "$4,150" }
+      ],
+      middle: [
+        { category: "Registration & Admission Fee", frequency: "One-Time", amount: "$400" },
+        { category: "Tuition Fee", frequency: "Per Term (3 terms)", amount: "$1,500" },
+        { category: "Library & Science Lab Fee", frequency: "Annual", amount: "$350" },
+        { category: "Sports & Activity Fee", frequency: "Annual", amount: "$300" },
+        { category: "Total Estimated Annual Investment", frequency: "Per Year", amount: "$5,250" }
+      ],
+      secondary: [
+        { category: "Registration & Admission Fee", frequency: "One-Time", amount: "$500" },
+        { category: "Tuition Fee", frequency: "Per Term (3 terms)", amount: "$1,900" },
+        { category: "Advanced STEM Lab Fee", frequency: "Annual", amount: "$500" },
+        { category: "Sports & Leadership Fee", frequency: "Annual", amount: "$350" },
+        { category: "Total Estimated Annual Investment", frequency: "Per Year", amount: "$6,550" }
+      ]
+    };
+
+    // Data Store for Gallery
+    const galleryData = [
+      {
+        id: 1,
+        category: "campus",
+        title: "Advanced Science Laboratory",
+        caption: "State-of-the-art equipment for chemistry and biology experimentation.",
+        img: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 2,
+        category: "sports",
+        title: "Annual Athletics Championship",
+        caption: "Students participating in track and field events at our Olympic-size ground.",
+        img: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 3,
+        category: "events",
+        title: "Annual Cultural Fest",
+        caption: "Showcasing performing arts, music, and dramatic talents.",
+        img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 4,
+        category: "campus",
+        title: "Digital Learning Suite",
+        caption: "Modern computer laboratories equipped with high-speed computing terminals.",
+        img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 5,
+        category: "sports",
+        title: "Inter-School Basketball Tournament",
+        caption: "Our varsity basketball team in action at the indoor stadium.",
+        img: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 6,
+        category: "events",
+        title: "Science & Innovation Exhibition",
+        caption: "Student robotics projects and working models on display.",
+        img: "https://images.unsplash.com/photo-1567168544813-cc03465b4fa8?auto=format&fit=crop&w=800&q=80"
+      }
+    ];
+
+    // DOM Elements
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    const feeTableBody = document.getElementById('fee-table-body');
+    const feeTabs = document.querySelectorAll('.fee-tab');
+    const galleryGrid = document.getElementById('gallery-grid');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const lightboxModal = document.getElementById('lightbox-modal');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxClose = document.getElementById('lightbox-close');
+    const inquiryForm = document.getElementById('inquiry-form');
+    const toastContainer = document.getElementById('toast-container');
+
+    // Initialize Application
+    function initApp() {
+      renderFees('primary');
+      renderGallery('all');
+      setupEventListeners();
+    }
+
+    // Render Fees Table
+    function renderFees(level) {
+      const items = feesData[level];
+      let html = '';
+      items.forEach((row, index) => {
+        const isLast = index === items.length - 1;
+        html += `
+          <tr class="${isLast ? 'fee-total-row' : ''}">
+            <td>${row.category}</td>
+            <td>${row.frequency}</td>
+            <td>${row.amount}</td>
+          </tr>
+        `;
+      });
+      feeTableBody.innerHTML = html;
+    }
+
+    // Render Gallery Grid
+    function renderGallery(filter) {
+      const filtered = filter === 'all' ? galleryData : galleryData.filter(item => item.category === filter);
+      let html = '';
+      filtered.forEach(item => {
+        html += `
+          <div class="gallery-item" onclick="openLightbox('${item.img}', '${item.title}: ${item.caption}')">
+            <img src="${item.img}" alt="${item.title}">
+            <div class="gallery-overlay">
+              <h4>${item.title}</h4>
+              <p>${item.caption}</p>
+            </div>
+          </div>
+        `;
+      });
+      galleryGrid.innerHTML = html;
+    }
+
+    // Lightbox Controls
+    function openLightbox(src, caption) {
+      lightboxImg.src = src;
+      lightboxCaption.textContent = caption;
+      lightboxModal.classList.add('active');
+    }
+
+    function closeLightbox() {
+      lightboxModal.classList.remove('active');
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" style="color: ${type === 'success' ? '#10b981' : 'var(--color-secondary)'}; font-size: 1.25rem;"></i>
+        <span>${message}</span>
+      `;
+      toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Event Listeners Setup
+    function setupEventListeners() {
+      // Mobile Menu Toggle
+      mobileToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+      });
+
+      // Close mobile menu on link click
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          navMenu.classList.remove('active');
+        });
+      });
+
+      // Fee Tab Switching
+      feeTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          feeTabs.forEach(t => t.classList.remove('active'));
+          e.target.classList.add('active');
+          const level = e.target.getAttribute('data-level');
+          renderFees(level);
+        });
+      });
+
+      // Gallery Filter Switching
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          const filter = e.target.getAttribute('data-filter');
+          renderGallery(filter);
+        });
+      });
+
+      // Lightbox Close Events
+      lightboxClose.addEventListener('click', closeLightbox);
+      lightboxModal.addEventListener('click', (e) => {
+        if (e.target === lightboxModal) closeLightbox();
+      });
+
+      // Admission Inquiry Form Submission
+      inquiryForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('parent-name').value;
+        showToast(`Thank you, ${name}! Your inquiry has been submitted successfully.`, 'success');
+        inquiryForm.reset();
+      });
+
+      // Sticky Header Shadow on Scroll
+      window.addEventListener('scroll', () => {
+        const header = document.getElementById('app-header');
+        if (window.scrollY > 30) {
+          header.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.05)';
+        } else {
+          header.style.boxShadow = 'none';
+        }
+      });
+    }
+
+    // Run on DOM Load
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
