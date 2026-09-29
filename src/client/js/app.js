@@ -263,6 +263,7 @@ function handlePipelineEvent(event) {
   switch (stage) {
     case 'PIPELINE_STARTED':
       setOrchestrationLock(true);
+      switchDockTab('telemetry');
       setPipelineStep('step-user', 'done');
       orchestratorStatusTag.textContent = 'Orchestrating...';
       addLog(`[ORCHESTRATOR] Task received: "${event.prompt?.slice(0, 60)}..."`, 'info');
@@ -310,6 +311,7 @@ function handlePipelineEvent(event) {
 
     case 'QA_STARTED':
       setPipelineStep('step-qa', 'active');
+      switchDockTab('qa');
       if (qaAuditCard) {
         qaAuditCard.style.display = 'block';
         qaVerdictBadge.className = 'badge';
@@ -376,6 +378,7 @@ function handlePipelineEvent(event) {
     case 'PIPELINE_COMPLETED':
       setOrchestrationLock(false);
       setPipelineStep('step-preview', 'done');
+      switchDockTab('edits');
       orchestratorStatusTag.textContent = 'Build Complete';
       addLog('[ORCHESTRATOR] Project successfully built and preview ready.', 'success');
       break;
@@ -584,11 +587,49 @@ if (feedbackInput) {
   });
 }
 
+// Dock Tab Switching Logic (Telemetry, Targeted Edits, QA Audit, Projects)
+export function switchDockTab(tabName) {
+  const allTabs = document.querySelectorAll('.dock-tab-btn');
+  const allPanes = document.querySelectorAll('.dock-pane');
+
+  allTabs.forEach(btn => {
+    const isActive = btn.dataset.tab === tabName;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  allPanes.forEach(pane => {
+    const targetId = `pane${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`;
+    pane.classList.toggle('active', pane.id === targetId);
+  });
+}
+
+// Bind Dock Tab Clicks
+document.querySelectorAll('.dock-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabName = btn.dataset.tab;
+    if (tabName) {
+      switchDockTab(tabName);
+    }
+  });
+});
+
+// Quick Feedback Suggestion Chips
+document.querySelectorAll('.suggestion-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    if (feedbackInput) {
+      feedbackInput.value = chip.dataset.chip || chip.textContent.replace('+', '').trim();
+      feedbackInput.focus();
+    }
+  });
+});
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initSystemStatus();
   initEventSource();
   loadProjects();
   setOrchestrationLock(false);
+  switchDockTab('telemetry');
   addLog('Agent Orchestra Platform ready.', 'info');
 });

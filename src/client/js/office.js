@@ -1,9 +1,10 @@
 /**
- * Agent Orchestra — Gamified Virtual Office Floor Engine
+ * Agent Orchestra — Virtual Office Atelier Floor Engine
  * 
- * Renders an animated 2D top-down / 2.5D creative office simulation where
- * logical agents have dedicated cabins and desks. Characters sit, roam, pace,
- * walk to handover tasks, and speak/murmur humorous thoughts in real time.
+ * Renders an animated architectural floorplan with dedicated rooms for each
+ * logical agent (Manager Suite, Dev Cabin, Design Atelier, Architecture & QA Lab).
+ * Features individual desks, roaming pathfinding, task handover walking animations,
+ * and floating thought bubbles with humorous murmurs.
  */
 
 export const MURMURS = {
@@ -17,10 +18,10 @@ export const MURMURS = {
   ],
   designer: [
     "What if the primary button had an 18px radius instead of 14px? Life-changing.",
-    "Contemplating the subtle emotional resonance of warm amber and sage green...",
+    "Contemplating the subtle emotional resonance of warm cream and dusty rose...",
     "Adding smooth cubic-bezier transitions to all hover micro-interactions...",
     "Making sure typography hierarchy breathes on mobile viewports...",
-    "Balancing negative space with rich botanical card aesthetics..."
+    "Balancing negative space with rich editorial card aesthetics..."
   ],
   frontend_architect: [
     "Structuring the semantic DOM with zero layout shifts...",
@@ -58,33 +59,78 @@ export class OfficeEngine {
     this.ctx = canvas.getContext('2d');
     this.onMurmur = onMurmur;
 
-    this.width = canvas.width;
-    this.height = canvas.height;
+    this.width = 640;
+    this.height = 360;
 
-    // Room Layout Coordinates (normalized for scalable canvas)
+    // Room Layout Coordinates (Adaptive 2x2 architectural grid)
     this.rooms = {
-      managerCabin: { x: 20, y: 20, w: 260, h: 220, name: "Manager's Executive Cabin", color: '#231e18', border: '#e5ad42' },
-      devDen: { x: 300, y: 20, w: 280, h: 220, name: "Dev Den (Coding Agent)", color: '#13201a', border: '#10b981' },
-      creativeCommons: { x: 20, y: 260, w: 560, h: 220, name: "Creative Commons & QA Testing Lab", color: '#171922', border: '#6366f1' },
+      managerSuite: {
+        id: 'managerSuite',
+        name: "Manager's Suite",
+        icon: '👑',
+        x: 16,
+        y: 16,
+        w: 290,
+        h: 155,
+        bg: '#FDFBF7',
+        border: '#D4A359',
+        tagColor: '#B8860B',
+      },
+      devCabin: {
+        id: 'devCabin',
+        name: "Dev Den (Coding Agent)",
+        icon: '💻',
+        x: 322,
+        y: 16,
+        w: 302,
+        h: 155,
+        bg: '#F5F9F6',
+        border: '#5B7B6D',
+        tagColor: '#2E5A44',
+      },
+      designStudio: {
+        id: 'designStudio',
+        name: "Design & UX Atelier",
+        icon: '🎨',
+        x: 16,
+        y: 185,
+        w: 290,
+        h: 160,
+        bg: '#FDF8F9',
+        border: '#C86D7C',
+        tagColor: '#A84D5C',
+      },
+      qaArchLab: {
+        id: 'qaArchLab',
+        name: "Architecture & QA Lab",
+        icon: '📐',
+        x: 322,
+        y: 185,
+        w: 302,
+        h: 160,
+        bg: '#F6F8FB',
+        border: '#6B82A8',
+        tagColor: '#3B5998',
+      },
     };
 
-    // Agent Avatars
+    // All 6 Dedicated Agents with Home Desks
     this.agents = {
       manager: {
         id: 'manager',
         name: 'Manager',
         role: 'Orchestrator',
         emoji: '👑',
-        color: '#f59e0b',
+        suitColor: '#D4A359',
         x: 150,
-        y: 110,
+        y: 85,
         homeX: 150,
-        homeY: 110,
+        homeY: 85,
         targetX: 150,
-        targetY: 110,
-        state: 'idle', // idle, thinking, walking, working
-        facing: 1, // 1 = right, -1 = left
-        cabin: 'managerCabin',
+        targetY: 85,
+        state: 'idle',
+        facing: 1,
+        roomKey: 'managerSuite',
         bubbleText: null,
         bubbleTimer: 0,
         lastMurmurTime: 0,
@@ -92,18 +138,18 @@ export class OfficeEngine {
       coding_agent: {
         id: 'coding_agent',
         name: 'Coding Agent',
-        role: 'Implementation',
+        role: 'Implementer',
         emoji: '💻',
-        color: '#10b981',
-        x: 440,
-        y: 110,
-        homeX: 440,
-        homeY: 110,
-        targetX: 440,
-        targetY: 110,
+        suitColor: '#2E5A44',
+        x: 470,
+        y: 85,
+        homeX: 470,
+        homeY: 85,
+        targetX: 470,
+        targetY: 85,
         state: 'idle',
         facing: -1,
-        cabin: 'devDen',
+        roomKey: 'devCabin',
         bubbleText: null,
         bubbleTimer: 0,
         lastMurmurTime: 0,
@@ -111,98 +157,102 @@ export class OfficeEngine {
       designer: {
         id: 'designer',
         name: 'Designer',
-        role: 'UI/UX Visuals',
+        role: 'Visuals & UI',
         emoji: '🎨',
-        color: '#ec4899',
-        x: 90,
-        y: 350,
-        homeX: 90,
-        homeY: 350,
-        targetX: 90,
-        targetY: 350,
+        suitColor: '#C86D7C',
+        x: 150,
+        y: 260,
+        homeX: 150,
+        homeY: 260,
+        targetX: 150,
+        targetY: 260,
         state: 'idle',
         facing: 1,
-        cabin: 'creativeCommons',
+        roomKey: 'designStudio',
         bubbleText: null,
         bubbleTimer: 0,
         lastMurmurTime: 0,
       },
       frontend_architect: {
         id: 'frontend_architect',
-        name: 'Frontend Architect',
-        role: 'DOM & CSS Tech',
+        name: 'Frontend Arch',
+        role: 'DOM & CSS',
         emoji: '📐',
-        color: '#0ea5e9',
-        x: 210,
-        y: 350,
-        homeX: 210,
-        homeY: 350,
-        targetX: 210,
-        targetY: 350,
+        suitColor: '#3B7A98',
+        x: 390,
+        y: 245,
+        homeX: 390,
+        homeY: 245,
+        targetX: 390,
+        targetY: 245,
         state: 'idle',
         facing: 1,
-        cabin: 'creativeCommons',
+        roomKey: 'qaArchLab',
         bubbleText: null,
         bubbleTimer: 0,
         lastMurmurTime: 0,
       },
       feature_architect: {
         id: 'feature_architect',
-        name: 'Feature Architect',
+        name: 'Feature Arch',
         role: 'Behaviors',
         emoji: '⚡',
-        color: '#8b5cf6',
-        x: 330,
-        y: 350,
-        homeX: 330,
-        homeY: 350,
-        targetX: 330,
-        targetY: 350,
+        suitColor: '#7C5295',
+        x: 460,
+        y: 285,
+        homeX: 460,
+        homeY: 285,
+        targetX: 460,
+        targetY: 285,
         state: 'idle',
         facing: 1,
-        cabin: 'creativeCommons',
+        roomKey: 'qaArchLab',
         bubbleText: null,
         bubbleTimer: 0,
         lastMurmurTime: 0,
       },
       qa: {
         id: 'qa',
-        name: 'QA Agent',
-        role: 'Verification',
+        name: 'QA Inspector',
+        role: 'Compliance',
         emoji: '🛡️',
-        color: '#3b82f6',
-        x: 480,
-        y: 350,
-        homeX: 480,
-        homeY: 350,
-        targetX: 480,
-        targetY: 350,
+        suitColor: '#4A6274',
+        x: 545,
+        y: 245,
+        homeX: 545,
+        homeY: 245,
+        targetX: 545,
+        targetY: 245,
         state: 'idle',
         facing: -1,
-        cabin: 'creativeCommons',
+        roomKey: 'qaArchLab',
         bubbleText: null,
         bubbleTimer: 0,
         lastMurmurTime: 0,
       },
     };
 
+    // Dedicated Architectural Furniture
     this.furniture = [
-      // Manager Cabin Furniture
-      { type: 'desk', x: 120, y: 125, w: 70, h: 32, label: 'Executive Desk' },
-      { type: 'whiteboard', x: 30, y: 35, w: 90, h: 12, label: 'Strategy Board' },
-      { type: 'plant', x: 245, y: 40, r: 12 },
+      // Manager Suite
+      { type: 'desk', x: 120, y: 100, w: 60, h: 26, color: '#E8DFC8' },
+      { type: 'whiteboard', x: 32, y: 28, w: 75, h: 10 },
+      { type: 'plant', x: 280, y: 35, r: 9 },
 
-      // Dev Den Furniture
-      { type: 'desk', x: 405, y: 125, w: 75, h: 34, label: 'Workstation', dev: true },
-      { type: 'server', x: 535, y: 40, w: 30, h: 50 },
-      { type: 'coffee', x: 475, y: 130, r: 6 },
+      // Dev Den
+      { type: 'desk', x: 440, y: 100, w: 62, h: 26, color: '#DCE8DF', isDev: true },
+      { type: 'server', x: 585, y: 30, w: 26, h: 40 },
+      { type: 'coffee', x: 505, y: 105, r: 5 },
 
-      // Creative Commons Furniture
-      { type: 'desk', x: 65, y: 370, w: 55, h: 30, label: 'Designer' },
-      { type: 'desk', x: 185, y: 370, w: 55, h: 30, label: 'Frontend' },
-      { type: 'desk', x: 305, y: 370, w: 55, h: 30, label: 'Features' },
-      { type: 'desk', x: 450, y: 370, w: 60, h: 30, label: 'QA Lab' },
-      { type: 'watercooler', x: 535, y: 280, w: 24, h: 40 },
+      // Design Studio
+      { type: 'desk', x: 120, y: 275, w: 60, h: 26, color: '#F2DFE2' },
+      { type: 'easel', x: 45, y: 220, w: 30, h: 35 },
+      { type: 'plant', x: 280, y: 320, r: 9 },
+
+      // Architecture & QA Lab
+      { type: 'desk', x: 365, y: 260, w: 50, h: 22, color: '#DCE4EE' },
+      { type: 'desk', x: 435, y: 300, w: 50, h: 22, color: '#E5DCEE' },
+      { type: 'desk', x: 520, y: 260, w: 52, h: 22, color: '#DEE4EA' },
     ];
 
     this.animationFrame = null;
@@ -214,15 +264,20 @@ export class OfficeEngine {
   }
 
   resize() {
+    if (!this.canvas || !this.canvas.parentElement) return;
     const rect = this.canvas.parentElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    this.width = rect.width || 600;
-    this.height = rect.height || 500;
-    this.canvas.width = this.width * dpr;
-    this.canvas.height = this.height * dpr;
-    this.canvas.style.width = `${this.width}px`;
-    this.canvas.style.height = `${this.height}px`;
-    this.ctx.scale(dpr, dpr);
+    this.clientWidth = rect.width || 640;
+    this.clientHeight = rect.height || 360;
+
+    this.canvas.width = Math.max(1, Math.floor(this.clientWidth * dpr));
+    this.canvas.height = Math.max(1, Math.floor(this.clientHeight * dpr));
+    this.canvas.style.width = `${this.clientWidth}px`;
+    this.canvas.style.height = `${this.clientHeight}px`;
+
+    this.dpr = dpr;
+    this.scaleX = (this.clientWidth || 640) / 640;
+    this.scaleY = (this.clientHeight || 360) / 360;
   }
 
   start() {
@@ -245,53 +300,50 @@ export class OfficeEngine {
     }
   }
 
-  // Update Agent Positions & Behaviors
   update() {
     this.tick++;
     const now = Date.now();
 
     for (const agent of Object.values(this.agents)) {
-      // 1. Moving towards target
+      // 1. Move towards target waypoint
       const dx = agent.targetX - agent.x;
       const dy = agent.targetY - agent.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > 2) {
-        const speed = agent.state === 'walking' ? 2.5 : 1.2;
+      if (dist > 1.5) {
+        const speed = agent.state === 'walking' ? 2.2 : 1.1;
         agent.x += (dx / dist) * Math.min(speed, dist);
         agent.y += (dy / dist) * Math.min(speed, dist);
         agent.facing = dx >= 0 ? 1 : -1;
       } else {
-        // Arrived at target
         if (agent.state === 'walking') {
           agent.state = 'working';
         }
       }
 
-      // 2. Behavior when Thinking: Pacing around room
+      // 2. Pacing in dedicated room when thinking
       if (agent.state === 'thinking') {
-        if (this.tick % 90 === 0) {
-          const room = this.rooms[agent.cabin];
+        if (this.tick % 80 === 0) {
+          const room = this.rooms[agent.roomKey];
           if (room) {
-            // Pick a random waypoint inside room
-            agent.targetX = room.x + 40 + Math.random() * (room.w - 80);
-            agent.targetY = room.y + 40 + Math.random() * (room.h - 80);
+            agent.targetX = room.x + 30 + Math.random() * (room.w - 60);
+            agent.targetY = room.y + 35 + Math.random() * (room.h - 60);
           }
         }
       }
 
-      // 3. Murmuring generator
-      if ((agent.state === 'thinking' || agent.state === 'working') && now - agent.lastMurmurTime > 4500) {
+      // 3. Humorous Murmurs
+      if ((agent.state === 'thinking' || agent.state === 'working') && now - agent.lastMurmurTime > 5000) {
         const list = MURMURS[agent.id] || MURMURS.manager;
         const text = list[Math.floor(Math.random() * list.length)];
-        this.showSpeechBubble(agent.id, text, 3500);
-        agent.lastMurmurTime = now + Math.random() * 2000;
+        this.showSpeechBubble(agent.id, text, 3600);
+        agent.lastMurmurTime = now + Math.random() * 2500;
         if (this.onMurmur) {
           this.onMurmur(agent.id, text);
         }
       }
 
-      // 4. Bubble timer countdown
+      // 4. Bubble countdown
       if (agent.bubbleTimer > 0) {
         agent.bubbleTimer--;
         if (agent.bubbleTimer <= 0) {
@@ -301,14 +353,13 @@ export class OfficeEngine {
     }
   }
 
-  showSpeechBubble(agentId, text, durationMs = 3500) {
+  showSpeechBubble(agentId, text, durationMs = 3600) {
     const agent = this.agents[agentId];
     if (!agent) return;
     agent.bubbleText = text;
     agent.bubbleTimer = Math.round((durationMs / 1000) * 60);
   }
 
-  // Orchestrator State Transitions
   setAgentState(agentId, state) {
     const agent = this.agents[agentId];
     if (!agent) return;
@@ -320,62 +371,57 @@ export class OfficeEngine {
       agent.targetY = agent.homeY;
       agent.bubbleText = null;
     } else if (agent.state === 'thinking') {
-      this.showSpeechBubble(agentId, '💭 Thinking...');
+      this.showSpeechBubble(agentId, '💭 Formulating plan...');
     } else if (agent.state === 'working' || agent.state === 'streaming') {
       agent.targetX = agent.homeX;
       agent.targetY = agent.homeY;
     }
   }
 
-  // Task Handover Animations
-  triggerHandover(fromAgentId, toAgentId, note = 'Brief handed over') {
+  // Task Handover Animations (walking between rooms)
+  triggerHandover(fromAgentId, toAgentId, note = 'Brief delivered') {
     const from = this.agents[fromAgentId];
     const to = this.agents[toAgentId];
     if (!from || !to) return;
 
-    // Walk to the recipient agent
     from.state = 'walking';
-    from.targetX = to.x + (from.x < to.x ? -35 : 35);
+    from.targetX = to.x + (from.x < to.x ? -30 : 30);
     from.targetY = to.y;
     this.showSpeechBubble(fromAgentId, `📋 ${note}`, 3000);
 
-    // After arrival, return home
     setTimeout(() => {
       from.targetX = from.homeX;
       from.targetY = from.homeY;
       to.state = 'working';
-      this.showSpeechBubble(toAgentId, '⚡ Received! Commencing work.', 2500);
-    }, 2200);
+      this.showSpeechBubble(toAgentId, '✨ Received! Implementing.', 2500);
+    }, 2000);
   }
 
-  // Handle Pipeline Events
   handlePipelineEvent(event) {
     const stage = event.stage;
     switch (stage) {
       case 'PIPELINE_STARTED':
       case 'MANAGER_PLAN_STARTED':
         this.setAgentState('manager', 'thinking');
-        this.showSpeechBubble('manager', '👑 Formulating architecture and selecting agents...', 4000);
+        this.showSpeechBubble('manager', '👑 Analyzing requirements and dispatching team...', 4000);
         break;
 
       case 'MANAGER_PLAN_COMPLETED':
         this.setAgentState('manager', 'working');
-        // Dispatch specialists
         const specialists = event.plan?.selected_agents || ['designer', 'frontend_architect', 'feature_architect'];
         for (const specId of specialists) {
           const spec = this.agents[specId];
           if (spec) {
-            // Walk to manager cabin, get assignment, return home
             spec.state = 'walking';
-            spec.targetX = this.agents.manager.x + (Math.random() * 40 - 20);
-            spec.targetY = this.agents.manager.y + 40;
-            this.showSpeechBubble(specId, '🏃 Visiting Manager for brief...', 2000);
+            spec.targetX = this.agents.manager.x + (Math.random() * 30 - 15);
+            spec.targetY = this.agents.manager.y + 35;
+            this.showSpeechBubble(specId, '🏃 Walking to Manager suite...', 2000);
 
             setTimeout(() => {
               spec.targetX = spec.homeX;
               spec.targetY = spec.homeY;
               spec.state = 'working';
-              this.showSpeechBubble(specId, '🎨 Generating technical specification...', 3500);
+              this.showSpeechBubble(specId, '🎨 Authoring technical specs...', 3500);
             }, 2000);
           }
         }
@@ -392,184 +438,195 @@ export class OfficeEngine {
         this.setAgentState('frontend_architect', 'idle');
         this.setAgentState('feature_architect', 'idle');
         this.setAgentState('manager', 'thinking');
-        this.showSpeechBubble('manager', '👑 Synthesizing Unified Implementation Specification...', 4000);
+        this.showSpeechBubble('manager', '👑 Synthesizing Unified Specification...', 4000);
         break;
 
       case 'MANAGER_SYNTHESIS_COMPLETED':
-        // Manager walks to Coding Agent cabin to hand over the unified spec
-        this.triggerHandover('manager', 'coding_agent', 'Handing over Unified Implementation Spec');
+        this.triggerHandover('manager', 'coding_agent', 'Delivering Unified Spec to Dev Den');
         break;
 
       case 'CODING_AGENT_STARTED':
         this.setAgentState('coding_agent', 'working');
-        this.showSpeechBubble('coding_agent', '💻 Coding single-file index.html with styles & scripts...', 4500);
+        this.showSpeechBubble('coding_agent', '💻 Assembling standalone index.html...', 4500);
         break;
 
       case 'CODING_AGENT_COMPLETED':
         this.setAgentState('coding_agent', 'idle');
-        // Coding Agent walks to QA Lab
-        this.triggerHandover('coding_agent', 'qa', 'Delivering index.html for compliance audit');
+        this.triggerHandover('coding_agent', 'qa', 'Delivering build for QA compliance audit');
         break;
 
       case 'QA_STARTED':
         this.setAgentState('qa', 'working');
-        this.showSpeechBubble('qa', '🛡️ Auditing DOM integrity, JS handlers & responsive design...', 4000);
+        this.showSpeechBubble('qa', '🛡️ Auditing DOM, styles, and script handlers...', 4000);
         break;
 
       case 'QA_COMPLETED':
         this.setAgentState('qa', 'idle');
-        const verdict = event.result === 'passed' ? '✨ Passed with zero defects!' : '⚠️ Detected defects for repair.';
+        const verdict = event.result === 'passed' ? '✨ Passed with zero defects!' : '⚠️ Identified defects for auto-repair.';
         this.showSpeechBubble('qa', verdict, 4000);
         break;
 
       case 'QA_REPAIR_STARTED':
         this.setAgentState('qa', 'thinking');
-        this.triggerHandover('qa', 'coding_agent', 'Handing over QA defects for automated repair');
+        this.triggerHandover('qa', 'coding_agent', 'Returning defects for auto-repair');
         break;
 
       case 'QA_REPAIR_COMPLETED':
         this.setAgentState('coding_agent', 'idle');
         this.setAgentState('qa', 'idle');
-        this.showSpeechBubble('coding_agent', '✨ Auto-repair complete! Zero defects.', 4000);
+        this.showSpeechBubble('coding_agent', '✨ Auto-repair resolved all defects!', 4000);
         break;
 
       case 'PIPELINE_COMPLETED':
         for (const id of Object.keys(this.agents)) {
           this.setAgentState(id, 'idle');
         }
-        this.showSpeechBubble('manager', '🎉 Build completed! Live preview ready.', 4000);
+        this.showSpeechBubble('manager', '🎉 Build complete! Live preview ready.', 4000);
         break;
     }
   }
 
-  // Draw Rendering Loop
   draw() {
     const ctx = this.ctx;
-    const w = this.width;
-    const h = this.height;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // 1. Clear & Background Floor Tile
-    ctx.fillStyle = '#0f1115';
+    const dpr = this.dpr || 1;
+    const sx = (this.scaleX || 1) * dpr;
+    const sy = (this.scaleY || 1) * dpr;
+    ctx.scale(sx, sy);
+
+    const w = 640;
+    const h = 360;
+
+    // 1. Warm Editorial Background Floor
+    ctx.fillStyle = '#F4EFE6';
     ctx.fillRect(0, 0, w, h);
 
-    // Floor Grid pattern
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    // Subtle parquet grid
+    ctx.strokeStyle = 'rgba(141, 43, 66, 0.035)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 24) {
+    for (let x = 0; x < w; x += 20) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, h);
       ctx.stroke();
     }
-    for (let y = 0; y < h; y += 24) {
+    for (let y = 0; y < h; y += 20) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(w, y);
       ctx.stroke();
     }
 
-    // 2. Draw Rooms / Cabins
+    // 2. Draw 4 Dedicated Rooms with Warm Editorial Borders
     for (const room of Object.values(this.rooms)) {
-      // Room Floor
-      ctx.fillStyle = room.color;
+      // Room floor
+      ctx.fillStyle = room.bg;
       ctx.beginPath();
-      ctx.roundRect(room.x, room.y, room.w, room.h, 12);
+      ctx.roundRect(room.x, room.y, room.w, room.h, 10);
       ctx.fill();
 
-      // Glass Wall / Partition Border
+      // Soft architectural shadow
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Crisp inner room border
       ctx.strokeStyle = room.border;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Room Title Badge
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
-      ctx.beginPath();
-      ctx.roundRect(room.x + 10, room.y + 8, room.name.length * 7 + 16, 20, 4);
-      ctx.fill();
-
+      // Room Header Badge
       ctx.fillStyle = room.border;
-      ctx.font = '600 10px "Plus Jakarta Sans", sans-serif';
-      ctx.fillText(room.name, room.x + 18, room.y + 22);
+      ctx.beginPath();
+      ctx.roundRect(room.x + 8, room.y + 8, 18, 18, 4);
+      ctx.fill();
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(room.icon, room.x + 17, room.y + 21);
+
+      ctx.fillStyle = room.tagColor;
+      ctx.font = '700 11px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(room.name, room.x + 32, room.y + 21);
     }
 
     // 3. Draw Furniture
     for (const item of this.furniture) {
       if (item.type === 'desk') {
-        // Desk shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-        ctx.fillRect(item.x + 2, item.y + 4, item.w, item.h);
+        // Shadow
+        ctx.fillStyle = 'rgba(40, 30, 20, 0.08)';
+        ctx.fillRect(item.x + 2, item.y + 3, item.w, item.h);
 
-        // Desk surface
-        ctx.fillStyle = item.dev ? '#1a221f' : '#232730';
+        // Desk
+        ctx.fillStyle = item.color;
         ctx.beginPath();
-        ctx.roundRect(item.x, item.y, item.w, item.h, 6);
+        ctx.roundRect(item.x, item.y, item.w, item.h, 5);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Monitor / Laptop on desk
-        ctx.fillStyle = item.dev ? '#059669' : '#3b82f6';
-        ctx.fillRect(item.x + item.w / 2 - 12, item.y + 6, 24, 10);
-        ctx.fillStyle = '#0f1115';
-        ctx.fillRect(item.x + item.w / 2 - 10, item.y + 8, 20, 6);
+        // Monitor
+        ctx.fillStyle = item.isDev ? '#2E5A44' : '#6B7280';
+        ctx.fillRect(item.x + item.w / 2 - 10, item.y + 4, 20, 8);
+        ctx.fillStyle = item.isDev ? '#A7F3D0' : '#E5E7EB';
+        ctx.fillRect(item.x + item.w / 2 - 8, item.y + 5, 16, 5);
 
-        // Code glow on dev desk
-        if (item.dev && (this.agents.coding_agent.state === 'working' || this.agents.coding_agent.state === 'streaming')) {
-          ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+        // Dev Monitor code glow
+        if (item.isDev && (this.agents.coding_agent.state === 'working' || this.agents.coding_agent.state === 'streaming')) {
+          ctx.fillStyle = 'rgba(46, 90, 68, 0.25)';
           ctx.beginPath();
-          ctx.arc(item.x + item.w / 2, item.y + 10, 16, 0, Math.PI * 2);
+          ctx.arc(item.x + item.w / 2, item.y + 8, 16, 0, Math.PI * 2);
           ctx.fill();
         }
       } else if (item.type === 'whiteboard') {
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(item.x, item.y, item.w, item.h);
-        ctx.strokeStyle = '#94a3b8';
+        ctx.strokeStyle = '#D4A359';
+        ctx.lineWidth = 1;
         ctx.strokeRect(item.x, item.y, item.w, item.h);
-
-        // Colorful strategy notes
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(item.x + 8, item.y + 3, 14, 6);
-        ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(item.x + 28, item.y + 3, 20, 6);
-        ctx.fillStyle = '#10b981';
-        ctx.fillRect(item.x + 54, item.y + 3, 16, 6);
+        // Colored notes
+        ctx.fillStyle = '#C86D7C';
+        ctx.fillRect(item.x + 6, item.y + 2, 10, 6);
+        ctx.fillStyle = '#5B7B6D';
+        ctx.fillRect(item.x + 20, item.y + 2, 14, 6);
       } else if (item.type === 'plant') {
-        ctx.fillStyle = '#065f46';
+        ctx.fillStyle = '#5B7B6D';
         ctx.beginPath();
         ctx.arc(item.x, item.y, item.r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#10b981';
+        ctx.fillStyle = '#7A9A8A';
         ctx.beginPath();
-        ctx.arc(item.x - 3, item.y - 3, item.r * 0.6, 0, Math.PI * 2);
+        ctx.arc(item.x - 2, item.y - 2, item.r * 0.65, 0, Math.PI * 2);
         ctx.fill();
-      } else if (item.type === 'server') {
-        ctx.fillStyle = '#181b20';
+      } else if (item.type === 'easel') {
+        ctx.fillStyle = '#C86D7C';
         ctx.fillRect(item.x, item.y, item.w, item.h);
-        // Blinking server lights
-        const blink = Math.sin(this.tick * 0.1) > 0;
-        ctx.fillStyle = blink ? '#10b981' : '#047857';
-        ctx.fillRect(item.x + 6, item.y + 8, 4, 4);
-        ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(item.x + 6, item.y + 16, 4, 4);
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(item.x + 6, item.y + 24, 4, 4);
-      } else if (item.type === 'watercooler') {
-        ctx.fillStyle = '#0284c7';
-        ctx.beginPath();
-        ctx.arc(item.x + 12, item.y + 12, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillRect(item.x + 6, item.y + 22, 12, 18);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(item.x + 3, item.y + 3, item.w - 6, item.h - 6);
+        // Color palette strokes on easel
+        ctx.fillStyle = '#E07A5F';
+        ctx.fillRect(item.x + 6, item.y + 8, 12, 4);
+        ctx.fillStyle = '#7A9A8A';
+        ctx.fillRect(item.x + 6, item.y + 16, 15, 4);
+      } else if (item.type === 'server') {
+        ctx.fillStyle = '#2A332C';
+        ctx.fillRect(item.x, item.y, item.w, item.h);
+        const blink = Math.sin(this.tick * 0.12) > 0;
+        ctx.fillStyle = blink ? '#34D399' : '#059669';
+        ctx.fillRect(item.x + 5, item.y + 8, 3, 3);
+        ctx.fillRect(item.x + 12, item.y + 8, 3, 3);
       }
     }
 
-    // 4. Draw Agents
+    // 4. Draw Characters (All 6 Agents)
     for (const agent of Object.values(this.agents)) {
       this.drawAgent(agent);
     }
 
-    // 5. Draw Speech / Thought Bubbles on Top
+    // 5. Draw Speech / Thought Bubbles
     for (const agent of Object.values(this.agents)) {
       if (agent.bubbleText) {
         this.drawSpeechBubble(agent);
@@ -582,62 +639,69 @@ export class OfficeEngine {
     const x = agent.x;
     const y = agent.y;
 
-    // Gentle bounce while walking or working
-    const bounce = (agent.state === 'walking' || agent.state === 'working') 
-      ? Math.sin(this.tick * 0.25) * 3 
-      : Math.sin(this.tick * 0.05) * 1;
+    const bounce = (agent.state === 'walking' || agent.state === 'working')
+      ? Math.sin(this.tick * 0.25) * 2.5
+      : Math.sin(this.tick * 0.05) * 0.8;
 
     // Shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillStyle = 'rgba(50, 40, 30, 0.14)';
     ctx.beginPath();
-    ctx.ellipse(x, y + 16, 12, 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + 14, 11, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Active Halo Glow
     if (agent.state === 'working' || agent.state === 'thinking' || agent.state === 'streaming') {
-      ctx.fillStyle = agent.color + '33';
+      ctx.fillStyle = agent.suitColor + '22';
       ctx.beginPath();
-      ctx.arc(x, y + bounce, 22, 0, Math.PI * 2);
+      ctx.arc(x, y + bounce, 18, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Body / Suit (Pill)
-    ctx.fillStyle = agent.color;
+    // Suit Body (Rounded Pill)
+    ctx.fillStyle = agent.suitColor;
     ctx.beginPath();
-    ctx.roundRect(x - 10, y - 6 + bounce, 20, 20, 8);
+    ctx.roundRect(x - 9, y - 5 + bounce, 18, 17, 6);
     ctx.fill();
 
     // Head
-    ctx.fillStyle = '#fce7d2';
+    ctx.fillStyle = '#FDDFC6';
     ctx.beginPath();
-    ctx.arc(x, y - 14 + bounce, 10, 0, Math.PI * 2);
+    ctx.arc(x, y - 12 + bounce, 9, 0, Math.PI * 2);
     ctx.fill();
 
-    // Eyes (with facing direction)
-    const eyeOffset = agent.facing * 3;
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(x + eyeOffset - 3, y - 16 + bounce, 2, 3);
-    ctx.fillRect(x + eyeOffset + 2, y - 16 + bounce, 2, 3);
+    // Eyes
+    const eyeOffset = agent.facing * 2.5;
+    ctx.fillStyle = '#2B2B2B';
+    ctx.fillRect(x + eyeOffset - 3, y - 14 + bounce, 2, 2.5);
+    ctx.fillRect(x + eyeOffset + 1.5, y - 14 + bounce, 2, 2.5);
 
-    // Emoji Crown / Tool Indicator
-    ctx.font = '14px sans-serif';
+    // Emoji Crown / Role Tool
+    ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(agent.emoji, x, y - 24 + bounce);
+    ctx.fillText(agent.emoji, x, y - 22 + bounce);
 
-    // Agent Name Tag below
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '600 10px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(agent.name, x, y + 28);
+    // Agent Name Pill
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.roundRect(x - 26, y + 21, 52, 13, 3);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = '#333A36';
+    ctx.font = '600 8.5px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(agent.name, x, y + 30.5);
 
     // State Badge
     if (agent.state !== 'idle') {
-      ctx.fillStyle = agent.state === 'working' ? '#10b981' : (agent.state === 'thinking' ? '#f59e0b' : '#3b82f6');
+      ctx.fillStyle = agent.state === 'working' ? '#2E5A44' : (agent.state === 'thinking' ? '#C86D7C' : '#3B7A98');
       ctx.beginPath();
-      ctx.roundRect(x - 22, y + 32, 44, 14, 4);
+      ctx.roundRect(x - 20, y + 36, 40, 11, 3);
       ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '700 8px "Plus Jakarta Sans", sans-serif';
-      ctx.fillText(agent.state.toUpperCase(), x, y + 42);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '700 7px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(agent.state.toUpperCase(), x, y + 44);
     }
   }
 
@@ -645,45 +709,44 @@ export class OfficeEngine {
     const ctx = this.ctx;
     const text = agent.bubbleText;
     const x = agent.x;
-    const y = agent.y - 42;
+    const y = agent.y - 36;
 
-    ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
-    const textWidth = Math.min(ctx.measureText(text).width + 16, 240);
-    const bubbleW = Math.max(textWidth, 80);
-    const bubbleH = 26;
-    const bx = Math.max(10, Math.min(x - bubbleW / 2, this.width - bubbleW - 10));
-    const by = Math.max(10, y - bubbleH);
+    ctx.font = '600 10px "Plus Jakarta Sans", sans-serif';
+    const textWidth = Math.min(ctx.measureText(text).width + 16, 210);
+    const bubbleW = Math.max(textWidth, 70);
+    const bubbleH = 22;
+    const bx = Math.max(10, Math.min(x - bubbleW / 2, 640 - bubbleW - 10));
+    const by = Math.max(8, y - bubbleH);
 
-    // Bubble Background (Glassmorphic Dark Slate)
-    ctx.fillStyle = '#1e222b';
+    // Clean Porcelain White Speech Bubble
+    ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.roundRect(bx, by, bubbleW, bubbleH, 8);
+    ctx.roundRect(bx, by, bubbleW, bubbleH, 6);
     ctx.fill();
 
-    // Border with Agent Color Accent
-    ctx.strokeStyle = agent.color;
+    // Border in Agent Signature Accent
+    ctx.strokeStyle = agent.suitColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Speech Tail Pointer
-    ctx.fillStyle = '#1e222b';
+    // Bubble Tail
+    ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.moveTo(x - 5, by + bubbleH);
-    ctx.lineTo(x + 5, by + bubbleH);
-    ctx.lineTo(x, by + bubbleH + 6);
+    ctx.moveTo(x - 4, by + bubbleH);
+    ctx.lineTo(x + 4, by + bubbleH);
+    ctx.lineTo(x, by + bubbleH + 5);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = agent.color;
+    ctx.strokeStyle = agent.suitColor;
     ctx.stroke();
 
     // Bubble Text
-    ctx.fillStyle = '#f8fafc';
+    ctx.fillStyle = '#1E2420';
     ctx.textAlign = 'center';
-    // Truncate text if needed
     let displayText = text;
-    if (displayText.length > 34) {
-      displayText = displayText.slice(0, 32) + '...';
+    if (displayText.length > 32) {
+      displayText = displayText.slice(0, 30) + '...';
     }
-    ctx.fillText(displayText, bx + bubbleW / 2, by + 17);
+    ctx.fillText(displayText, bx + bubbleW / 2, by + 14.5);
   }
 }
