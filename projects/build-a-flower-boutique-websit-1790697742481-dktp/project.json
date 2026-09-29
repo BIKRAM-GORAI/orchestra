@@ -3,9 +3,9 @@
   "name": "build a flower boutique websit",
   "prompt": "build a flower boutique website with animated flowers and make it attractive",
   "createdAt": "2026-09-29T16:02:22.482Z",
-  "updatedAt": "2026-09-29T16:04:28.143Z",
+  "updatedAt": "2026-09-29T16:43:27.247Z",
   "status": "generated",
-  "version": 2,
+  "version": 3,
   "files": [
     "index.html"
   ],
@@ -411,6 +411,11 @@
       "version": 1,
       "timestamp": "2026-09-29T16:04:25.003Z",
       "note": "Initial Generation"
+    },
+    {
+      "version": 2,
+      "timestamp": "2026-09-29T16:43:27.245Z",
+      "note": "Human Feedback: In the NAV bar there are three lines at the very right it doesn't do anything just remove it and at the very last of the website keep a review button or write a review button and upon opening that it will open a review review section on top of the page also like it will show some pre made reviews like about 10 reviews or so and it should be generic reviews not like it has been written by AI"
     }
   ]
 }

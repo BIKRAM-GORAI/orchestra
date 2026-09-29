@@ -1,24 +1,38 @@
 /**
  * Agent Orchestra — Client Application Controller
- * Handles dashboard interactions, SSE streaming events, project switching,
- * and multi-agent build orchestration with live iframe preview.
+ * Handles 4-quadrant atelier dashboard, animated virtual office floor,
+ * live device preview simulations (mobile/tablet/desktop/new-tab),
+ * real-time SSE stream events, and locked editing during active builds.
  */
+
+import { OfficeEngine } from './office.js';
 
 // DOM Elements
 const apiStatusDot = document.getElementById('apiStatusDot');
 const apiStatusText = document.getElementById('apiStatusText');
 const currentModelDisplay = document.getElementById('currentModelDisplay');
+const providerDisplay = document.getElementById('providerDisplay');
+const activeProjectNameDisplay = document.getElementById('activeProjectNameDisplay');
 const projectSelect = document.getElementById('projectSelect');
+const newProjectBtn = document.getElementById('newProjectBtn');
 const terminalLogs = document.getElementById('terminalLogs');
 const clearLogsBtn = document.getElementById('clearLogsBtn');
 const samplePromptBtn = document.getElementById('samplePromptBtn');
 const promptInput = document.getElementById('promptInput');
 const startOrchestrationBtn = document.getElementById('startOrchestrationBtn');
 const orchestratorStatusTag = document.getElementById('orchestratorStatusTag');
+
+// Preview DOM
 const previewWrap = document.getElementById('previewWrap');
 const previewIframe = document.getElementById('previewIframe');
+const previewUrlBadge = document.getElementById('previewUrlBadge');
 const refreshPreviewBtn = document.getElementById('refreshPreviewBtn');
-const vpButtons = document.querySelectorAll('.viewport-btn[data-width]');
+const openNewTabBtn = document.getElementById('openNewTabBtn');
+const vpButtons = document.querySelectorAll('.viewport-btn[data-mode]');
+
+// Edits & QA DOM
+const editsSection = document.getElementById('editsSection');
+const lockIndicator = document.getElementById('lockIndicator');
 const feedbackInput = document.getElementById('feedbackInput');
 const applyFeedbackBtn = document.getElementById('applyFeedbackBtn');
 const qaAuditCard = document.getElementById('qaAuditCard');
@@ -26,14 +40,42 @@ const qaVerdictBadge = document.getElementById('qaVerdictBadge');
 const qaSummaryText = document.getElementById('qaSummaryText');
 const qaIssuesList = document.getElementById('qaIssuesList');
 
+// Canvas for Office Simulation
+const officeCanvas = document.getElementById('officeCanvas');
+let officeEngine = null;
+
 // Active state tracking
 let activeProjectId = null;
 let eventSource = null;
+let currentPreviewUrl = '/api/preview';
 
-// Terminal Logging Utility
+// Initialize Office Simulation Engine
+if (officeCanvas) {
+  officeEngine = new OfficeEngine(officeCanvas, {
+    onMurmur: (agentId, text) => {
+      addLog(`💭 [Thinking] ${agentId.toUpperCase()}: "${text}"`, 'murmur');
+    }
+  });
+  officeEngine.start();
+}
+
+// Terminal Logging Utility with Agent-specific Color Coding
 export function addLog(message, type = 'info') {
   const line = document.createElement('div');
-  line.className = `log-line ${type}`;
+  
+  // Auto-detect agent prefix for colored styling if not already typed
+  let resolvedType = type;
+  if (resolvedType === 'info') {
+    if (message.includes('[MANAGER]')) resolvedType = 'manager';
+    else if (message.includes('[DESIGNER]')) resolvedType = 'designer';
+    else if (message.includes('[FRONTEND]')) resolvedType = 'frontend';
+    else if (message.includes('[FEATURE]')) resolvedType = 'feature';
+    else if (message.includes('[CODING') || message.includes('[CODER]')) resolvedType = 'coder';
+    else if (message.includes('[QA')) resolvedType = 'qa';
+    else if (message.includes('[Thinking]') || message.includes('💭')) resolvedType = 'murmur';
+  }
+
+  line.className = `log-line ${resolvedType}`;
   const timestamp = new Date().toLocaleTimeString();
   line.textContent = `[${timestamp}] ${message}`;
   terminalLogs.appendChild(line);
@@ -44,29 +86,46 @@ export function addLog(message, type = 'info') {
 if (clearLogsBtn) {
   clearLogsBtn.addEventListener('click', () => {
     terminalLogs.innerHTML = '';
-    addLog('Terminal cleared.', 'muted');
+    addLog('Terminal logs cleared.', 'muted');
   });
 }
 
-// Agent State Machine visual updater
+// Set Locked / Unlocked state for human edits & project controls
+export function setOrchestrationLock(isLocked) {
+  if (editsSection) {
+    if (isLocked) {
+      editsSection.classList.add('orchestrating-locked');
+    } else {
+      editsSection.classList.remove('orchestrating-locked');
+    }
+  }
+
+  if (lockIndicator) {
+    if (isLocked) {
+      lockIndicator.className = 'lock-indicator-badge locked';
+      lockIndicator.innerHTML = '<span class="lock-icon">🔒</span><span class="lock-text">Orchestrating...</span>';
+    } else {
+      lockIndicator.className = 'lock-indicator-badge';
+      lockIndicator.innerHTML = '<span class="lock-icon">🟢</span><span class="lock-text">Ready for Edits</span>';
+    }
+  }
+
+  if (feedbackInput) feedbackInput.disabled = isLocked;
+  if (applyFeedbackBtn) applyFeedbackBtn.disabled = isLocked;
+  if (projectSelect) projectSelect.disabled = isLocked;
+  if (newProjectBtn) newProjectBtn.disabled = isLocked;
+  if (startOrchestrationBtn) startOrchestrationBtn.disabled = isLocked;
+}
+
+// Agent State updater (forwards to Office Engine)
 export function setAgentState(agentId, state, details = {}) {
-  const card = document.getElementById(`agent-card-${agentId}`);
-  const badge = document.getElementById(`badge-${agentId}`);
-  if (!card || !badge) return;
-
-  // Clear previous states
-  card.classList.remove('idle', 'thinking', 'working', 'streaming', 'completed', 'error', 'retrying');
-  const normalizedState = state.toLowerCase();
-  card.classList.add(normalizedState);
-  badge.textContent = state.toUpperCase();
-
-  if (details.durationMs) {
-    addLog(`Agent [${agentId.toUpperCase()}] completed in ${details.durationMs}ms`, 'success');
+  if (officeEngine) {
+    officeEngine.setAgentState(agentId, state);
   }
 }
 
 // Reset all agents to idle
-export function resetAllAgentCards() {
+export function resetAllAgents() {
   const agentIds = ['manager', 'designer', 'frontend_architect', 'feature_architect', 'coding_agent', 'qa'];
   for (const id of agentIds) {
     setAgentState(id, 'idle');
@@ -109,16 +168,62 @@ export function resetPipelineSteps() {
 export function updatePreview(projectId = null) {
   const cacheBuster = `t=${Date.now()}`;
   if (projectId) {
-    previewIframe.src = `/api/projects/${projectId}/preview?${cacheBuster}`;
+    currentPreviewUrl = `/api/projects/${projectId}/preview`;
   } else {
-    previewIframe.src = `/api/preview?${cacheBuster}`;
+    currentPreviewUrl = `/api/preview`;
+  }
+
+  previewIframe.src = `${currentPreviewUrl}?${cacheBuster}`;
+  if (previewUrlBadge) {
+    previewUrlBadge.textContent = currentPreviewUrl;
   }
 
   // Visual pulse on reload
-  previewWrap.style.boxShadow = '0 0 24px rgba(6, 182, 212, 0.4)';
+  previewWrap.style.boxShadow = '0 0 24px rgba(245, 158, 11, 0.4)';
   setTimeout(() => {
     previewWrap.style.boxShadow = '';
   }, 1000);
+}
+
+// Viewport Device Mode Switcher (Desktop, Tablet, Mobile)
+vpButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    vpButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const mode = btn.dataset.mode;
+    previewWrap.classList.remove('desktop-mode', 'tablet-mode', 'mobile-mode');
+
+    if (mode === 'mobile') {
+      previewWrap.classList.add('mobile-mode');
+      addLog('Switched live viewport to Smartphone frame (380px device simulation with notch).', 'muted');
+    } else if (mode === 'tablet') {
+      previewWrap.classList.add('tablet-mode');
+      addLog('Switched live viewport to Tablet frame (720px iPad simulation).', 'muted');
+    } else {
+      previewWrap.classList.add('desktop-mode');
+      addLog('Switched live viewport to Full Desktop resolution (100%).', 'muted');
+    }
+  });
+});
+
+// Open in New Tab Button (Fullscreen testing)
+if (openNewTabBtn) {
+  openNewTabBtn.addEventListener('click', () => {
+    const targetUrl = activeProjectId 
+      ? `/api/projects/${activeProjectId}/preview` 
+      : `/api/preview`;
+    window.open(targetUrl, '_blank');
+    addLog(`Opened full preview in new tab: ${targetUrl}`, 'info');
+  });
+}
+
+// Refresh Preview iframe
+if (refreshPreviewBtn) {
+  refreshPreviewBtn.addEventListener('click', () => {
+    updatePreview(activeProjectId);
+    addLog('Refreshed live preview frame.', 'muted');
+  });
 }
 
 // Real-Time SSE Stream Listener
@@ -150,9 +255,14 @@ function initEventSource() {
 
 // Handle Pipeline Lifecycle Events
 function handlePipelineEvent(event) {
+  if (officeEngine) {
+    officeEngine.handlePipelineEvent(event);
+  }
+
   const stage = event.stage;
   switch (stage) {
     case 'PIPELINE_STARTED':
+      setOrchestrationLock(true);
       setPipelineStep('step-user', 'done');
       orchestratorStatusTag.textContent = 'Orchestrating...';
       addLog(`[ORCHESTRATOR] Task received: "${event.prompt?.slice(0, 60)}..."`, 'info');
@@ -175,7 +285,7 @@ function handlePipelineEvent(event) {
 
     case 'SPECIALISTS_COMPLETED':
       setPipelineStep('step-specialists', 'done');
-      addLog('[SPECIALISTS] All specialists completed their specifications.', 'success');
+      addLog('[SPECIALISTS] All specialists completed their technical specifications.', 'success');
       break;
 
     case 'MANAGER_SYNTHESIS_STARTED':
@@ -185,12 +295,12 @@ function handlePipelineEvent(event) {
 
     case 'MANAGER_SYNTHESIS_COMPLETED':
       setPipelineStep('step-synthesis', 'done');
-      addLog('[MANAGER] Unified specification generated. Handing over to Coding Agent.', 'success');
+      addLog('[MANAGER] Unified specification generated. Handing over to Coding Agent in Dev Den.', 'success');
       break;
 
     case 'CODING_AGENT_STARTED':
       setPipelineStep('step-coder', 'active');
-      addLog('[CODING AGENT] Generating self-contained index.html...', 'info');
+      addLog('[CODING AGENT] Assembling complete self-contained index.html with styles & scripts...', 'info');
       break;
 
     case 'CODING_AGENT_COMPLETED':
@@ -227,7 +337,7 @@ function handlePipelineEvent(event) {
           qaSummaryText.textContent = event.summary?.verdict || 'Issues found during static verification.';
           qaIssuesList.innerHTML = event.issues.map(iss => `
             <div class="qa-issue-item ${iss.severity}">
-              <span class="qa-issue-sev">${iss.severity}:</span>
+              <span class="qa-issue-sev">${iss.severity?.toUpperCase()}:</span>
               <span><strong>${iss.location || 'Code'}:</strong> ${iss.description}</span>
             </div>
           `).join('');
@@ -264,6 +374,7 @@ function handlePipelineEvent(event) {
       break;
 
     case 'PIPELINE_COMPLETED':
+      setOrchestrationLock(false);
       setPipelineStep('step-preview', 'done');
       orchestratorStatusTag.textContent = 'Build Complete';
       addLog('[ORCHESTRATOR] Project successfully built and preview ready.', 'success');
@@ -288,6 +399,14 @@ export async function loadProjects() {
 
     if (activeProjectId) {
       projectSelect.value = activeProjectId;
+      const current = projects.find(p => p.id === activeProjectId);
+      if (current && activeProjectNameDisplay) {
+        activeProjectNameDisplay.textContent = current.name;
+      }
+    } else if (projects.length > 0) {
+      if (activeProjectNameDisplay) {
+        activeProjectNameDisplay.textContent = projects[0].name;
+      }
     }
   } catch (err) {
     console.error('Failed to load projects:', err);
@@ -298,19 +417,23 @@ export async function loadProjects() {
 if (projectSelect) {
   projectSelect.addEventListener('change', () => {
     activeProjectId = projectSelect.value || null;
+    const selectedOption = projectSelect.options[projectSelect.selectedIndex];
+    if (activeProjectNameDisplay) {
+      activeProjectNameDisplay.textContent = selectedOption ? selectedOption.text : 'Active Workspace';
+    }
     updatePreview(activeProjectId);
     addLog(`Switched view to project: ${activeProjectId || 'Active Workspace'}`, 'info');
   });
 }
 
 // New Project Reset
-const newProjectBtn = document.getElementById('newProjectBtn');
 if (newProjectBtn) {
   newProjectBtn.addEventListener('click', () => {
     activeProjectId = null;
     if (projectSelect) projectSelect.value = '';
     if (promptInput) promptInput.value = '';
-    resetAllAgentCards();
+    if (activeProjectNameDisplay) activeProjectNameDisplay.textContent = 'New Project Atelier';
+    resetAllAgents();
     resetPipelineSteps();
     updatePreview(null);
     orchestratorStatusTag.textContent = 'Ready for Task';
@@ -319,8 +442,6 @@ if (newProjectBtn) {
 }
 
 // System Health & Model Discovery
-const providerDisplay = document.getElementById('providerDisplay');
-
 async function initSystemStatus() {
   try {
     const res = await fetch('/api/health');
@@ -353,50 +474,17 @@ async function initSystemStatus() {
   } catch (err) {
     console.error('Failed to load models:', err);
   }
-
-  try {
-    const res = await fetch('/api/agents');
-    const data = await res.json();
-    if (data.agents) {
-      for (const agent of data.agents) {
-        const tag = document.getElementById(`agent-model-${agent.id}`);
-        if (tag) {
-          tag.textContent = `Model: ${agent.modelId}`;
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load agents:', err);
-  }
-}
-
-// Viewport Switcher
-vpButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    vpButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const width = btn.dataset.width;
-    previewWrap.style.maxWidth = width;
-  });
-});
-
-// Refresh Preview iframe
-if (refreshPreviewBtn) {
-  refreshPreviewBtn.addEventListener('click', () => {
-    updatePreview(activeProjectId);
-    addLog('Refreshed live preview frame.', 'muted');
-  });
 }
 
 // Sample Prompt
 if (samplePromptBtn) {
   samplePromptBtn.addEventListener('click', () => {
-    promptInput.value = 'Build me a modern sports ecommerce website with dark theme, hero banner, product catalogue with search and category filtering, interactive shopping cart modal, and responsive design.';
-    addLog('Loaded example sports ecommerce specification prompt.', 'info');
+    promptInput.value = 'Build a minimalist dark-mode portfolio landing page for an AI engineer with hero title, bio, interactive skills grid, and contact modal.';
+    addLog('Loaded sample AI engineer portfolio specification.', 'info');
   });
 }
 
-// Trigger Full Multi-Agent Build (Phase 4 / 5)
+// Trigger Full Multi-Agent Build
 if (startOrchestrationBtn) {
   startOrchestrationBtn.addEventListener('click', async () => {
     const prompt = promptInput.value.trim();
@@ -405,10 +493,10 @@ if (startOrchestrationBtn) {
       return;
     }
 
-    startOrchestrationBtn.disabled = true;
+    setOrchestrationLock(true);
     orchestratorStatusTag.textContent = 'Building...';
     resetPipelineSteps();
-    resetAllAgentCards();
+    resetAllAgents();
 
     setPipelineStep('step-user', 'active');
     addLog(`Initiating multi-agent build for: "${prompt.slice(0, 60)}..."`, 'info');
@@ -437,12 +525,12 @@ if (startOrchestrationBtn) {
       orchestratorStatusTag.textContent = 'Error';
       addLog(`Build failed: ${err.message}`, 'error');
     } finally {
-      startOrchestrationBtn.disabled = false;
+      setOrchestrationLock(false);
     }
   });
 }
 
-// Apply Human Feedback (Phase 7 - Minimal Change Rule)
+// Apply Human Feedback (Minimal Change Rule)
 async function handleApplyFeedback() {
   const feedback = feedbackInput.value.trim();
   if (!feedback) {
@@ -450,7 +538,7 @@ async function handleApplyFeedback() {
     return;
   }
 
-  applyFeedbackBtn.disabled = true;
+  setOrchestrationLock(true);
   orchestratorStatusTag.textContent = 'Applying Feedback...';
   addLog(`[HUMAN FEEDBACK] Submitting targeted edit: "${feedback}"`, 'info');
 
@@ -479,7 +567,7 @@ async function handleApplyFeedback() {
     orchestratorStatusTag.textContent = 'Error';
     addLog(`[HUMAN FEEDBACK ERROR] ${err.message}`, 'error');
   } finally {
-    applyFeedbackBtn.disabled = false;
+    setOrchestrationLock(false);
   }
 }
 
@@ -501,5 +589,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSystemStatus();
   initEventSource();
   loadProjects();
+  setOrchestrationLock(false);
   addLog('Agent Orchestra Platform ready.', 'info');
 });

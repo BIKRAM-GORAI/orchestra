@@ -3,37 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Orchestra — Multi-Agent AI Orchestration Platform</title>
-  <meta name="description" content="State of the art multi-agent AI platform orchestrating specialized reasoning agents to build software with live preview and human-in-the-loop editing.">
+  <title>Agent Orchestra — Multi-Agent Software Atelier</title>
+  <meta name="description" content="Gamified multi-agent AI orchestration platform where specialized logical agents collaborate in an animated office to generate complete web applications with live preview.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./index.css">
 </head>
 <body>
   <div class="app-layout">
     <!-- Top Navigation Bar -->
     <header class="app-header">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
+      <div class="header-left">
+        <div class="brand-wrap">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">Agent Orchestra</span>
+            <span class="brand-subtitle">Autonomous Multi-Agent Studio</span>
+          </div>
         </div>
-        <div class="brand-text">
-          <span class="brand-title">Agent Orchestra</span>
-          <span class="brand-subtitle">Autonomous Multi-Agent AI Platform</span>
+
+        <!-- Active Project Badge (Top Left Display) -->
+        <div class="active-project-tag" id="activeProjectTag">
+          <span class="tag-label">Active Project:</span>
+          <span class="tag-val" id="activeProjectNameDisplay">Flourela — Flower Boutique</span>
         </div>
       </div>
 
-      <div class="header-status">
-        <div class="status-pill project-selector-pill" id="projectPill">
-          <span class="status-label">Project:</span>
-          <select id="projectSelect" class="project-dropdown">
-            <option value="">Active Workspace</option>
-          </select>
-          <button id="newProjectBtn" class="pill-action-btn" title="Create Fresh Project">+ New</button>
-        </div>
+      <!-- Quick Prompt Launcher in Header -->
+      <div class="header-prompt-bar">
+        <input type="text" id="promptInput" class="header-prompt-input" placeholder="Describe a website or app (e.g., 'Modern fitness tracker with workout planner and calorie chart')..." />
+        <button type="button" class="btn btn-sm btn-ghost" id="samplePromptBtn" title="Load example specification">Load Example</button>
+        <button type="button" class="btn btn-sm btn-primary" id="startOrchestrationBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Launch Orchestra
+        </button>
+      </div>
+
+      <div class="header-right">
         <div class="status-pill" id="modelPill">
           <span class="status-dot"></span>
           <span class="status-label">Model:</span>
@@ -46,248 +59,189 @@
         <div class="status-pill" id="apiStatusPill">
           <span class="status-dot ping-dot" id="apiStatusDot"></span>
           <span class="status-label">Gateway:</span>
-          <span class="status-value" id="apiStatusText">Connecting...</span>
+          <span class="status-value" id="apiStatusText">Ready</span>
         </div>
       </div>
     </header>
 
-    <!-- Main 3-Column Dashboard -->
-    <main class="dashboard-grid">
-      <!-- LEFT: Agent Registry & Playground -->
-      <aside class="panel left-panel" id="agentPlaygroundPanel">
-        <div class="panel-header">
-          <div class="panel-title-wrap">
-            <h2 class="panel-title">Agent Registry</h2>
-            <span class="badge" id="agentCountBadge">6 Agents</span>
-          </div>
-          <p class="panel-desc">Logical roles decoupled from inference engines</p>
-        </div>
-
-        <div class="agent-cards-list" id="agentCardsContainer">
-          <!-- Manager Card -->
-          <div class="agent-card idle" id="agent-card-manager" data-agent="manager">
-            <div class="agent-card-header">
-              <div class="agent-identity">
-                <span class="agent-emoji">👑</span>
-                <div>
-                  <h3 class="agent-name">Manager</h3>
-                  <span class="agent-role">Orchestration & Synthesis</span>
-                </div>
-              </div>
-              <span class="agent-state-badge" id="badge-manager">IDLE</span>
-            </div>
-            <p class="agent-skills-summary">Intent understanding, task decomposition, agent selection, specification synthesis</p>
-            <div class="agent-meta">
-              <span class="agent-model-tag" id="agent-model-manager">Model: gemini-3.5-flash</span>
-            </div>
-          </div>
-
-          <!-- Designer Card -->
-          <div class="agent-card idle" id="agent-card-designer" data-agent="designer">
-            <div class="agent-card-header">
-              <div class="agent-identity">
-                <span class="agent-emoji">🎨</span>
-                <div>
-                  <h3 class="agent-name">Designer</h3>
-                  <span class="agent-role">UI/UX & Visual Direction</span>
-                </div>
-              </div>
-              <span class="agent-state-badge" id="badge-designer">IDLE</span>
-            </div>
-            <p class="agent-skills-summary">Color harmony, typography, layout, spacing, responsive behavior, interaction styling</p>
-            <div class="agent-meta">
-              <span class="agent-model-tag" id="agent-model-designer">Model: gemini-3.5-flash</span>
-            </div>
-          </div>
-
-          <!-- Frontend Architect Card -->
-          <div class="agent-card idle" id="agent-card-frontend_architect" data-agent="frontend_architect">
-            <div class="agent-card-header">
-              <div class="agent-identity">
-                <span class="agent-emoji">📐</span>
-                <div>
-                  <h3 class="agent-name">Frontend Architect</h3>
-                  <span class="agent-role">Technical Strategy</span>
-                </div>
-              </div>
-              <span class="agent-state-badge" id="badge-frontend_architect">IDLE</span>
-            </div>
-            <p class="agent-skills-summary">Semantic DOM, CSS architecture, JavaScript state machines, single-file constraints</p>
-            <div class="agent-meta">
-              <span class="agent-model-tag" id="agent-model-frontend_architect">Model: gemini-3.5-flash</span>
-            </div>
-          </div>
-
-          <!-- Feature Architect Card -->
-          <div class="agent-card idle" id="agent-card-feature_architect" data-agent="feature_architect">
-            <div class="agent-card-header">
-              <div class="agent-identity">
-                <span class="agent-emoji">⚡</span>
-                <div>
-                  <h3 class="agent-name">Feature Architect</h3>
-                  <span class="agent-role">Behavior & User Flows</span>
-                </div>
-              </div>
-              <span class="agent-state-badge" id="badge-feature_architect">IDLE</span>
-            </div>
-            <p class="agent-skills-summary">Feature decomposition, interaction models, edge cases, state management</p>
-            <div class="agent-meta">
-              <span class="agent-model-tag" id="agent-model-feature_architect">Model: gemini-3.5-flash</span>
-            </div>
-          </div>
-
-          <!-- Coding Agent Card -->
-          <div class="agent-card idle" id="agent-card-coding_agent" data-agent="coding_agent">
-            <div class="agent-card-header">
-              <div class="agent-identity">
-                <span class="agent-emoji">💻</span>
-                <div>
-                  <h3 class="agent-name">Coding Agent</h3>
-                  <span class="agent-role">Implementation Owner</span>
-                </div>
-              </div>
-              <span class="agent-state-badge" id="badge-coding_agent">IDLE</span>
-            </div>
-            <p class="agent-skills-summary">Sole generator of index.html, minimal-change preservation during edits, full synthesis</p>
-            <div class="agent-meta">
-              <span class="agent-model-tag" id="agent-model-coding_agent">Model: gemini-3.5-flash</span>
-            </div>
-          </div>
-
-          <!-- QA Agent Card -->
-          <div class="agent-card idle" id="agent-card-qa" data-agent="qa">
-            <div class="agent-card-header">
-              <div class="agent-identity">
-                <span class="agent-emoji">🛡️</span>
-                <div>
-                  <h3 class="agent-name">QA Agent</h3>
-                  <span class="agent-role">Quality & Verification</span>
-                </div>
-              </div>
-              <span class="agent-state-badge" id="badge-qa">IDLE</span>
-            </div>
-            <p class="agent-skills-summary">Static inspection, functional validation, DOM checks, structured issues audit</p>
-            <div class="agent-meta">
-              <span class="agent-model-tag" id="agent-model-qa">Model: gemini-3.5-flash</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- CENTER: Orchestration Workflow & Activity -->
-      <section class="panel center-panel" id="orchestrationPanel">
-        <div class="panel-header">
-          <div class="panel-title-wrap">
-            <h2 class="panel-title">Orchestration Flow</h2>
+    <!-- Main 4-Quadrant Dashboard Grid -->
+    <main class="quad-grid">
+      <!-- SECTION 1 (TOP LEFT): Animated Virtual Office Floor -->
+      <section class="quad-card section-office" id="officeFloorCard">
+        <div class="quad-card-header">
+          <div class="header-title-wrap">
+            <span class="quad-icon">🏢</span>
+            <h2 class="quad-title">The Agent Atelier & Office Floor</h2>
             <span class="status-indicator-tag" id="orchestratorStatusTag">Ready for Task</span>
           </div>
-          <p class="panel-desc">Multi-agent execution graph and live communication logs</p>
+          <div class="office-legend">
+            <span class="legend-item"><span class="legend-dot" style="background: #f59e0b;"></span>Manager Cabin</span>
+            <span class="legend-item"><span class="legend-dot" style="background: #10b981;"></span>Dev Den</span>
+            <span class="legend-item"><span class="legend-dot" style="background: #6366f1;"></span>Creative Commons</span>
+          </div>
         </div>
 
-        <!-- Task Input Box -->
-        <div class="prompt-box-card">
-          <label for="promptInput" class="prompt-label">Software / Product Goal</label>
-          <div class="prompt-input-wrapper">
-            <textarea id="promptInput" rows="3" placeholder="e.g. Build me a modern sports ecommerce website with dark theme, search, filtering, and cart..."></textarea>
-            <div class="prompt-actions">
-              <button type="button" class="btn btn-secondary" id="samplePromptBtn">Load Example</button>
-              <button type="button" class="btn btn-primary" id="startOrchestrationBtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-                Launch Orchestra
+        <!-- Office Canvas Simulation Area -->
+        <div class="office-canvas-container" id="officeCanvasContainer">
+          <canvas id="officeCanvas"></canvas>
+        </div>
+
+        <!-- Execution Pipeline Mini-Strip -->
+        <div class="pipeline-mini-strip">
+          <div class="flow-step" id="step-user"><span class="flow-num">1</span>Goal</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" id="step-manager-plan"><span class="flow-num">2</span>Manager Plan</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" id="step-specialists"><span class="flow-num">3</span>Specialists</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" id="step-synthesis"><span class="flow-num">4</span>Synthesis</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" id="step-coder"><span class="flow-num">5</span>Coding</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" id="step-qa"><span class="flow-num">6</span>QA Audit</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" id="step-preview"><span class="flow-num">7</span>Preview</div>
+        </div>
+      </section>
+
+      <!-- SECTION 2 (TOP RIGHT - MAJOR): Live Preview with Mobile/Tablet/Desktop/NewTab -->
+      <section class="quad-card section-preview" id="previewSection">
+        <div class="quad-card-header">
+          <div class="header-title-wrap">
+            <span class="quad-icon">🖥️</span>
+            <h2 class="quad-title">Live Preview</h2>
+            <span class="preview-url-badge" id="previewUrlBadge">/api/preview</span>
+          </div>
+
+          <!-- Viewport & New Tab Controls -->
+          <div class="preview-actions-bar">
+            <div class="viewport-toggles">
+              <button class="viewport-btn active" data-mode="desktop" title="Desktop Resolution (100%)" id="vpDesktop">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                <span>Desktop</span>
+              </button>
+              <button class="viewport-btn" data-mode="tablet" title="Tablet Viewport (768px)" id="vpTablet">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>Tablet</span>
+              </button>
+              <button class="viewport-btn" data-mode="mobile" title="Mobile Smartphone Simulation (390px)" id="vpMobile">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>Mobile</span>
               </button>
             </div>
+
+            <!-- Open in New Tab Button -->
+            <button class="btn btn-action-icon" id="openNewTabBtn" title="Open Fullscreen in New Browser Tab">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              <span>Open Tab ↗</span>
+            </button>
+
+            <!-- Refresh Preview Button -->
+            <button class="btn btn-action-icon" id="refreshPreviewBtn" title="Reload iframe preview">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
           </div>
         </div>
 
-        <!-- Visual Flow Pipeline -->
-        <div class="pipeline-section">
-          <h4 class="section-label">Execution Pipeline</h4>
-          <div class="pipeline-flow" id="pipelineFlow">
-            <div class="flow-step" id="step-user"><span class="flow-num">1</span>User Request</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-manager-plan"><span class="flow-num">2</span>Manager Plan</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-specialists"><span class="flow-num">3</span>Parallel Specialists</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-synthesis"><span class="flow-num">4</span>Manager Synthesis</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-coder"><span class="flow-num">5</span>Coding Agent</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-qa"><span class="flow-num">6</span>QA Audit</div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step" id="step-preview"><span class="flow-num">7</span>Live Preview</div>
-          </div>
-        </div>
-
-        <!-- QA Audit Results Card -->
-        <div class="qa-audit-card" id="qaAuditCard" style="display: none;">
-          <div class="qa-audit-header">
-            <div class="qa-title-wrap">
-              <span class="qa-icon">🛡️</span>
-              <h4 class="qa-title">QA Verification Audit</h4>
+        <!-- Sandboxed Live Rendering Area -->
+        <div class="preview-stage-container" id="previewStage">
+          <!-- Smartphone / Tablet Simulated Frame Wrapper -->
+          <div class="device-frame desktop-mode" id="previewWrap">
+            <!-- Simulated phone notch/speaker (visible in mobile mode) -->
+            <div class="device-notch-bar" id="deviceNotch">
+              <span class="notch-speaker"></span>
+              <span class="notch-camera"></span>
             </div>
-            <span class="badge" id="qaVerdictBadge">PASSED</span>
-          </div>
-          <p class="qa-summary-text" id="qaSummaryText">Inspecting generated code integrity...</p>
-          <div class="qa-issues-list" id="qaIssuesList"></div>
-        </div>
+            
+            <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-same-origin allow-modals" title="Generated Project Preview"></iframe>
 
-        <!-- Live Terminal / Logs -->
-        <div class="terminal-card">
-          <div class="terminal-header">
+            <!-- Simulated home indicator (visible in mobile mode) -->
+            <div class="device-home-bar" id="deviceHomeBar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3 (BOTTOM LEFT): Communications & Agent Terminal Logs -->
+      <section class="quad-card section-terminal" id="terminalSection">
+        <div class="quad-card-header">
+          <div class="header-title-wrap">
             <div class="terminal-dots">
               <span class="dot red"></span>
               <span class="dot yellow"></span>
               <span class="dot green"></span>
             </div>
-            <span class="terminal-title">Orchestration Logs & Stream</span>
-            <button class="terminal-clear-btn" id="clearLogsBtn">Clear</button>
+            <h2 class="quad-title">Agent Communications & Telemetry</h2>
           </div>
-          <div class="terminal-body" id="terminalLogs">
-            <div class="log-line info">[ORCHESTRA] System initialized. Ready for instructions.</div>
-            <div class="log-line info">[CONFIG] Model: moonshotai/kimi-k3 via NVIDIA NIM</div>
-            <div class="log-line muted">[TIP] Enter a prompt above or click "Load Example" to begin.</div>
-          </div>
+          <button class="btn btn-sm btn-ghost" id="clearLogsBtn">Clear Logs</button>
+        </div>
+
+        <!-- Terminal Logs Window -->
+        <div class="terminal-body" id="terminalLogs">
+          <div class="log-line info">[ORCHESTRA] Multi-agent engine active. All 6 logical roles loaded.</div>
+          <div class="log-line info">[CONFIG] Model: Gemini 3.5 Flash via Google AI Studio</div>
+          <div class="log-line murmur">💭 [Thinking] Manager: "Consulting architectural blueprint... no div soup allowed!"</div>
         </div>
       </section>
 
-      <!-- RIGHT: Live Website Preview & Human Feedback -->
-      <aside class="panel right-panel" id="previewPanel">
-        <div class="panel-header">
-          <div class="panel-title-wrap">
-            <h2 class="panel-title">Live Preview</h2>
-            <div class="viewport-toggles">
-              <button class="viewport-btn active" data-width="100%" title="Desktop View" id="vpDesktop">🖥️</button>
-              <button class="viewport-btn" data-width="768px" title="Tablet View" id="vpTablet">📱</button>
-              <button class="viewport-btn" data-width="375px" title="Mobile View" id="vpMobile">📲</button>
-              <button class="viewport-btn" title="Refresh Preview" id="refreshPreviewBtn">↻</button>
+      <!-- SECTION 4 (BOTTOM RIGHT): Human Feedback & Project Selection -->
+      <section class="quad-card section-edits" id="editsSection">
+        <div class="quad-card-header">
+          <div class="header-title-wrap">
+            <span class="quad-icon">✨</span>
+            <h2 class="quad-title">Targeted Edits & Project Switcher</h2>
+          </div>
+          <span class="lock-indicator-badge" id="lockIndicator">
+            <span class="lock-icon">🟢</span>
+            <span class="lock-text">Ready for Edits</span>
+          </span>
+        </div>
+
+        <div class="edits-card-content">
+          <!-- Minimal-Change Human Feedback Box -->
+          <div class="feedback-group" id="feedbackGroup">
+            <div class="feedback-label-row">
+              <label for="feedbackInput" class="feedback-label">Human Feedback (Minimal Change Rule)</label>
+              <span class="badge info">V1 Direct-to-Coder</span>
+            </div>
+            <p class="feedback-subtext">Requests modify ONLY targeted components. Working layout, styling, and handlers are strictly preserved.</p>
+            <div class="feedback-input-row">
+              <input type="text" id="feedbackInput" placeholder="e.g. Change primary color to emerald and add customer review cards..." />
+              <button type="button" class="btn btn-accent" id="applyFeedbackBtn">
+                Apply Edit
+              </button>
             </div>
           </div>
-          <p class="panel-desc">Sandboxed live rendering of generated <code>index.html</code></p>
-        </div>
 
-        <!-- Preview Frame Wrapper -->
-        <div class="preview-viewport-wrap" id="previewWrap">
-          <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-same-origin allow-modals" title="Generated Project Preview"></iframe>
-        </div>
+          <!-- Project Management Selection Box (At the bottom of right section) -->
+          <div class="project-selector-group" id="projectSelectorGroup">
+            <div class="project-selector-label-row">
+              <label for="projectSelect" class="feedback-label">Project Workspace Catalog</label>
+              <span class="project-count-badge" id="projectCountBadge">Isolated Folders</span>
+            </div>
+            <div class="project-selector-row">
+              <select id="projectSelect" class="project-dropdown">
+                <option value="">Active Workspace</option>
+              </select>
+              <button id="newProjectBtn" class="btn btn-secondary" title="Create Fresh Project">
+                + New Project
+              </button>
+            </div>
+          </div>
 
-        <!-- Human in the loop feedback card -->
-        <div class="feedback-card" id="feedbackCard">
-          <div class="feedback-header">
-            <h4 class="feedback-title">Human Feedback & Minimal-Change Editing</h4>
-            <span class="badge info">V1 Direct-to-Coder</span>
-          </div>
-          <p class="feedback-desc">Request precise modifications. Unrelated layout, styling, and functionality are strictly preserved.</p>
-          <div class="feedback-input-row">
-            <input type="text" id="feedbackInput" placeholder="e.g. Change the primary color to cyan and add a wishlist button" />
-            <button type="button" class="btn btn-accent" id="applyFeedbackBtn">
-              Apply Edit
-            </button>
+          <!-- QA Audit Results Card -->
+          <div class="qa-audit-card" id="qaAuditCard" style="display: none;">
+            <div class="qa-audit-header">
+              <div class="qa-title-wrap">
+                <span class="qa-icon">🛡️</span>
+                <h4 class="qa-title">QA Verification Audit</h4>
+              </div>
+              <span class="badge qa-pass" id="qaVerdictBadge">PASSED</span>
+            </div>
+            <p class="qa-summary-text" id="qaSummaryText">Inspecting generated code integrity...</p>
+            <div class="qa-issues-list" id="qaIssuesList"></div>
           </div>
         </div>
-      </aside>
+      </section>
     </main>
   </div>
 

@@ -208,12 +208,6 @@
             color: var(--color-primary);
         }
 
-        .mobile-menu-toggle {
-            display: none;
-            font-size: 1.5rem;
-            color: var(--color-text);
-        }
-
         /* HERO SECTION */
         section#hero-section {
             padding-top: 150px;
@@ -919,6 +913,28 @@
             border-top: 1px solid rgba(255,255,255,0.1);
             color: #A8A29E;
             font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .footer-review-trigger-btn {
+            background: var(--color-primary);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-review-trigger-btn:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-2px);
         }
 
         /* CART MODAL DRAWER */
@@ -1105,6 +1121,155 @@
             margin-bottom: 1rem;
         }
 
+        /* REVIEWS MODAL OVERLAY ON TOP OF PAGE */
+        .reviews-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 42, 41, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 4000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .reviews-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .reviews-modal {
+            background: var(--color-surface);
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            border-radius: 24px;
+            box-shadow: var(--shadow-hover);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reviews-overlay.open .reviews-modal {
+            transform: translateY(0);
+        }
+
+        .reviews-modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .reviews-modal-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .close-reviews-modal {
+            font-size: 1.25rem;
+            color: var(--color-text-muted);
+            transition: var(--transition);
+        }
+
+        .close-reviews-modal:hover {
+            color: var(--color-primary);
+            transform: rotate(90deg);
+        }
+
+        .reviews-modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .write-review-box {
+            background: var(--color-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            margin-bottom: 2.5rem;
+        }
+
+        .write-review-box h4 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .review-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .review-form input,
+        .review-form textarea {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .review-form input:focus,
+        .review-form textarea:focus {
+            border-color: var(--color-primary);
+        }
+
+        .review-form textarea {
+            resize: vertical;
+            height: 90px;
+        }
+
+        .premade-reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .premade-review-card {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-lg);
+        }
+
+        .premade-review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .premade-review-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .premade-review-stars {
+            color: #E6B8A2;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        .premade-review-text {
+            color: var(--color-text-muted);
+            font-size: 0.95k;
+            font-style: italic;
+        }
+
         /* NOTIFICATION TOAST */
         #notification-toast {
             position: fixed;
@@ -1115,7 +1280,7 @@
             padding: 1rem 1.5rem;
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-hover);
-            z-index: 3000;
+            z-index: 5000;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -1162,9 +1327,6 @@
             .main-nav {
                 display: none;
             }
-            .mobile-menu-toggle {
-                display: block;
-            }
             .hero-content h1 {
                 font-size: 2.75rem;
             }
@@ -1189,7 +1351,7 @@
     <header id="site-header">
         <div class="container header-container">
             <a href="#hero-section" class="brand-logo">
-                <i class="fa-solid.fa-spa fa-solid fa-seedling"></i>
+                <i class="fa-solid fa-seedling"></i>
                 <span>Fleuriste</span>
             </a>
             <nav class="main-nav">
@@ -1203,9 +1365,6 @@
                 <button class="cart-btn" id="open-cart-trigger" aria-label="Shopping Cart">
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span class="cart-badge" id="cart-count">0</span>
-                </button>
-                <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Menu">
-                    <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
         </div>
@@ -1465,10 +1624,109 @@
                 </div>
             </div>
             <div class="footer-bottom">
+                <button class="footer-review-trigger-btn" id="open-reviews-btn">
+                    <i class="fa-solid fa-pen-to-square"></i> Write / View Reviews
+                </button>
                 <p>&copy; 2025 Fleuriste Botanica Boutique. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- REVIEWS MODAL (OPENS ON TOP OF PAGE) -->
+    <div class="reviews-overlay" id="reviews-overlay">
+        <div class="reviews-modal">
+            <div class="reviews-modal-header">
+                <h3>Customer Reviews & Experiences</h3>
+                <button class="close-reviews-modal" id="close-reviews-btn" aria-label="Close Reviews">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="reviews-modal-body">
+                <div class="write-review-box">
+                    <h4>Write Your Review</h4>
+                    <form class="review-form" id="new-review-form">
+                        <input type="text" id="review-name" placeholder="Your Name (e.g. Sarah M.)" required>
+                        <textarea id="review-text" placeholder="Share your experience with our flowers..." required></textarea>
+                        <button type="submit" class="btn-primary" style="align-self: flex-start;">Submit Review</button>
+                    </form>
+                </div>
+                <h4 style="margin-bottom: 1rem; font-size: 1.1rem;">Recent Community Reviews</h4>
+                <div class="premade-reviews-list" id="premade-reviews-list">
+                    <!-- 10 generic human-like reviews -->
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Jessica Miller</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Ordered a bouquet for my sister's housewarming and she couldn't stop talking about how good they smelled. Delivery was right on time."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">David K.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"First time buying from a local botanical boutique instead of a supermarket chain. Totally worth the price difference, the stems were massive."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Amanda T.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"The custom builder is really cool. Put together some tulips and kraft paper for a quick gift. Will definitely use again."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Robert N.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Got these for our 5th wedding anniversary. My wife loves flowers and she rated this arrangement among the best she's received."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Chloe G.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Super cute packaging! The little flower food packet actually kept the roses alive for nearly two weeks on my desk."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Brian W.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Easy checkout process and prompt delivery. Only thing is I wish they had more color choices for the ceramic vases, but the flowers themselves were top notch."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Samantha P.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Ordered the Blushing Peony Dream for a friend who was recovering from surgery. She said opening the box literally made her day."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Kevin H.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Great customer service when I needed to change my delivery address last minute. Flowers looked even better in person than online."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Rachel M.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Loved the wild meadow bunch! Very rustic and charming. Will be ordering for my mom's birthday next month."</p>
+                    </div>
+                    <div class="premade-review-card">
+                        <div class="premade-review-header">
+                            <span class="premade-review-name">Jason L.</span>
+                            <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                        <p class="premade-review-text">"Bought flowers here a few times now and consistency is great. Always fresh, no bruised petals, and friendly delivery person."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- CART DRAWER MODAL -->
     <div class="cart-overlay" id="cart-overlay"></div>
@@ -1587,6 +1845,13 @@
         const notificationToast = document.getElementById('notification-toast');
         const toastMsg = document.getElementById('toast-msg');
         const siteHeader = document.getElementById('site-header');
+        
+        // Reviews modal elements
+        const openReviewsBtn = document.getElementById('open-reviews-btn');
+        const closeReviewsBtn = document.getElementById('close-reviews-btn');
+        const reviewsOverlay = document.getElementById('reviews-overlay');
+        const newReviewForm = document.getElementById('new-review-form');
+        const premadeReviewsList = document.getElementById('premade-reviews-list');
 
         /* INITIALIZE APP */
         function initApp() {
@@ -1595,6 +1860,7 @@
             setupCustomizer();
             setupTestimonialSlider();
             setupAccordion();
+            setupReviewsModal();
             updateCartUI();
         }
 
@@ -1779,6 +2045,43 @@
                 } else {
                     siteHeader.classList.remove('scrolled');
                 }
+            });
+        }
+
+        /* REVIEWS MODAL SETUP */
+        function setupReviewsModal() {
+            openReviewsBtn.addEventListener('click', () => {
+                reviewsOverlay.classList.add('open');
+            });
+
+            closeReviewsBtn.addEventListener('click', () => {
+                reviewsOverlay.classList.remove('open');
+            });
+
+            reviewsOverlay.addEventListener('click', (e) => {
+                if (e.target === reviewsOverlay) {
+                    reviewsOverlay.classList.remove('open');
+                }
+            });
+
+            newReviewForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('review-name').value.trim();
+                const text = document.getElementById('review-text').value.trim();
+                if (!name || !text) return;
+
+                const newCard = document.createElement('div');
+                newCard.className = 'premade-review-card';
+                newCard.innerHTML = `
+                    <div class="premade-review-header">
+                        <span class="premade-review-name">${name}</span>
+                        <div class="premade-review-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    </div>
+                    <p class="premade-review-text">"${text}"</p>
+                `;
+                premadeReviewsList.prepend(newCard);
+                showToast('Thank you for sharing your review!');
+                newReviewForm.reset();
             });
         }
 
