@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server/index.js",
     "dev": "node --watch-path=src/server src/server/index.js",
-    "test": "node --test"
+    "test": "node --test --test-concurrency=1"
   },
   "keywords": [
     "multi-agent",
@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "mongodb": "^7.7.0",
     "motion": "^13.4.6"
   }
 }

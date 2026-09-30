@@ -387,11 +387,12 @@ router.get('/projects/:id/files', async (req, res) => {
   }
 });
 
-router.get('/projects/:id/files/:filename', async (req, res) => {
+router.get('/projects/:id/files/:filename(*)', async (req, res) => {
   try {
-    const content = await getProjectFileContent(req.params.id, req.params.filename);
+    const filename = req.params.filename || req.params[0];
+    const content = await getProjectFileContent(req.params.id, filename);
     if (content === null) return res.status(404).json({ error: 'File not found' });
-    res.json({ filename: req.params.filename, content });
+    res.json({ filename, content });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

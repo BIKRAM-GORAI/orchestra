@@ -542,31 +542,151 @@ body {
   font-weight: 800;
   padding: 3px 8px;
   border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
 }
 
+.insp-status-badge.status-idle {
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #CBD5E1;
+}
+
+.insp-status-badge.status-queued {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.insp-status-badge.status-working,
 .insp-status-badge.working {
   background: #ECFDF5;
   color: #059669;
   border: 1px solid #A7F3D0;
+  animation: badgePulse 2s infinite ease-in-out;
 }
 
-.insp-status-badge.coffee {
-  background: #FEF3C7;
+.insp-status-badge.status-thinking {
+  background: #FFFBEB;
   color: #D97706;
   border: 1px solid #FDE68A;
+  animation: badgePulse 2s infinite ease-in-out;
+}
+
+.insp-status-badge.status-coding {
+  background: #F5F3FF;
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+  animation: badgePulse 1.8s infinite ease-in-out;
+}
+
+.insp-status-badge.status-running {
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
+  animation: badgePulse 1.8s infinite ease-in-out;
+}
+
+.insp-status-badge.status-waiting {
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+.insp-status-badge.status-completed {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #6EE7B7;
+}
+
+.insp-status-badge.status-failed {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.82; transform: scale(0.98); }
 }
 
 .insp-quote {
   font-size: 0.72rem;
-  font-style: italic;
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 170px;
+  font-weight: 500;
+}
+
+/* Section 10: Task Section in Inspector */
+.task-section {
+  background: #F8FAFC;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  gap: 5px;
+}
+
+.insp-task-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.insp-task-action {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.insp-progress-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.insp-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.insp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #10B981);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.insp-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.insp-progress-text {
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.insp-started-text {
+  color: #64748B;
 }
 
 .insp-section {
+
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -774,39 +894,67 @@ body {
 .term-entry {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 7px;
   word-break: break-word;
+  padding: 2px 0;
+  line-height: 1.5;
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+  transition: background 0.15s ease;
+}
+
+.term-entry:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .term-time {
-  font-size: 0.68rem;
+  font-size: 0.67rem;
   color: #6E7681;
   flex-shrink: 0;
+  letter-spacing: -0.01em;
 }
 
-.agent-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
+.term-agent-pill {
+  font-size: 0.63rem;
+  font-weight: 800;
   padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.term-status-pill {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 5px;
   border-radius: 3px;
   flex-shrink: 0;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-.badge-at { background: rgba(245, 158, 11, 0.22); color: #FBBF24; }
-.badge-nv { background: rgba(56, 189, 248, 0.22); color: #38BDF8; }
-.badge-by { background: rgba(16, 185, 129, 0.22); color: #34D399; }
-.badge-px { background: rgba(192, 132, 252, 0.22); color: #C084FC; }
-.badge-qr { background: rgba(251, 146, 60, 0.22); color: #FB923C; }
-.badge-fg { background: rgba(244, 63, 94, 0.22); color: #FB7185; }
-.badge-sc { background: rgba(45, 212, 191, 0.22); color: #2DD4BF; }
-.badge-ec { background: rgba(253, 224, 71, 0.22); color: #FDE047; }
-.badge-ln { background: rgba(6, 182, 212, 0.22); color: #22D3EE; }
-.badge-rx { background: rgba(239, 68, 68, 0.22); color: #F87171; }
-.badge-sys { background: rgba(148, 163, 184, 0.20); color: #94A3B8; }
+.term-status-pill.status-working { background: rgba(56, 189, 248, 0.16); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.term-status-pill.status-coding { background: rgba(167, 139, 250, 0.16); color: #C084FC; border: 1px solid rgba(167, 139, 250, 0.3); }
+.term-status-pill.status-thinking { background: rgba(251, 191, 36, 0.16); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.3); }
+.term-status-pill.status-running { background: rgba(52, 211, 153, 0.16); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.3); }
+.term-status-pill.status-waiting { background: rgba(148, 163, 184, 0.16); color: #94A3B8; border: 1px solid rgba(148, 163, 184, 0.3); }
+.term-status-pill.status-completed { background: rgba(16, 185, 129, 0.22); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.4); }
+.term-status-pill.status-failed { background: rgba(244, 63, 94, 0.22); color: #FB7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+.term-status-pill.status-idle { background: rgba(100, 116, 139, 0.16); color: #94A3B8; border: 1px solid rgba(100, 116, 139, 0.3); }
+.term-status-pill.status-queued { background: rgba(96, 165, 250, 0.16); color: #60A5FA; border: 1px solid rgba(96, 165, 250, 0.3); }
 
-.term-text {
-  color: #E6EDF3;
+.term-msg {
+  color: #E2E8F0;
+  flex: 1;
 }
+
+.term-entry.log-working .term-msg { color: #F1F5F9; }
+.term-entry.log-success .term-msg { color: #A7F3D0; }
+.term-entry.log-error .term-msg { color: #FECDD3; }
 
 /* Row 2: Chat Area (Occupying ~40% of vertical height) */
 .sidebar-chat-row {

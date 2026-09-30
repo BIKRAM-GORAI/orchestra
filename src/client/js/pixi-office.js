@@ -13,6 +13,8 @@
  * - Smooth camera panning, zooming (0.8x - 1.8x), and click-to-focus on agents
  */
 
+import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js';
+
 export const AGENT_ROSTER = {
   atlas: {
     id: 'atlas',
@@ -26,8 +28,8 @@ export const AGENT_ROSTER = {
     suitColor: '#1E293B',
     hairColor: '#D97706',
     skinColor: '#FDE047',
-    state: 'working',
-    statusText: 'Standing by for architecture & delegation',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['System Architecture', 'Decomposition', 'Synthesis', 'Delegation'],
@@ -46,8 +48,8 @@ export const AGENT_ROSTER = {
     suitColor: '#0284C7',
     hairColor: '#0F172A',
     skinColor: '#FAD4C0',
-    state: 'working',
-    statusText: 'Ready at frontend workstation',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['HTML5 Semantic DOM', 'Vanilla CSS3', 'Mobile Viewports', 'CSS Tokens'],
@@ -66,8 +68,8 @@ export const AGENT_ROSTER = {
     suitColor: '#059669',
     hairColor: '#334155',
     skinColor: '#F5C6A5',
-    state: 'working',
-    statusText: 'Ready at backend workstation',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Vanilla JavaScript', 'Event Handlers', 'State Machines', 'REST APIs'],
@@ -86,8 +88,8 @@ export const AGENT_ROSTER = {
     suitColor: '#7E22CE',
     hairColor: '#F472B6',
     skinColor: '#FEE2E2',
-    state: 'working',
-    statusText: 'Standing by for design specifications',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Design Tokens', 'Color Systems', 'Typography Hierarchy', 'Micro-interactions'],
@@ -106,8 +108,8 @@ export const AGENT_ROSTER = {
     suitColor: '#C2410C',
     hairColor: '#78350F',
     skinColor: '#F5D0A9',
-    state: 'working',
-    statusText: 'Ready for DOM compliance & QA audits',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Static Analysis', 'DOM Auditing', 'Error Trapping', 'Auto-Repair Loop'],
@@ -126,8 +128,8 @@ export const AGENT_ROSTER = {
     suitColor: '#BE123C',
     hairColor: '#18181B',
     skinColor: '#FAD4C0',
-    state: 'working',
-    statusText: 'Monitoring server racks & SSE pipeline',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Server Infrastructure', 'Node.js Watchers', 'SSE Streaming'],
@@ -147,7 +149,7 @@ export const AGENT_ROSTER = {
     hairColor: '#475569',
     skinColor: '#FDE047',
     state: 'idle',
-    statusText: 'Standing by for feature analysis',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Feature Benchmarking', 'Conversion Funnels', 'Product Analytics'],
@@ -167,7 +169,7 @@ export const AGENT_ROSTER = {
     hairColor: '#FBBF24',
     skinColor: '#FAD4C0',
     state: 'idle',
-    statusText: 'Standing by for copy strategy',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Marketing Copy', 'Brand Voice', 'Value Propositions'],
@@ -187,8 +189,8 @@ export const AGENT_ROSTER = {
     suitColor: '#0891B2',
     hairColor: '#1E1B4B',
     skinColor: '#FAD4C0',
-    state: 'working',
-    statusText: 'Validating JSON schemas & streams',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Schema Validation', 'Data Transformations', 'ETL Pipelines'],
@@ -207,8 +209,8 @@ export const AGENT_ROSTER = {
     suitColor: '#991B1B',
     hairColor: '#374151',
     skinColor: '#F5C6A5',
-    state: 'working',
-    statusText: 'Scanning CORS and sandbox headers',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
     skills: ['Penetration Testing', 'CSP & CORS', 'Input Sanitization'],
@@ -506,11 +508,15 @@ export class PixiOffice {
       }
     };
 
-    // Initialize All 18 Agents
+    // Initialize Agents from Central State
     this.agents = {};
     for (const [id, def] of Object.entries(AGENT_ROSTER)) {
+      const centralState = agentStateManager.getAgent(id);
       this.agents[id] = {
         ...def,
+        status: centralState ? centralState.status : AGENT_STATUS.IDLE,
+        currentTask: centralState ? centralState.currentTask : null,
+        lastAction: centralState ? centralState.lastAction : null,
         x: def.home.x,
         y: def.home.y,
         waypoints: [],
@@ -519,14 +525,73 @@ export class PixiOffice {
         isSeated: true,
         walkingFrame: 0,
         bubbleTimer: 0,
-        bubbleText: def.state === 'working' ? 'coding...' : 'planning...',
-        idleTimer: Math.floor(Math.random() * 600) + 400
+        bubbleText: '',
       };
     }
+
+    // Subscribe to Central State Manager as Single Source of Truth
+    this.unsubscribeState = agentStateManager.subscribe((agentState) => {
+      this.syncAgentFromState(agentState);
+    });
 
     this.initCanvas();
     this.bindEvents();
     this.start();
+  }
+
+  syncAgentFromState(agentState) {
+    const agent = this.agents[agentState.id];
+    if (!agent) return;
+
+    agent.status = agentState.status;
+    agent.currentTask = agentState.currentTask;
+    agent.lastAction = agentState.lastAction;
+    agent.progress = agentState.progress;
+
+    if (agentState.status === AGENT_STATUS.COMPLETED) {
+      agent.bubbleText = '✓ Task finished!';
+      agent.bubbleTimer = 220;
+    } else if (
+      agentState.status === AGENT_STATUS.WORKING ||
+      agentState.status === AGENT_STATUS.CODING ||
+      agentState.status === AGENT_STATUS.THINKING ||
+      agentState.status === AGENT_STATUS.RUNNING
+    ) {
+      const actionDesc = agentState.lastAction || (agentState.status === AGENT_STATUS.CODING ? 'coding...' : 'working...');
+      agent.bubbleText = actionDesc.length > 28 ? actionDesc.slice(0, 26) + '..' : actionDesc;
+      agent.bubbleTimer = 280;
+
+      // Ensure agent is seated at workstation for focused work
+      if (agent.waypoints.length === 0 && !agent.isSeated) {
+        this.navigateTo(agent, agent.home.x, agent.home.y, {
+          onComplete: () => {
+            agent.isSeated = true;
+            agent.facing = agent.home.facing;
+          }
+        });
+      }
+    } else if (agentState.status === AGENT_STATUS.QUEUED) {
+      agent.bubbleText = 'Queued — Waiting to start';
+      agent.bubbleTimer = 180;
+    } else if (agentState.status === AGENT_STATUS.FAILED) {
+      agent.bubbleText = '× Failed';
+      agent.bubbleTimer = 300;
+    } else if (agentState.status === AGENT_STATUS.IDLE) {
+      agent.bubbleText = '';
+      agent.bubbleTimer = 0;
+      if (agent.waypoints.length === 0 && !agent.isSeated) {
+        this.navigateTo(agent, agent.home.x, agent.home.y, {
+          onComplete: () => {
+            agent.isSeated = true;
+            agent.facing = agent.home.facing;
+          }
+        });
+      }
+    }
+  }
+
+  handlePipelineEvent(event) {
+    agentStateManager.handlePipelineEvent(event);
   }
 
   buildNavMesh() {
@@ -954,15 +1019,6 @@ export class PixiOffice {
         }
       } else {
         agent.walkingFrame = 0;
-        // Controlled purposeful movements (once every 800-1400 ticks, only 1 agent at a time)
-        agent.idleTimer--;
-        if (agent.idleTimer <= 0) {
-          agent.idleTimer = Math.floor(Math.random() * 800) + 600;
-          if (this.currentPreset === 'focus' && Math.random() < 0.2) {
-            // Take a quick coffee or check whiteboard then return
-            this.pickControlledDestination(agent);
-          }
-        }
       }
 
       if (agent.bubbleTimer > 0) {
@@ -1003,9 +1059,9 @@ export class PixiOffice {
       this.drawAgent(ctx, agent);
     }
 
-    // 7. Draw Speech & Status Bubbles
+    // 7. Draw Speech & Status Bubbles (only when active bubble text exists)
     for (const agent of sortedAgents) {
-      if (agent.bubbleTimer > 0 || (agent.isSeated && agent.state === 'working')) {
+      if (agent.bubbleTimer > 0 && agent.bubbleText && agent.bubbleText.trim().length > 0) {
         this.drawSpeechBubble(ctx, agent);
       }
     }
@@ -1495,15 +1551,57 @@ export class PixiOffice {
     ctx.fillRect(x - 6, y - 26 + bob, 2, 4);
     ctx.fillRect(x + 4, y - 26 + bob, 2, 4);
 
-    // Name Tag Badge beneath Agent
+    // Name Tag Badge beneath Agent with Live Status Indicator
     ctx.font = 'bold 8px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     const textWidth = ctx.measureText(agent.name).width;
 
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.fillRect(x - textWidth / 2 - 4, y + 4, textWidth + 8, 11);
+    const isWorking = agent.status === AGENT_STATUS.WORKING || agent.status === AGENT_STATUS.CODING || agent.status === AGENT_STATUS.THINKING || agent.status === AGENT_STATUS.RUNNING;
+    const isCompleted = agent.status === AGENT_STATUS.COMPLETED;
+    const isFailed = agent.status === AGENT_STATUS.FAILED;
+
+    const badgeWidth = textWidth + 18;
+    const badgeX = Math.round(x - badgeWidth / 2);
+    const badgeY = y + 4;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+    ctx.fillRect(badgeX, badgeY, badgeWidth, 12);
+    ctx.strokeStyle = isSelected ? (agent.color || '#38BDF8') : (isWorking ? 'rgba(56, 189, 248, 0.5)' : 'rgba(255, 255, 255, 0.12)');
+    ctx.lineWidth = isSelected ? 1.5 : 1;
+    ctx.strokeRect(badgeX, badgeY, badgeWidth, 12);
+
+    // Live Activity Indicator (Dot/Symbol)
+    const dotX = badgeX + 6;
+    const dotY = badgeY + 6;
+    if (isWorking) {
+      const pulse = 0.5 + Math.sin(this.tick * 0.14) * 0.5;
+      ctx.fillStyle = agent.color || '#10B981';
+      ctx.globalAlpha = 0.4 + pulse * 0.6;
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    } else if (isCompleted) {
+      ctx.fillStyle = '#10B981';
+      ctx.font = 'bold 7px sans-serif';
+      ctx.fillText('✓', dotX, dotY + 2.5);
+    } else if (isFailed) {
+      ctx.fillStyle = '#EF4444';
+      ctx.font = 'bold 7px sans-serif';
+      ctx.fillText('×', dotX, dotY + 2.5);
+    } else {
+      // Idle
+      ctx.strokeStyle = '#64748B';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.font = 'bold 8px "JetBrains Mono", monospace';
     ctx.fillStyle = isSelected ? '#38BDF8' : '#FFFFFF';
-    ctx.fillText(agent.name, x, y + 13);
+    ctx.textAlign = 'left';
+    ctx.fillText(agent.name, dotX + 5, y + 13);
   }
 
   // ============================================================================

@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import { agentRegistry } from '../agents/agentRegistry.js';
-import { getProject, updateProject, saveProjectHtml, getProjectHtml } from '../services/projectService.js';
+import { getProject, updateProject, saveProjectHtml, getProjectHtml, saveAgentArtifact } from '../services/projectService.js';
 
 /**
  * Helper to safely extract HTML content from various structured outputs
@@ -94,7 +94,7 @@ export class Orchestrator extends EventEmitter {
   /**
    * Stage 1: Manager Plan & Agent Selection
    */
-  async plan(prompt, { gateway, onChunk } = {}) {
+  async plan(prompt, { projectId, gateway, onChunk } = {}) {
     const manager = this.registry.getAgent('manager');
     this.emitPipelineEvent('MANAGER_PLAN_STARTED', { prompt });
 
@@ -106,14 +106,27 @@ export class Orchestrator extends EventEmitter {
 
     const plan = managerOutput.result;
     this.emitPipelineEvent('MANAGER_PLAN_COMPLETED', { plan });
+
+    if (projectId) {
+      saveAgentArtifact({
+        projectId,
+        agentId: 'manager',
+        agentName: 'Atlas (Manager)',
+        task: `Analyze user goal and produce plan for "${prompt}"`,
+        status: 'Completed',
+        response: plan,
+      }).catch(err => console.warn('[ARTIFACT] Error saving manager plan artifact:', err.message));
+    }
+
     return plan;
   }
 
   /**
    * Stage 2: Concurrent Specialist Execution
    * Runs Designer, Frontend Architect, and Feature Architect in parallel.
+   * Direct response is returned directly to Manager, while simultaneously persisting .md artifact.
    */
-  async runSpecialists(plan, userPrompt, { gateway, onChunk } = {}) {
+  async runSpecialists(plan, userPrompt, { projectId, gateway, onChunk } = {}) {
     this.emitPipelineEvent('SPECIALISTS_STARTED', {
       selectedAgents: plan.selected_agents || ['designer', 'frontend_architect', 'feature_architect'],
     });
@@ -133,7 +146,19 @@ export class Orchestrator extends EventEmitter {
           },
           gateway,
           onChunk: onChunk ? (chunk) => onChunk({ agent: 'designer', chunk }) : null,
-        }).then(out => ({ agent: 'designer', output: out.result }))
+        }).then(out => {
+          if (projectId) {
+            saveAgentArtifact({
+              projectId,
+              agentId: 'designer',
+              agentName: 'Pixel (UI/UX Designer)',
+              task: `Visual direction and UX design specification for "${userPrompt}"`,
+              status: 'Completed',
+              response: out.result,
+            }).catch(e => console.warn('[ARTIFACT] Error saving designer artifact:', e.message));
+          }
+          return { agent: 'designer', output: out.result };
+        })
       );
     }
 
@@ -149,7 +174,19 @@ export class Orchestrator extends EventEmitter {
           },
           gateway,
           onChunk: onChunk ? (chunk) => onChunk({ agent: 'frontend_architect', chunk }) : null,
-        }).then(out => ({ agent: 'frontend_architect', output: out.result }))
+        }).then(out => {
+          if (projectId) {
+            saveAgentArtifact({
+              projectId,
+              agentId: 'frontend_architect',
+              agentName: 'Nova (Frontend Architect)',
+              task: `Single-file index.html technical architecture for "${userPrompt}"`,
+              status: 'Completed',
+              response: out.result,
+            }).catch(e => console.warn('[ARTIFACT] Error saving frontend_architect artifact:', e.message));
+          }
+          return { agent: 'frontend_architect', output: out.result };
+        })
       );
     }
 
@@ -165,7 +202,19 @@ export class Orchestrator extends EventEmitter {
           },
           gateway,
           onChunk: onChunk ? (chunk) => onChunk({ agent: 'feature_architect', chunk }) : null,
-        }).then(out => ({ agent: 'feature_architect', output: out.result }))
+        }).then(out => {
+          if (projectId) {
+            saveAgentArtifact({
+              projectId,
+              agentId: 'feature_architect',
+              agentName: 'Scout (Feature Architect)',
+              task: `Feature behavior and interaction flow specification for "${userPrompt}"`,
+              status: 'Completed',
+              response: out.result,
+            }).catch(e => console.warn('[ARTIFACT] Error saving feature_architect artifact:', e.message));
+          }
+          return { agent: 'feature_architect', output: out.result };
+        })
       );
     }
 
@@ -184,7 +233,7 @@ export class Orchestrator extends EventEmitter {
    * Stage 3: Manager Synthesis
    * Synthesizes all specialist outputs into a single Unified Implementation Specification.
    */
-  async synthesize(userPrompt, plan, specialistOutputs, { gateway, onChunk } = {}) {
+  async synthesize(userPrompt, plan, specialistOutputs, { projectId, gateway, onChunk } = {}) {
     const manager = this.registry.getAgent('manager');
     this.emitPipelineEvent('MANAGER_SYNTHESIS_STARTED');
 
@@ -225,6 +274,18 @@ Return a JSON object conforming to:
 
     const unifiedSpec = synthesisOutput.result?.unified_specification || synthesisOutput.result;
     this.emitPipelineEvent('MANAGER_SYNTHESIS_COMPLETED', { unifiedSpec });
+
+    if (projectId) {
+      saveAgentArtifact({
+        projectId,
+        agentId: 'manager',
+        agentName: 'Atlas (Manager)',
+        task: 'Synthesize specialist specifications into Unified Implementation Specification',
+        status: 'Completed',
+        response: unifiedSpec,
+      }).catch(e => console.warn('[ARTIFACT] Error saving manager synthesis artifact:', e.message));
+    }
+
     return unifiedSpec;
   }
 
@@ -235,13 +296,13 @@ Return a JSON object conforming to:
     this.emitPipelineEvent('PIPELINE_STARTED', { projectId, prompt });
 
     // Step 1: Manager Plan
-    const plan = await this.plan(prompt, { gateway, onChunk });
+    const plan = await this.plan(prompt, { projectId, gateway, onChunk });
 
     // Step 2: Parallel Specialists
-    const specialistOutputs = await this.runSpecialists(plan, prompt, { gateway, onChunk });
+    const specialistOutputs = await this.runSpecialists(plan, prompt, { projectId, gateway, onChunk });
 
     // Step 3: Manager Synthesis
-    const unifiedSpec = await this.synthesize(prompt, plan, specialistOutputs, { gateway, onChunk });
+    const unifiedSpec = await this.synthesize(prompt, plan, specialistOutputs, { projectId, gateway, onChunk });
 
     // Save to isolated project directory if projectId provided
     if (projectId) {
@@ -358,6 +419,14 @@ Return a structured audit report with status "passed" or "issues_found". Do NOT 
     const report = qaOutput.result || {};
     if (projectId) {
       await updateProject(projectId, { qaReport: report });
+      saveAgentArtifact({
+        projectId,
+        agentId: 'qa',
+        agentName: 'Query (QA Auditor)',
+        task: `Audit generated index.html for "${userPrompt}"`,
+        status: report.result || 'Completed',
+        response: report,
+      }).catch(e => console.warn('[ARTIFACT] Error saving qa artifact:', e.message));
     }
 
     this.emitPipelineEvent('QA_COMPLETED', {
@@ -375,94 +444,102 @@ Return a structured audit report with status "passed" or "issues_found". Do NOT 
    * Manager Plan -> Parallel Specialists -> Manager Synthesis -> Coding Agent -> QA Agent -> Saved index.html
    */
   async buildFullProject({ projectId, prompt, gateway, onChunk } = {}) {
-    // Run specification pipeline first
-    const specResult = await this.executeSpecificationPipeline({
-      projectId,
-      prompt,
-      gateway,
-      onChunk,
-    });
-
-    // Implement via Coding Agent
-    const implementResult = await this.implement({
-      projectId: specResult.projectId,
-      userPrompt: prompt,
-      unifiedSpec: specResult.unifiedSpec,
-      gateway,
-      onChunk,
-    });
-
-    // Run QA Audit
-    let qaReport = await this.audit({
-      projectId: specResult.projectId,
-      userPrompt: prompt,
-      unifiedSpec: specResult.unifiedSpec,
-      htmlContent: implementResult.htmlContent,
-      gateway,
-      onChunk,
-    });
-
-    let finalHtml = implementResult.htmlContent;
-    let finalSummary = implementResult.summary;
-
-    // Automated QA Auto-Repair Loop: If QA found defects, trigger Coding Agent to fix them
-    if (qaReport.result === 'issues_found' && qaReport.issues?.length > 0) {
-      this.emitPipelineEvent('QA_REPAIR_STARTED', {
-        projectId: specResult.projectId,
-        issueCount: qaReport.issues.length,
-        verdict: qaReport.summary?.verdict || 'Issues detected during audit',
+    try {
+      // Run specification pipeline first
+      const specResult = await this.executeSpecificationPipeline({
+        projectId,
+        prompt,
+        gateway,
+        onChunk,
       });
 
-      try {
-        const issuesSummary = qaReport.issues
-          .map((iss, i) => `${i + 1}. [${iss.severity?.toUpperCase() || 'DEFECT'}] ${iss.location || 'Code'}: ${iss.description}. Fix: ${iss.recommendation || 'Complete implementation'}`)
-          .join('\n');
+      // Implement via Coding Agent
+      const implementResult = await this.implement({
+        projectId: specResult.projectId,
+        userPrompt: prompt,
+        unifiedSpec: specResult.unifiedSpec,
+        gateway,
+        onChunk,
+      });
 
-        const repairPrompt = `The QA Agent audited your previous code and detected the following ${qaReport.issues.length} defect(s):\n${issuesSummary}\n\nPlease repair all identified defects immediately and output the complete, valid, self-contained "index.html" with all missing tags, CSS styles, and JavaScript interactions fully resolved.`;
+      // Run QA Audit
+      let qaReport = await this.audit({
+        projectId: specResult.projectId,
+        userPrompt: prompt,
+        unifiedSpec: specResult.unifiedSpec,
+        htmlContent: implementResult.htmlContent,
+        gateway,
+        onChunk,
+      });
 
-        const repairResult = await this.implement({
+      let finalHtml = implementResult.htmlContent;
+      let finalSummary = implementResult.summary;
+
+      // Automated QA Auto-Repair Loop: If QA found defects, trigger Coding Agent to fix them
+      if (qaReport.result === 'issues_found' && qaReport.issues?.length > 0) {
+        this.emitPipelineEvent('QA_REPAIR_STARTED', {
           projectId: specResult.projectId,
-          userPrompt: repairPrompt,
-          unifiedSpec: specResult.unifiedSpec,
-          existingHtml: finalHtml,
-          changeNote: `QA Automated Repair (${qaReport.issues.length} defect(s) fixed)`,
-          gateway,
-          onChunk,
+          issueCount: qaReport.issues.length,
+          verdict: qaReport.summary?.verdict || 'Issues detected during audit',
         });
 
-        finalHtml = repairResult.htmlContent;
-        finalSummary = repairResult.summary;
+        try {
+          const issuesSummary = qaReport.issues
+            .map((iss, i) => `${i + 1}. [${iss.severity?.toUpperCase() || 'DEFECT'}] ${iss.location || 'Code'}: ${iss.description}. Fix: ${iss.recommendation || 'Complete implementation'}`)
+            .join('\n');
 
-        // Re-audit repaired code
-        qaReport = await this.audit({
-          projectId: specResult.projectId,
-          userPrompt: prompt,
-          unifiedSpec: specResult.unifiedSpec,
-          htmlContent: finalHtml,
-          gateway,
-          onChunk,
-        });
+          const repairPrompt = `The QA Agent audited your previous code and detected the following ${qaReport.issues.length} defect(s):\n${issuesSummary}\n\nPlease repair all identified defects immediately and output the complete, valid, self-contained "index.html" with all missing tags, CSS styles, and JavaScript interactions fully resolved.`;
 
-        this.emitPipelineEvent('QA_REPAIR_COMPLETED', {
-          projectId: specResult.projectId,
-          qaResult: qaReport.result,
-          issues: qaReport.issues || [],
-          summary: qaReport.summary || {},
-        });
-      } catch (repairErr) {
-        console.warn(`[ORCHESTRATOR] QA auto-repair encountered an error:`, repairErr.message);
+          const repairResult = await this.implement({
+            projectId: specResult.projectId,
+            userPrompt: repairPrompt,
+            unifiedSpec: specResult.unifiedSpec,
+            existingHtml: finalHtml,
+            changeNote: `QA Automated Repair (${qaReport.issues.length} defect(s) fixed)`,
+            gateway,
+            onChunk,
+          });
+
+          finalHtml = repairResult.htmlContent;
+          finalSummary = repairResult.summary;
+
+          // Re-audit repaired code
+          qaReport = await this.audit({
+            projectId: specResult.projectId,
+            userPrompt: prompt,
+            unifiedSpec: specResult.unifiedSpec,
+            htmlContent: finalHtml,
+            gateway,
+            onChunk,
+          });
+
+          this.emitPipelineEvent('QA_REPAIR_COMPLETED', {
+            projectId: specResult.projectId,
+            qaResult: qaReport.result,
+            issues: qaReport.issues || [],
+            summary: qaReport.summary || {},
+          });
+        } catch (repairErr) {
+          console.warn(`[ORCHESTRATOR] QA auto-repair encountered an error:`, repairErr.message);
+        }
       }
-    }
 
-    return {
-      projectId: specResult.projectId,
-      plan: specResult.plan,
-      specialistOutputs: specResult.specialistOutputs,
-      unifiedSpec: specResult.unifiedSpec,
-      htmlContent: finalHtml,
-      summary: finalSummary,
-      qaReport,
-    };
+      return {
+        projectId: specResult.projectId,
+        plan: specResult.plan,
+        specialistOutputs: specResult.specialistOutputs,
+        unifiedSpec: specResult.unifiedSpec,
+        htmlContent: finalHtml,
+        summary: finalSummary,
+        qaReport,
+      };
+    } catch (err) {
+      this.emitPipelineEvent('PIPELINE_FAILED', {
+        projectId,
+        error: err.message,
+      });
+      throw err;
+    }
   }
 
   /**
@@ -475,16 +552,17 @@ Return a structured audit report with status "passed" or "issues_found". Do NOT 
     gateway,
     onChunk,
   } = {}) {
-    const project = await getProject(projectId);
-    if (!project) throw new Error(`Project "${projectId}" not found`);
+    try {
+      const project = await getProject(projectId);
+      if (!project) throw new Error(`Project "${projectId}" not found`);
 
-    const existingHtml = await getProjectHtml(projectId);
-    if (!existingHtml) throw new Error(`Project "${projectId}" has no generated HTML to modify`);
+      const existingHtml = await getProjectHtml(projectId);
+      if (!existingHtml) throw new Error(`Project "${projectId}" has no generated HTML to modify`);
 
-    const codingAgent = this.registry.getAgent('coding_agent');
-    this.emitPipelineEvent('FEEDBACK_STARTED', { projectId, feedback });
+      const codingAgent = this.registry.getAgent('coding_agent');
+      this.emitPipelineEvent('FEEDBACK_STARTED', { projectId, feedback });
 
-    const feedbackInput = `The user has provided human feedback requesting a modification:
+      const feedbackInput = `The user has provided human feedback requesting a modification:
 "${feedback}"
 
 CRITICAL MINIMAL CHANGE PRESERVATION RULE:
@@ -494,40 +572,47 @@ CRITICAL MINIMAL CHANGE PRESERVATION RULE:
 4. Do NOT perform unrequested redesigns, refactors, or optimizations.
 5. Return a complete, valid index.html containing the targeted modification.`;
 
-    const codingOutput = await codingAgent.execute({
-      input: feedbackInput,
-      context: {
-        operation: 'modify',
-        scope: 'targeted_change',
-        user_feedback: feedback,
-        original_prompt: project.prompt,
-        explicit_requirements: project.managerPlan?.explicit_requirements || [],
-        existing_html: existingHtml,
-      },
-      gateway,
-      onChunk: onChunk ? (chunk) => onChunk({ agent: 'coding_agent', chunk }) : null,
-    });
+      const codingOutput = await codingAgent.execute({
+        input: feedbackInput,
+        context: {
+          operation: 'modify',
+          scope: 'targeted_change',
+          user_feedback: feedback,
+          original_prompt: project.prompt,
+          explicit_requirements: project.managerPlan?.explicit_requirements || [],
+          existing_html: existingHtml,
+        },
+        gateway,
+        onChunk: onChunk ? (chunk) => onChunk({ agent: 'coding_agent', chunk }) : null,
+      });
 
-    const modifiedHtml = extractHtmlFromCodingResult(codingOutput.result, codingOutput.rawText);
-    if (!modifiedHtml) {
-      throw new Error('Coding Agent failed to produce valid HTML for feedback modification');
+      const modifiedHtml = extractHtmlFromCodingResult(codingOutput.result, codingOutput.rawText);
+      if (!modifiedHtml) {
+        throw new Error('Coding Agent failed to produce valid HTML for feedback modification');
+      }
+
+      const updatedProject = await saveProjectHtml(projectId, modifiedHtml, `Human Feedback: ${feedback}`);
+
+      this.emitPipelineEvent('FEEDBACK_COMPLETED', {
+        projectId,
+        feedback,
+        version: updatedProject.version,
+        contentLength: modifiedHtml.length,
+      });
+
+      return {
+        projectId,
+        version: updatedProject.version,
+        htmlContent: modifiedHtml,
+        summary: codingOutput.result?.summary || {},
+      };
+    } catch (err) {
+      this.emitPipelineEvent('FEEDBACK_FAILED', {
+        projectId,
+        error: err.message,
+      });
+      throw err;
     }
-
-    const updatedProject = await saveProjectHtml(projectId, modifiedHtml, `Human Feedback: ${feedback}`);
-
-    this.emitPipelineEvent('FEEDBACK_COMPLETED', {
-      projectId,
-      feedback,
-      version: updatedProject.version,
-      contentLength: modifiedHtml.length,
-    });
-
-    return {
-      projectId,
-      version: updatedProject.version,
-      htmlContent: modifiedHtml,
-      summary: codingOutput.result?.summary || {},
-    };
   }
 }
 

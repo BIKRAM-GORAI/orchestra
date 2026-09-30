@@ -170,8 +170,24 @@
 
               <div class="inspector-body">
                 <div class="insp-row status-row">
-                  <span class="insp-status-badge working" id="inspStatusBadge">● CODING</span>
-                  <span class="insp-quote" id="inspQuote">"Ready for assignments."</span>
+                  <span class="insp-status-badge status-idle" id="inspStatusBadge">○ IDLE</span>
+                  <span class="insp-quote" id="inspQuote">Idle — Waiting for a task</span>
+                </div>
+
+                <!-- Section 10: Current Task & Activity Panel -->
+                <div class="insp-section task-section">
+                  <span class="section-label">Current Task</span>
+                  <div class="insp-task-title" id="inspTaskTitle">No active task</div>
+                  <div class="insp-task-action" id="inspTaskAction">Waiting for instructions</div>
+                  <div class="insp-progress-box" id="inspProgressBox">
+                    <div class="insp-progress-bar">
+                      <div class="insp-progress-fill" id="inspProgressFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="insp-meta-row">
+                      <span class="insp-progress-text" id="inspProgressText">0%</span>
+                      <span class="insp-started-text">Started: <span id="inspStartedAt">—</span></span>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="insp-section">

@@ -5,13 +5,9 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Temporary test artifacts
-projects/*-test-*
-projects/test-*
-projects/project-alpha-*
-projects/project-beta-*
-projects/qa-audit-*
-projects/synthesis-test-*
+# Temporary test and generated projects artifacts
+projects/
+workspace/index.html
 
 # Agent IDE settings & skills
 .agent/

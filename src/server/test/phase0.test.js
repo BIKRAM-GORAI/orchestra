@@ -3,6 +3,7 @@ import test from 'node:test';
 import app, { startServer } from '../index.js';
 import { config } from '../config/env.js';
 import { MODEL_REGISTRY } from '../config/models.js';
+import { closeMongo } from '../db/mongo.js';
 
 test('Phase 0: Environment & Model Configuration', () => {
   assert.ok(MODEL_REGISTRY['gemini-3.5-flash'], 'gemini-3.5-flash model is registered');
@@ -21,8 +22,9 @@ test('Phase 0: HTTP Server Endpoints', async (t) => {
   const port = server.address().port;
   const baseUrl = `http://localhost:${port}`;
 
-  t.after(() => {
+  t.after(async () => {
     server.close();
+    await closeMongo();
   });
 
   // Health endpoint test

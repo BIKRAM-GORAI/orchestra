@@ -15,6 +15,8 @@ export const config = {
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   isProduction: process.env.NODE_ENV === 'production',
   rootDir,
+  mongoUri: process.env.MONGO_URI || process.env.MONGODB_URI || '',
+  mongoDbName: process.env.MONGO_DB_NAME || process.env.MONGODB_DB_NAME || '',
   projectsDir: path.join(rootDir, 'projects'),
   workspaceDir: path.join(rootDir, 'workspace'),
   workspaceIndexHtml: path.join(rootDir, 'workspace', 'index.html'),

@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { config, validateConfig } from './config/env.js';
 import { router as apiRouter } from './routes/api.js';
+import { connectMongo } from './db/mongo.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +51,14 @@ export function startServer() {
   const server = app.listen(config.port, config.host, () => {
     console.log(`[ORCHESTRA SERVER] Running at http://${config.host}:${config.port}`);
   });
+
+  if (config.mongoUri) {
+    connectMongo().then(() => {
+      console.log('[MONGODB] Connected and online storage initialized');
+    }).catch(err => {
+      console.warn(`[MONGODB] Online storage initialization warning: ${err.message}`);
+    });
+  }
 
   return server;
 }

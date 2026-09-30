@@ -7,6 +7,7 @@
 
 import { PixiOffice, AGENT_ROSTER } from './pixi-office.js';
 import { getLucideIcon, AGENT_ICONS, FILE_EXT_ICONS } from './icons.js';
+import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js';
 
 // Global State
 let pixiOffice = null;
@@ -38,7 +39,7 @@ export const AGENT_EMOJIS = {
   luna: '📊', rex: '🔒'
 };
 
-// DOM Elements: Agent Identity Inspector
+// DOM Elements: Agent Identity Inspector & Current Task Panel
 const agentInspectorCard = document.getElementById('agentInspectorCard');
 const closeInspectorBtn = document.getElementById('closeInspectorBtn');
 const inspAvatar = document.getElementById('inspAvatar');
@@ -47,6 +48,11 @@ const inspRole = document.getElementById('inspRole');
 const inspCoreTag = document.getElementById('inspCoreTag');
 const inspStatusBadge = document.getElementById('inspStatusBadge');
 const inspQuote = document.getElementById('inspQuote');
+const inspTaskTitle = document.getElementById('inspTaskTitle');
+const inspTaskAction = document.getElementById('inspTaskAction');
+const inspProgressFill = document.getElementById('inspProgressFill');
+const inspProgressText = document.getElementById('inspProgressText');
+const inspStartedAt = document.getElementById('inspStartedAt');
 const inspModelTag = document.getElementById('inspModelTag');
 const inspSkillsWrap = document.getElementById('inspSkillsWrap');
 const inspBtnCoffee = document.getElementById('inspBtnCoffee');
@@ -174,11 +180,52 @@ function initOfficeSimulation() {
 }
 
 // ==========================================================================
-// 3. Agent Identity Inspector
+// 3. Agent Identity Inspector & Live Task Panel (Section 10)
 // ==========================================================================
-export function showAgentInspector(agentId, data) {
+export function updateInspectorDetails(agentState) {
+  if (!agentState || !agentInspectorCard) return;
+
+  inspName.textContent = agentState.name;
+  inspRole.textContent = agentState.role;
+  inspCoreTag.style.display = agentState.core ? 'inline-block' : 'none';
+
+  // Section 2 & 10: Accurate status badge
+  const statusLower = (agentState.status || 'idle').toLowerCase();
+  inspStatusBadge.className = `insp-status-badge status-${statusLower}`;
+
+  let badgeLabel = `● ${agentState.status}`;
+  if (agentState.status === AGENT_STATUS.IDLE) badgeLabel = '○ IDLE';
+  else if (agentState.status === AGENT_STATUS.QUEUED) badgeLabel = '⏳ QUEUED';
+  else if (agentState.status === AGENT_STATUS.COMPLETED) badgeLabel = '✓ COMPLETED';
+  else if (agentState.status === AGENT_STATUS.FAILED) badgeLabel = '× FAILED';
+  else if (agentState.status === AGENT_STATUS.WAITING) badgeLabel = '⏸ WAITING';
+
+  inspStatusBadge.textContent = badgeLabel;
+
+  // Exact activity text from Section 2
+  inspQuote.textContent = `«${getStatusDisplayText(agentState.status, agentState.lastAction)}»`;
+
+  // Section 10: Current Task Panel
+  if (inspTaskTitle) {
+    inspTaskTitle.textContent = agentState.currentTask || (agentState.status === AGENT_STATUS.IDLE ? 'No active task' : 'General Directive');
+  }
+  if (inspTaskAction) {
+    inspTaskAction.textContent = agentState.lastAction || (agentState.status === AGENT_STATUS.IDLE ? 'Waiting for instructions' : 'Processing...');
+  }
+  if (inspProgressFill && inspProgressText) {
+    const pct = agentState.status === AGENT_STATUS.IDLE ? 0 : (agentState.progress || 0);
+    inspProgressFill.style.width = `${pct}%`;
+    inspProgressText.textContent = `${pct}%`;
+  }
+  if (inspStartedAt) {
+    inspStartedAt.textContent = agentState.startedAt || '—';
+  }
+}
+
+export function showAgentInspector(agentId) {
   selectedAgentId = agentId;
-  const def = AGENT_ROSTER[agentId] || data;
+  const agentState = agentStateManager.getAgent(agentId);
+  const def = AGENT_ROSTER[agentId] || agentState;
   if (!def || !agentInspectorCard) return;
 
   agentInspectorCard.style.display = 'flex';
@@ -189,19 +236,10 @@ export function showAgentInspector(agentId, data) {
   inspAvatar.innerHTML = getLucideIcon(AGENT_ICONS[agentId] || 'bot', { size: 18 });
   inspAvatar.style.background = `${def.color || '#38BDF8'}22`;
   inspAvatar.style.borderColor = def.color || '#38BDF8';
-
-  inspName.textContent = def.name;
-  inspRole.textContent = def.role;
-  inspCoreTag.style.display = def.core ? 'inline-block' : 'none';
-
-  const isWorking = def.state === 'coding' || def.state === 'working';
-  inspStatusBadge.className = `insp-status-badge ${isWorking ? 'working' : 'coffee'}`;
-  inspStatusBadge.textContent = `● ${def.state.toUpperCase()}`;
-  inspQuote.textContent = `"${def.statusText || 'Ready'}"`;
-
   inspModelTag.textContent = def.model;
-
   inspSkillsWrap.innerHTML = (def.skills || []).map(s => `<span class="skill-chip">${s}</span>`).join('');
+
+  updateInspectorDetails(agentState || def);
 
   // Update active chip in sidebar strip
   document.querySelectorAll('.agent-mini-chip').forEach(el => {
@@ -229,8 +267,8 @@ if (inspBtnCoffee) {
           a.state = 'coffee';
           a.bubbleText = 'Coffee ☕';
           a.bubbleTimer = 400;
-          showAgentInspector(selectedAgentId, a);
-          addLog(`[AGENT] ${a.name} stepped away for espresso.`, 'info', a.tag);
+          showAgentInspector(selectedAgentId);
+          addLog(`${a.name} stepped away to Coffee Lounge for espresso.`, 'info', a.tag, 'PAUSE');
         }
       });
     }
@@ -246,8 +284,8 @@ if (inspBtnMeeting) {
           a.state = 'meeting';
           a.bubbleText = 'Meeting 👥';
           a.bubbleTimer = 400;
-          showAgentInspector(selectedAgentId, a);
-          addLog(`[AGENT] ${a.name} joined the conference meeting.`, 'info', a.tag);
+          showAgentInspector(selectedAgentId);
+          addLog(`${a.name} joined the conference meeting room.`, 'info', a.tag, 'SYNC');
         }
       });
     }
@@ -262,11 +300,8 @@ if (inspBtnDesk) {
         onComplete: () => {
           a.isSeated = true;
           a.facing = a.home.facing;
-          a.state = 'working';
-          a.bubbleText = 'coding...';
-          a.bubbleTimer = 400;
-          showAgentInspector(selectedAgentId, a);
-          addLog(`[AGENT] ${a.name} seated at workstation.`, 'info', a.tag);
+          showAgentInspector(selectedAgentId);
+          addLog(`${a.name} seated at workstation.`, 'info', a.tag, 'STATION');
         }
       });
     }
@@ -277,30 +312,53 @@ if (inspBtnBriefing) {
   inspBtnBriefing.addEventListener('click', () => {
     if (pixiOffice) {
       pixiOffice.triggerManagerDelegation(selectedAgentId, 'Review sprint objectives');
-      addLog(`[DELEGATION] Manager Atlas briefing ${AGENT_ROSTER[selectedAgentId].name} on sprint goals.`, 'info', 'AT');
+      addLog(`Manager Atlas briefing ${AGENT_ROSTER[selectedAgentId].name} on sprint goals.`, 'info', 'AT', 'BRIEF');
     }
   });
 }
 
+// Header Live Stats (Section 8)
+export function updateHeaderStats() {
+  if (headerAgentStats) {
+    const active = agentStateManager.getActiveAgentsCount();
+    const idle = agentStateManager.getIdleAgentsCount();
+    headerAgentStats.textContent = `Active: ${active} | Idle: ${idle}`;
+  }
+}
+
 // ==========================================================================
-// 4. Render Sidebar Roster & Team Directory
+// 4. Render Sidebar Roster & Team Directory (Derived from Central State)
 // ==========================================================================
 function renderAgentRosters() {
+  const allAgents = agentStateManager.getAllAgents();
+
   // 1. Sidebar Horizontal Chip Strip
   if (agentsRosterStrip) {
-    agentsRosterStrip.innerHTML = Object.values(AGENT_ROSTER).map(agent => `
-      <div class="agent-mini-chip ${agent.id === selectedAgentId ? 'active' : ''}" data-agent="${agent.id}">
-        <span class="chip-avatar">${getLucideIcon(AGENT_ICONS[agent.id] || 'bot', { size: 13 })}</span>
-        <span class="chip-name">${agent.name}</span>
-      </div>
-    `).join('');
+    agentsRosterStrip.innerHTML = allAgents.map(agent => {
+      const isWorking = agent.status === AGENT_STATUS.WORKING || agent.status === AGENT_STATUS.CODING || agent.status === AGENT_STATUS.THINKING || agent.status === AGENT_STATUS.RUNNING;
+      const isCompleted = agent.status === AGENT_STATUS.COMPLETED;
+      const isFailed = agent.status === AGENT_STATUS.FAILED;
+
+      return `
+        <div class="agent-mini-chip ${agent.id === selectedAgentId ? 'active' : ''} ${isWorking ? 'working' : ''}" data-agent="${agent.id}">
+          <span class="chip-avatar" style="border-color:${agent.color};">
+            ${getLucideIcon(AGENT_ICONS[agent.id] || 'bot', { size: 13 })}
+          </span>
+          <span class="chip-name">${agent.name}</span>
+          <span class="chip-status-dot ${isWorking ? 'dot-working' : (isCompleted ? 'dot-completed' : (isFailed ? 'dot-failed' : 'dot-idle'))}"></span>
+        </div>
+      `;
+    }).join('');
 
     agentsRosterStrip.querySelectorAll('.agent-mini-chip').forEach(el => {
       el.addEventListener('click', () => {
         const id = el.dataset.agent;
-        if (id && pixiOffice) {
-          pixiOffice.selectAgent(id);
-          pixiOffice.focusOnAgent(id);
+        if (id) {
+          showAgentInspector(id);
+          if (pixiOffice) {
+            pixiOffice.selectAgent(id);
+            pixiOffice.focusOnAgent(id);
+          }
         }
       });
     });
@@ -308,46 +366,58 @@ function renderAgentRosters() {
 
   // 2. Full Directory Grid (Team Tab)
   if (agentsDirectoryGrid) {
-    agentsDirectoryGrid.innerHTML = Object.values(AGENT_ROSTER).map(agent => `
-      <div class="agent-dossier-card" data-agent="${agent.id}">
-        <div class="dossier-header">
-          <div class="dossier-avatar" style="border-color: ${agent.color};">
-            ${getLucideIcon(AGENT_ICONS[agent.id] || 'bot', { size: 18 })}
-          </div>
-          <div class="dossier-meta">
-            <div class="name-row">
-              <span class="dossier-name">${agent.name}</span>
-              ${agent.core ? '<span class="core-tag">CORE</span>' : ''}
+    agentsDirectoryGrid.innerHTML = allAgents.map(agent => {
+      return `
+        <div class="agent-dossier-card" data-agent="${agent.id}">
+          <div class="dossier-header">
+            <div class="dossier-avatar" style="border-color: ${agent.color};">
+              ${getLucideIcon(AGENT_ICONS[agent.id] || 'bot', { size: 18 })}
             </div>
-            <span class="dossier-role">${agent.role}</span>
+            <div class="dossier-meta">
+              <div class="name-row">
+                <span class="dossier-name">${agent.name}</span>
+                ${agent.core ? '<span class="core-tag">CORE</span>' : ''}
+              </div>
+              <span class="dossier-role">${agent.role}</span>
+            </div>
+            <span class="insp-status-badge status-${agent.status.toLowerCase()}">
+              ${agent.status === AGENT_STATUS.IDLE ? '○ IDLE' : (agent.status === AGENT_STATUS.COMPLETED ? '✓ COMPLETED' : (agent.status === AGENT_STATUS.FAILED ? '× FAILED' : `● ${agent.status}`))}
+            </span>
           </div>
-          <span class="insp-status-badge ${agent.state === 'coding' || agent.state === 'working' ? 'working' : 'coffee'}">
-            ● ${agent.state.toUpperCase()}
-          </span>
-        </div>
 
-        <div class="insp-section">
-          <span class="section-label">Intelligence Model</span>
-          <span class="dossier-model-badge">${agent.model}</span>
-        </div>
+          <div class="insp-section task-section" style="margin-top:6px;padding:6px 8px;border-radius:6px;background:#F8FAFC;border:1px solid #E2E8F0;">
+            <span class="section-label" style="font-size:0.6rem;color:#64748B;font-weight:700;">Current Task</span>
+            <div class="dossier-task-title" style="font-size:0.75rem;font-weight:600;color:var(--text-primary);">
+              ${agent.currentTask || 'No active task'}
+            </div>
+            <div class="dossier-task-action" style="font-size:0.68rem;color:var(--text-secondary);">
+              ${agent.lastAction || 'Waiting for instructions'}
+            </div>
+          </div>
 
-        <div class="insp-section">
-          <span class="section-label">Specialist Capabilities</span>
-          <div class="skills-wrap">
-            ${agent.skills.map(s => `<span class="skill-chip">${s}</span>`).join('')}
+          <div class="insp-section" style="margin-top:6px;">
+            <span class="section-label">Intelligence Model</span>
+            <span class="dossier-model-badge">${agent.model}</span>
+          </div>
+
+          <div class="insp-section">
+            <span class="section-label">Specialist Capabilities</span>
+            <div class="skills-wrap">
+              ${agent.skills.map(s => `<span class="skill-chip">${s}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="inspector-actions">
+            <button class="btn btn-xs btn-outline btn-locate-agent" data-agent="${agent.id}">
+              ${getLucideIcon('compass', { size: 12 })} Locate in Office
+            </button>
+            <button class="btn btn-xs btn-primary btn-delegate-agent" data-agent="${agent.id}">
+              ${getLucideIcon('briefcase', { size: 12 })} Boss Brief
+            </button>
           </div>
         </div>
-
-        <div class="inspector-actions">
-          <button class="btn btn-xs btn-outline btn-locate-agent" data-agent="${agent.id}">
-            ${getLucideIcon('compass', { size: 12 })} Locate in Office
-          </button>
-          <button class="btn btn-xs btn-primary btn-delegate-agent" data-agent="${agent.id}">
-            ${getLucideIcon('briefcase', { size: 12 })} Boss Brief
-          </button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     agentsDirectoryGrid.querySelectorAll('.btn-locate-agent').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -370,44 +440,85 @@ function renderAgentRosters() {
   }
 }
 
+// Mini-chip live updater
+function updateMiniChipStatus(agentState) {
+  if (!agentsRosterStrip) return;
+  const chip = agentsRosterStrip.querySelector(`.agent-mini-chip[data-agent="${agentState.id}"]`);
+  if (!chip) return;
+
+  const isWorking = agentState.status === AGENT_STATUS.WORKING || agentState.status === AGENT_STATUS.CODING || agentState.status === AGENT_STATUS.THINKING || agentState.status === AGENT_STATUS.RUNNING;
+  const isCompleted = agentState.status === AGENT_STATUS.COMPLETED;
+  const isFailed = agentState.status === AGENT_STATUS.FAILED;
+
+  chip.classList.toggle('working', isWorking);
+
+  const dot = chip.querySelector('.chip-status-dot');
+  if (dot) {
+    dot.className = `chip-status-dot ${isWorking ? 'dot-working' : (isCompleted ? 'dot-completed' : (isFailed ? 'dot-failed' : 'dot-idle'))}`;
+  }
+}
+
+// Directory card live updater
+function updateDirectoryCardStatus(agentState) {
+  if (!agentsDirectoryGrid) return;
+  const card = agentsDirectoryGrid.querySelector(`.agent-dossier-card[data-agent="${agentState.id}"]`);
+  if (!card) return;
+
+  const badge = card.querySelector('.insp-status-badge');
+  if (badge) {
+    badge.className = `insp-status-badge status-${agentState.status.toLowerCase()}`;
+    badge.textContent = agentState.status === AGENT_STATUS.IDLE ? '○ IDLE' : (agentState.status === AGENT_STATUS.COMPLETED ? '✓ COMPLETED' : (agentState.status === AGENT_STATUS.FAILED ? '× FAILED' : `● ${agentState.status}`));
+  }
+
+  const taskTitle = card.querySelector('.dossier-task-title');
+  if (taskTitle) taskTitle.textContent = agentState.currentTask || 'No active task';
+
+  const taskAction = card.querySelector('.dossier-task-action');
+  if (taskAction) taskAction.textContent = agentState.lastAction || 'Waiting for instructions';
+}
+
 // ==========================================================================
-// 5. Terminal & Activity Logging with Dedicated Agent Colors
+// 5. Terminal & Activity Logging with Dedicated Agent Colors (Section 4 & 9)
 // ==========================================================================
-export function addLog(message, type = 'info', agentTag = null) {
+export function addTerminalEntry(timestamp, agentTag, status, message, type = 'info', agentColor = null) {
+  if (!sidebarTerminalLogs) return;
+
+  const color = agentColor || '#94A3B8';
+  const cleanMsg = (message || '').replace(/^\[.*?\]\s*/, '');
+
+  const entry = document.createElement('div');
+  entry.className = `term-entry log-${type}`;
+  entry.innerHTML = `
+    <span class="term-time">${timestamp}</span>
+    <span class="term-agent-pill" style="color: ${color}; border-color: ${color}44; background: ${color}14;">
+      ${agentTag}
+    </span>
+    <span class="term-status-pill status-${(status || 'info').toLowerCase()}">
+      ${status || 'INFO'}
+    </span>
+    <span class="term-msg">${cleanMsg}</span>
+  `;
+
+  sidebarTerminalLogs.appendChild(entry);
+  sidebarTerminalLogs.scrollTop = sidebarTerminalLogs.scrollHeight;
+
+  if (sidebarTerminalLogs.children.length > 120) {
+    sidebarTerminalLogs.removeChild(sidebarTerminalLogs.children[0]);
+  }
+
+  if (window.Motion) {
+    window.Motion.animate(entry, { opacity: [0.35, 1], x: [-3, 0] }, { duration: 0.15 });
+  }
+}
+
+export function addLog(message, type = 'info', agentTag = 'SYS', status = 'INFO') {
   const timestamp = new Date().toLocaleTimeString();
-
-  // Deduce agent tag if not provided
-  let tag = agentTag;
-  if (!tag) {
-    if (message.includes('[ATLAS]') || message.includes('Manager')) tag = 'AT';
-    else if (message.includes('[NOVA]') || message.includes('Frontend')) tag = 'NV';
-    else if (message.includes('[BYTE]') || message.includes('Backend') || message.includes('Coding')) tag = 'BY';
-    else if (message.includes('[PIXEL]') || message.includes('Designer')) tag = 'PX';
-    else if (message.includes('[QUERY]') || message.includes('QA')) tag = 'QR';
-    else if (message.includes('[FORGE]') || message.includes('DevOps')) tag = 'FG';
-    else tag = 'SYS';
-  }
-
-  const badgeClass = `badge-${tag.toLowerCase()}`;
-
-  // 1. Add to sidebar terminal
-  if (sidebarTerminalLogs) {
-    const entry = document.createElement('div');
-    entry.className = 'term-entry';
-    entry.innerHTML = `
-      <span class="term-time">${timestamp}</span>
-      <span class="agent-badge ${badgeClass}">${tag}</span>
-      <span class="term-text">${message.replace(/^\[.*?\]\s*/, '')}</span>
-    `;
-    sidebarTerminalLogs.appendChild(entry);
-    sidebarTerminalLogs.scrollTop = sidebarTerminalLogs.scrollHeight;
-    if (sidebarTerminalLogs.children.length > 80) {
-      sidebarTerminalLogs.removeChild(sidebarTerminalLogs.children[0]);
-    }
-    if (window.Motion) {
-      window.Motion.animate(entry, { opacity: [0.35, 1], x: [-3, 0] }, { duration: 0.15 });
-    }
-  }
+  const colorMap = {
+    AT: '#F59E0B', NV: '#38BDF8', BY: '#10B981', PX: '#C084FC',
+    QR: '#FB923C', FG: '#F43F5E', SC: '#2DD4BF', EC: '#EAB308',
+    LN: '#06B6D4', RX: '#A855F7', SYS: '#94A3B8', USER: '#3B82F6'
+  };
+  addTerminalEntry(timestamp, agentTag, status, message, type, colorMap[agentTag] || '#94A3B8');
 }
 
 if (sidebarClearLogsBtn) {
@@ -418,7 +529,7 @@ if (sidebarClearLogsBtn) {
           <span class="term-banner-prompt">orchestra@agent-atelier:~$</span> telemetry --follow --all
         </div>
       `;
-      addLog('Terminal logs cleared.', 'info', 'SYS');
+      addLog('Terminal logs cleared.', 'info', 'SYS', 'CLEAR');
     }
   });
 }
@@ -729,7 +840,14 @@ async function handleApplyFeedback() {
   const feedback = feedbackInput.value.trim();
   if (!feedback || isOrchestrating) return;
 
-  addLog(`Submitting minimal-change edit: "${feedback}"`, 'info', 'NV');
+  addLog(`Feedback received: "${feedback}"`, 'info', 'USER', 'FEEDBACK');
+  agentStateManager.setAgentState('byte', {
+    status: AGENT_STATUS.QUEUED,
+    currentTask: `Modify application: "${feedback}"`,
+    lastAction: 'Human feedback received. Queued for patch',
+    progress: 10,
+  });
+
   setControlsLocked(true);
 
   try {
@@ -744,9 +862,9 @@ async function handleApplyFeedback() {
     feedbackInput.value = '';
     updatePreview(activeProjectId || data.projectId);
     loadProjectFiles(activeProjectId || data.projectId);
-    addLog(`Minimal-change edit applied. Preview reloaded.`, 'success', 'BY');
+    addLog(`Minimal-change edit applied. Preview reloaded.`, 'success', 'BY', 'COMPLETE');
   } catch (err) {
-    addLog(`Feedback failed: ${err.message}`, 'error', 'QR');
+    addLog(`Feedback failed: ${err.message}`, 'error', 'QR', 'FAILED');
   } finally {
     setControlsLocked(false);
   }
@@ -826,13 +944,15 @@ async function handleSendPrompt(promptText) {
     }
   }, 350);
 
-  addLog(`Build requested: "${prompt.slice(0, 60)}..."`, 'info', 'AT');
-  if (chatStatusTag) chatStatusTag.textContent = 'Orchestrating...';
+  addLog(`Task received: "${prompt}"`, 'info', 'USER', 'TASK');
+  agentStateManager.setAgentState('atlas', {
+    status: AGENT_STATUS.QUEUED,
+    currentTask: prompt,
+    lastAction: 'Task assigned. Launching orchestration pipeline',
+    progress: 5,
+  });
 
-  // Trigger office manager delegation animation
-  if (pixiOffice) {
-    pixiOffice.triggerManagerDelegation('nova', prompt.slice(0, 30));
-  }
+  if (chatStatusTag) chatStatusTag.textContent = 'Orchestrating...';
 
   try {
     const payload = { prompt };
@@ -864,10 +984,13 @@ async function handleSendPrompt(promptText) {
     loadProjectFiles(activeProjectId);
 
     if (chatStatusTag) chatStatusTag.textContent = 'Preview Ready';
-    addLog(`Build complete! Preview & files ready for "${activeProjectId}".`, 'success', 'BY');
   } catch (err) {
     if (chatStatusTag) chatStatusTag.textContent = 'Error';
-    addLog(`Build failed: ${err.message}`, 'error', 'QR');
+    addLog(`Build failed: ${err.message}`, 'error', 'QR', 'FAILED');
+    agentStateManager.setAgentState('atlas', {
+      status: AGENT_STATUS.FAILED,
+      lastAction: err.message,
+    });
   } finally {
     setControlsLocked(false);
   }
@@ -923,7 +1046,7 @@ if (sidebarLaunchBtn && sidebarPromptInput) {
 }
 
 // ==========================================================================
-// 10. Real-time SSE Stream Listener
+// 10. Real-time SSE Stream Listener (Single Source of Truth)
 // ==========================================================================
 function initEventSource() {
   if (eventSource) eventSource.close();
@@ -932,17 +1055,14 @@ function initEventSource() {
   eventSource.addEventListener('agentState', (e) => {
     try {
       const data = JSON.parse(e.data);
-      if (pixiOffice && pixiOffice.agents[data.agentId]) {
-        pixiOffice.agents[data.agentId].state = data.state;
-      }
+      agentStateManager.handleAgentStateEvent(data);
     } catch (_) {}
   });
 
   eventSource.addEventListener('pipeline', (e) => {
     try {
       const data = JSON.parse(e.data);
-      if (pixiOffice) pixiOffice.handlePipelineEvent(data);
-      addLog(`[${data.stage}] ${data.message || ''}`, 'info', 'SYS');
+      agentStateManager.handlePipelineEvent(data);
 
       if (data.stage === 'PIPELINE_COMPLETED') {
         setControlsLocked(false);
@@ -953,7 +1073,7 @@ function initEventSource() {
           selectProject(pid, true);
           loadProjectFiles(pid);
         }
-      } else if (data.stage === 'PIPELINE_FAILED') {
+      } else if (data.stage === 'PIPELINE_FAILED' || data.stage === 'FEEDBACK_FAILED') {
         setControlsLocked(false);
       }
     } catch (_) {}
@@ -979,7 +1099,23 @@ function bootstrap() {
   loadProjects();
   initEventSource();
   initSystemHealth();
-  addLog('Agent Orchestra Workspace initialized. 10 AI specialist agents on duty.', 'info', 'SYS');
+
+  // Single Source of Truth Subscription (Section 1 & 8)
+  agentStateManager.subscribe((agentState) => {
+    if (agentState.id === selectedAgentId) {
+      updateInspectorDetails(agentState);
+    }
+    updateMiniChipStatus(agentState);
+    updateDirectoryCardStatus(agentState);
+    updateHeaderStats();
+  });
+
+  agentStateManager.onTerminalLog((log) => {
+    addTerminalEntry(log.timestamp, log.agentTag, log.status, log.message, log.type, log.agentColor);
+  });
+
+  updateHeaderStats();
+  addLog('Agent Orchestra Workspace initialized. 10 AI specialist agents ready on duty.', 'info', 'SYS', 'READY');
 }
 
 if (document.readyState === 'loading') {
