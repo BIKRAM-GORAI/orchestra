@@ -26,6 +26,10 @@ app.use('/workspace', express.static(config.workspaceDir));
 const clientDir = path.join(rootDir, 'src', 'client');
 app.use(express.static(clientDir));
 
+app.get('/home', (req, res) => {
+  res.sendFile(path.join(clientDir, 'home.html'));
+});
+
 // Fallback to index.html for client SPA
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/workspace')) {

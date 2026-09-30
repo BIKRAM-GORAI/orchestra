@@ -5,9 +5,9 @@
  * and live device preview synchronization.
  */
 
-import { PixiOffice, AGENT_ROSTER } from './pixi-office.js?v=3';
+import { PixiOffice, AGENT_ROSTER } from './pixi-office.js?v=4';
 import { getLucideIcon, AGENT_ICONS, FILE_EXT_ICONS } from './icons.js';
-import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=3';
+import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=4';
 
 // Global State
 let pixiOffice = null;
@@ -552,8 +552,6 @@ function initOfficeSimulation() {
       executeChoreographedMeetingWorkflow('Build modern portfolio with interactive showcase and contact drawer', { runBackendBuild: false });
     });
   }
-
-  showAgentInspector('nova', AGENT_ROSTER.nova);
 }
 
 // ==========================================================================

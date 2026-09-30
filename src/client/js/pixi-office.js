@@ -26,6 +26,33 @@ export const WORKFLOW_STATE = {
   IN_REVIEW: 'IN_REVIEW'
 };
 
+export const FREE_ROAM_SPOTS = [
+  // Coffee Lounge & Cafe
+  { x: 620, y: 395, text: 'Coffee break ☕' },
+  { x: 665, y: 445, text: 'Lounge chat 💬' },
+  { x: 685, y: 280, text: 'Espresso run ☕' },
+  { x: 575, y: 260, text: 'Water break 💧' },
+  { x: 580, y: 485, text: 'Taking a breather 🛋️' },
+  { x: 685, y: 320, text: 'Chatting by counter ☕' },
+
+  // Server Room ESD Lab
+  { x: 600, y: 100, text: 'Inspecting servers 🖥️' },
+  { x: 620, y: 130, text: 'Checking telemetry ⚡' },
+
+  // Meeting Room Collaboration
+  { x: 380, y: 55, text: 'Reviewing whiteboard 📊' },
+  { x: 340, y: 55, text: 'Brainstorming 💡' },
+  { x: 380, y: 135, text: 'Syncing notes 📝' },
+  { x: 295, y: 95, text: 'Discussing roadmap 📋' },
+
+  // Main Workspace Open Corridors
+  { x: 100, y: 220, text: 'Stretching legs 🚶' },
+  { x: 280, y: 220, text: 'Walking corridor 🚶' },
+  { x: 460, y: 220, text: 'Passing by 👋' },
+  { x: 200, y: 310, text: 'Checking in 🤝' },
+  { x: 280, y: 380, text: 'Checking office plants 🌿' }
+];
+
 export const AGENT_ROSTER = {
   // 1. Executive Manager
   atlas: {
@@ -746,14 +773,6 @@ export class PixiOffice {
     } else if (agentState.status === AGENT_STATUS.IDLE) {
       agent.bubbleText = '';
       agent.bubbleTimer = 0;
-      if (agent.waypoints.length === 0 && !agent.isSeated) {
-        this.navigateTo(agent, agent.home.x, agent.home.y, {
-          onComplete: () => {
-            agent.isSeated = true;
-            agent.facing = agent.home.facing;
-          }
-        });
-      }
     }
   }
 
@@ -1247,6 +1266,14 @@ export class PixiOffice {
         });
         i++;
       }
+    } else if (preset === 'free') {
+      // Free Roam Mode: Release choreography locks and allow agents to explore the office
+      for (const agent of Object.values(this.agents)) {
+        agent.inChoreography = false;
+        agent.isSeated = false;
+        agent.workflowState = WORKFLOW_STATE.IDLE;
+        agent.freeRoamCooldown = 10 + Math.floor(Math.random() * 50); // Stagger initial movement
+      }
     }
   }
 
@@ -1365,16 +1392,34 @@ export class PixiOffice {
         agent.walkingFrame = 0;
         agent.currentSpeed = 0;
 
-        // Strict station lock: If IDLE, WORKING, or TASK_COMPLETED, agent remains firmly seated at assigned workstation
+        // Station alignment: firmly align at workstation ONLY when returning to desk or working at desk in focus mode
         if (
-          agent.workflowState === WORKFLOW_STATE.IDLE ||
-          agent.workflowState === WORKFLOW_STATE.WORKING ||
-          agent.workflowState === WORKFLOW_STATE.TASK_COMPLETED
+          agent.workflowState === WORKFLOW_STATE.RETURNING_TO_DESK ||
+          (agent.workflowState === WORKFLOW_STATE.WORKING && this.currentPreset === 'focus')
         ) {
-          agent.x = agent.home.x;
-          agent.y = agent.home.y;
-          agent.isSeated = true;
-          agent.facing = agent.home.facing;
+          if (Math.hypot(agent.x - agent.home.x, agent.y - agent.home.y) < 22) {
+            agent.x = agent.home.x;
+            agent.y = agent.home.y;
+            agent.isSeated = true;
+            agent.facing = agent.home.facing;
+          }
+        }
+
+        // Autonomous Free Roam in Free Roam Preset
+        if (this.currentPreset === 'free' && !agent.inChoreography) {
+          agent.freeRoamCooldown = (agent.freeRoamCooldown || 0) - 1;
+          if (agent.freeRoamCooldown <= 0) {
+            const spot = FREE_ROAM_SPOTS[Math.floor(Math.random() * FREE_ROAM_SPOTS.length)];
+            agent.isSeated = false;
+            this.navigateTo(agent, spot.x, spot.y, {
+              onComplete: () => {
+                agent.bubbleText = spot.text;
+                agent.bubbleTimer = 240;
+              }
+            });
+            // Stay at visited spot for 6 to 12 seconds before strolling to next spot
+            agent.freeRoamCooldown = 360 + Math.floor(Math.random() * 360);
+          }
         }
       }
 

@@ -125,6 +125,21 @@ body {
   align-items: center;
   gap: 9px;
   text-decoration: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand-wrap:hover {
+  background: var(--bg-surface-hover, rgba(0, 0, 0, 0.04));
+  transform: translateY(-1px);
+}
+
+.brand-wrap:hover .brand-icon {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
 .brand-icon {
@@ -334,31 +349,33 @@ body {
 
 /* Office Control Bar: Related Office Buttons Inside Office Box */
 .office-control-bar {
-  height: 44px;
+  height: 48px;
   background: var(--bg-base);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 16px;
   z-index: 20;
   flex-shrink: 0;
   box-shadow: var(--shadow-xs);
+  gap: 12px;
 }
 
 .office-presets-wrap {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .bar-label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-right: 2px;
+  letter-spacing: 0.06em;
+  margin-right: 6px;
+  user-select: none;
 }
 
 .preset-btn {
@@ -368,7 +385,7 @@ body {
   background: var(--bg-base);
   border: 1px solid var(--border-medium);
   color: var(--text-secondary);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 600;
   font-family: inherit;
   height: 32px;
@@ -377,6 +394,7 @@ body {
   cursor: pointer;
   transition: var(--transition-fast);
   box-shadow: var(--shadow-xs);
+  white-space: nowrap;
 }
 
 .preset-btn:hover {
@@ -396,6 +414,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .camera-controls-group {
@@ -409,13 +428,17 @@ body {
 }
 
 .bar-caption {
-  font-size: 0.7rem;
-  color: var(--agent-byte);
+  font-size: 0.74rem;
+  color: #047857;
   font-weight: 600;
   background: #ECFDF5;
-  padding: 3px 9px;
-  border-radius: var(--radius-xs);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
   border: 1px solid #A7F3D0;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
 }
 
 /* Fixed Office Stage */
@@ -450,7 +473,7 @@ body {
   box-shadow: var(--shadow-lg);
   border-radius: var(--radius-md);
   padding: 14px;
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 12px;
   z-index: 50;
