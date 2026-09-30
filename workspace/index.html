@@ -1,1062 +1,1505 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Motors | Next-Gen Vehicle Launch & Test Drive Portal</title>
-    <!-- Google Fonts -->
+    <title>VISUAL LAB — Experimental Data Museum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Tailwind CSS CDN for rapid robust styling -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-          --primary: #2563EB;
-          --secondary: #1E293B;
-          --background: #0F172A;
-          --surface: #1E293B;
-          --text-main: #F8FAFC;
-          --text-muted: #94A3B8;
-          --border: #334155;
-          --accent: #38BDF8;
+            --bg-primary: #07080b;
+            --bg-secondary: #0e1117;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-elevated: rgba(255, 255, 255, 0.07);
+            --glass-bg: rgba(18, 20, 28, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-border-hover: rgba(255, 255, 255, 0.28);
+            --glass-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            --clay-bg: linear-gradient(135deg, #181b26 0%, #0d0f17 100%);
+            --clay-shadow: 12px 12px 24px rgba(0, 0, 0, 0.6), -8px -8px 20px rgba(255, 255, 255, 0.02), inset 1px 1px 2px rgba(255, 255, 255, 0.08);
+            --text-primary: #F5F5F7;
+            --text-muted: #86868B;
+            --accent: #FF3B30;
+            --accent-cyan: #00E5FF;
+            --accent-purple: #5856D6;
+            --accent-success: #34C759;
+            --accent-warning: #FF9500;
+            --font-display: 'Space Grotesk', -apple-system, sans-serif;
+            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --radius-lg: 32px;
+            --radius-md: 20px;
+            --radius-sm: 12px;
+            --transition-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
         body {
-          font-family: 'Inter', system-ui, -apple-system, sans-serif;
-          background-color: var(--background);
-          color: var(--text-main);
-          overflow-x: hidden;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            position: relative;
         }
 
-        .font-orbitron {
-          font-family: 'Orbitron', sans-serif;
+        /* Ambient Background Glows */
+        .ambient-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(140px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.15;
+            transition: transform 1s ease, background 1s ease;
+        }
+        .glow-1 { top: -200px; left: -200px; background: var(--accent-purple); }
+        .glow-2 { bottom: 10vh; right: -200px; background: var(--accent-cyan); }
+        .glow-3 { top: 50vh; left: 30vw; background: var(--accent); opacity: 0.1;
+}
+
+        /* Custom Cursor Light effect */
+        #cursor-light {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,59,48,0.08) 0%, rgba(0,229,255,0.03) 40%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1;
+            transition: width 0.3s, height 0.3s;
         }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #334155;
-          border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: #38bdf8;
+        /* App Container */
+        #app-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 40px 180px 40px;
         }
 
-        .glass-nav {
-          background: rgba(15, 23, 42, 0.85);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        /* Floating Navigation Dock */
+        .floating-dock {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 17, 23, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            padding: 10px 20px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            transition: transform 0.4s var(--transition-spring), border-color 0.3s;
+        }
+        .floating-dock:hover {
+            border-color: var(--glass-border-hover);
+        }
+        .dock-item {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.3s var(--transition-smooth);
+            white-space: nowrap;
+        }
+        .dock-item:hover, .dock-item.active {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+        .dock-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--glass-border);
+        }
+        .dock-random-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, #ff6b6b 100%);
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(255, 59, 48, 0.4);
+            transition: transform 0.3s var(--transition-spring), box-shadow 0.3s;
+        }
+        .dock-random-btn:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 12px 28px rgba(255, 59, 48, 0.6);
+        }
+        .dock-random-btn:active {
+            transform: scale(0.96);
         }
 
-        .glass-card {
-          background: rgba(30, 41, 59, 0.7);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(51, 65, 85, 0.6);
+        /* Hero Section (Broken Grid) */
+        .hero-section {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            padding: 60px 0;
+        }
+        .hero-top-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            width: fit-content;
+            backdrop-filter: blur(10px);
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent-success);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 20px var(--accent-success); }
+            100% { transform: scale(0.95); opacity: 0.8; }
         }
 
-        .hero-glow {
-          background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+        .hero-title-wrapper {
+            position: relative;
+            margin-bottom: 40px;
+        }
+        .giant-title {
+            font-family: var(--font-display);
+            font-size: clamp(60px, 11vw, 170px);
+            font-weight: 800;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #FFFFFF 30%, #86868B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+        }
+        .giant-title span {
+            color: var(--accent);
+            -webkit-text-fill-color: var(--accent);
+            text-shadow: 0 0 50px rgba(255,59,48,0.4);
         }
 
-        .car-card-hover {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            align-items: start;
+            position: relative;
+            z-index: 3;
         }
-        .car-card-hover:hover {
-          transform: translateY(-6px);
-          border-color: #38bdf8;
-          box-shadow: 0 20px 25px -5px rgba(56, 189, 248, 0.1), 0 8px 10px -6px rgba(56, 189, 248, 0.1);
+        .hero-desc {
+            font-size: clamp(18px, 1.5vw, 22px);
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+        .hero-desc strong {
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
-        @keyframes pulseGlow {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
+        /* Real-time Metric Cards (Floating Grid-Breaking) */
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            transform: translateY(-40px);
         }
-        .animate-pulse-glow {
-          animation: pulseGlow 4s infinite ease-in-out;
+        .metric-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.4s var(--transition-spring), border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--glass-border-hover);
+        }
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .metric-card:hover::after {
+            opacity: 1;
+        }
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .metric-value-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+        .metric-value {
+            font-family: var(--font-display);
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .metric-trend {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .metric-trend.positive {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--accent-success);
+        }
+        .metric-trend.negative {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--accent);
+        }
+
+        /* Gallery Sections */
+        .gallery-container {
+            display: flex;
+            flex-direction: column;
+            gap: 220px;
+            margin-top: 100px;
+        }
+
+        .lab-section {
+            position: relative;
+        }
+
+        /* Section Header Layout */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 3;
+        }
+        .section-meta-group h2 {
+            font-family: var(--font-display);
+            font-size: clamp(32px, 4vw, 54px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .section-number {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .section-desc {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .action-btn {
+            background: var(--surface-elevated);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s var(--transition-smooth);
+            backdrop-filter: blur(10px);
+        }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--glass-border-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Broken Grid Canvas Layouts */
+        .canvas-layout-1 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+        .canvas-layout-2 {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+        .canvas-layout-symmetric {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        /* Visualization Container Card */
+        .vis-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--glass-shadow);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.4s, transform 0.4s;
+        }
+        .vis-card:hover {
+            border-color: var(--glass-border-hover);
+        }
+
+        /* Photography Pairings */
+        .photo-card {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+            border: 1px solid var(--glass-border);
+            height: 480px;
+        }
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s var(--transition-smooth);
+        }
+        .photo-card:hover img {
+            transform: scale(1.05);
+        }
+        .photo-caption {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+            background: rgba(11, 12, 16, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .photo-caption span:first-child {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .photo-caption span:last-child {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- SPECIFIC EXPERIMENTAL CHARTS --- */
+
+        /* 1. Massive Floating Line Chart */
+        .line-chart-svg {
+            width: 100%;
+            height: 380px;
+            overflow: visible;
+        }
+        .chart-path {
+            fill: none;
+            stroke: url(#lineGradient);
+            stroke-width: 4;
+            stroke-linecap: round;
+            filter: drop-shadow(0 10px 20px rgba(255, 59, 48, 0.4));
+            transition: d 0.8s var(--transition-smooth);
+        }
+        .chart-area {
+            fill: url(#areaGradient);
+            transition: d 0.8s var(--transition-smooth);
+        }
+        .chart-point {
+            fill: var(--bg-primary);
+            stroke: var(--accent);
+            stroke-width: 3;
+            cursor: pointer;
+            transition: transform 0.3s var(--transition-spring), r 0.3s;
+        }
+        .chart-point:hover {
+            transform: scale(1.6);
+            stroke: var(--accent-cyan);
+        }
+
+        /* 2. Organic Clay Bar Chart */
+        .clay-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 380px;
+            padding: 20px 10px 0 10px;
+            gap: 20px;
+        }
+        .clay-bar-wrapper {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+        }
+        .clay-bar {
+            width: 100%;
+            max-width: 50px;
+            background: var(--clay-bg);
+            box-shadow: var(--clay-shadow);
+            border-radius: 20px 20px 8px 8px;
+            position: relative;
+            transition: height 0.8s var(--transition-spring), transform 0.3s, background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .clay-bar::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            height: 40%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+            border-radius: 16px 16px 0 0;
+        }
+        .clay-bar-wrapper:hover .clay-bar {
+            transform: translateY(-8px);
+            background: linear-gradient(135deg, #222738 0%, #111420 100%);
+            border-color: var(--accent-cyan);
+        }
+        .clay-bar-label {
+            margin-top: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .clay-bar-val {
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        .clay-bar-wrapper:hover .clay-bar-val {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 3. Glass Donut Visualization */
+        .donut-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            height: 380px;
+        }
+        .donut-svg {
+            width: 260px;
+            height: 260px;
+            transform: rotate(-90deg);
+        }
+        .donut-ring {
+            fill: none;
+            stroke-width: 32;
+            transition: stroke-dasharray 0.8s var(--transition-smooth), stroke 0.3s;
+            cursor: pointer;
+        }
+        .donut-ring:hover {
+            stroke-width: 38;
+            filter: drop-shadow(0 0 15px rgba(0,229,255,0.5));
+        }
+        .donut-center-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-130px, -50%); /* Adjusted based on flex layout */
+            text-align: center;
+            pointer-events: none;
+        }
+        .donut-center-val {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .donut-center-lbl {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .donut-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .donut-legend-item:hover {
+            background: var(--surface-elevated);
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        /* 4. Animated Scatter Plot */
+        .scatter-canvas-box {
+            height: 380px;
+            position: relative;
+            border-radius: var(--radius-md);
+            background: radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.4) 100%);
+            overflow: hidden;
+        }
+        .scatter-node {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--accent-cyan);
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.8s var(--transition-spring), transform 0.2s;
+        }
+        .scatter-node:hover {
+            transform: translate(-50%, -50%) scale(2);
+            background: #fff;
+            z-index: 10;
+            box-shadow: 0 0 30px #fff;
+        }
+        .scatter-tooltip {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* 5. 3D-Inspired Radial Visualization */
+        .radial-box {
+            height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .radial-svg {
+            width: 320px;
+            height: 320px;
+        }
+        .radial-polygon {
+            fill: rgba(88, 86, 214, 0.25);
+            stroke: var(--accent-purple);
+            stroke-width: 2;
+            transition: all 0.8s var(--transition-smooth);
+            filter: drop-shadow(0 0 10px rgba(88,86,214,0.5));
+        }
+        .radial-grid-circle {
+            fill: none;
+            stroke: var(--glass-border);
+            stroke-dasharray: 4 4;
+        }
+
+        /* 6. Interactive Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            height: 380px;
+            align-content: center;
+        }
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: transform 0.3s var(--transition-spring), background 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.6);
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.15);
+            z-index: 5;
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* 7. Geographic Visualization */
+        .geo-box {
+            height: 380px;
+            position: relative;
+            background: radial-gradient(circle, rgba(0,229,255,0.03) 0%, transparent 70%);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .geo-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .geo-node {
+            fill: var(--accent);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .geo-node:hover {
+            transform: scale(1.5);
+        }
+        .geo-path {
+            fill: none;
+            stroke: rgba(255, 59, 48, 0.4);
+            stroke-width: 2;
+            stroke-dasharray: 6 6;
+            animation: dash-flow 20s linear infinite;
+        }
+        @keyframes dash-flow {
+            to { stroke-dashoffset: -1000;
+}
+        }
+
+        /* Focus Mode Fullscreen Modal */
+        .focus-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(7, 8, 11, 0.92);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s var(--transition-smooth);
+        }
+        .focus-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .focus-modal-content {
+            width: 100%;
+            max-width: 1300px;
+            height: 85vh;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border-hover);
+            border-radius: var(--radius-lg);
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.4s var(--transition-spring);
+        }
+        .focus-modal-overlay.active .focus-modal-content {
+            transform: scale(1);
+        }
+        .focus-close-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .focus-close-btn:hover {
+            background: var(--accent);
+            transform: rotate(90deg);
+        }
+        .focus-body-area {
+            flex: 1;
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Footer */
+        .lab-footer {
+            margin-top: 150px;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .footer-brand {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1200px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .metric-cards-grid {
+                transform: translateY(0);
+            }
+            .canvas-layout-1, .canvas-layout-2, .canvas-layout-symmetric {
+                grid-template-columns: 1fr;
+            }
+            .photo-card {
+                height: 340px;
+            }
+        }
+        @media (max-width: 768px) {
+            #app-container {
+                padding: 0 20px 140px 20px;
+            }
+            .floating-dock {
+                bottom: 20px;
+                padding: 8px 12px;
+                gap: 6px;
+            }
+            .dock-item {
+                display: none;
+            }
+            .metric-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            .donut-wrapper {
+                flex-direction: column;
+            }
+            .donut-center-info {
+                transform: translate(-50%, -50%);
+            }
         }
     </style>
 </head>
-<body class="bg-[#0F172A] text-[#F8FAFC] antialiased selection:bg-cyan-500 selection:text-slate-950">
+<body>
+    <!-- Ambient Glows & Cursor Light -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+    <div id="cursor-light"></div>
 
-    <!-- Top Navigation -->
-    <header class="fixed top-0 left-0 right-0 z-50 glass-nav transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <!-- Brand Logo -->
-            <a href="#" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-bolt text-white text-lg"></i>
+    <!-- Floating Navigation Dock -->
+    <nav class="floating-dock">
+        <a href="#hero" class="dock-item active">Overview</a>
+        <a href="#line-section" class="dock-item">Line</a>
+        <a href="#bar-section" class="dock-item">Clay</a>
+        <a href="#donut-section" class="dock-item">Donut</a>
+        <a href="#scatter-section" class="dock-item">Scatter</a>
+        <a href="#radial-section" class="dock-item">Radial</a>
+        <a href="#heatmap-section" class="dock-item">Heatmap</a>
+        <a href="#geo-section" class="dock-item">Geo</a>
+        <div class="dock-divider"></div>
+        <button class="dock-random-btn" id="global-random-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.65-5.65"/></svg>
+            Random Dataset
+        </button>
+    </nav>
+
+    <!-- App Root Container -->
+    <div id="app-container">
+        
+        <!-- Hero Section -->
+        <header class="hero-section" id="hero">
+            <div class="hero-top-tag">
+                <div class="live-dot"></div>
+                <span>Experimental Data Museum &bull; Live Exhibition</span>
+            </div>
+
+            <div class="hero-title-wrapper">
+                <h1 class="giant-title">Visual <span>Lab</span></h1>
+            </div>
+
+            <div class="hero-grid">
+                <p class="hero-desc">
+                    An immersive playground for experimental data visualization. Blending Awwwards aesthetics, Apple presentation precision, and interactive tactile surfaces. <strong>Never look at analytics the same way again.</strong>
+                </p>
+                <div class="metric-cards-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Flow Velocity</div>
+                        <div class="metric-value-row">
+                            <div class="metric-value" id="metric-1">94.8</div>
+                            <div class="metric-trend positive">+12.4%</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Neural Density</div>
+                        <div class="metric-value-row">
+                            <div class="metric-value" id="metric-2">1,480</div>
+                            <div class="metric-trend positive">+8.1%</div>
+                        </div>
+                    </div>
                 </div>
-                <span class="font-orbitron font-extrabold text-xl tracking-wider text-white">
-                    APEX<span class="text-cyan-400">MOTORS</span>
-                </span>
-            </a>
-
-            <!-- Desktop Nav Links -->
-            <nav class="hidden md:flex items-center gap-8">
-                <a href="#hero" class="text-sm font-medium text-slate-300 hover:text-cyan-400 transition-colors">Overview</a>
-                <a href="#showroom" class="text-sm font-medium text-slate-300 hover:text-cyan-400 transition-colors">Showroom</a>
-                <a href="#features" class="text-sm font-medium text-slate-300 hover:text-cyan-400 transition-colors">Innovation</a>
-                <a href="#my-bookings" class="text-sm font-medium text-slate-300 hover:text-cyan-400 transition-colors flex items-center gap-1.5">
-                    <i class="fa-regular fa-calendar-check text-cyan-400"></i> My Bookings <span id="booking-badge" class="hidden bg-cyan-500 text-slate-950 text-xs font-bold px-1.5 py-0.2 rounded-full">0</span>
-                </a>
-            </nav>
-
-            <!-- CTA Action -->
-            <div class="hidden md:flex items-center gap-4">
-                <button onclick="openBookingModal()" class="relative group overflow-hidden rounded-xl p-[1px] font-semibold">
-                    <span class="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-400 group-hover:opacity-90 transition-opacity"></span>
-                    <span class="relative px-5 py-2.5 rounded-[11px] bg-slate-900 flex items-center gap-2 text-white text-sm transition-colors group-hover:bg-opacity-0">
-                        <i class="fa-solid fa-key text-cyan-400 group-hover:text-white"></i> Book Test Drive
-                    </span>
-                </button>
             </div>
+        </header>
 
-            <!-- Mobile Menu Toggle -->
-            <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2 text-xl">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-        </div>
+        <!-- Gallery Container -->
+        <main class="gallery-container">
 
-        <!-- Mobile Navigation Menu -->
-        <div id="mobile-menu" class="hidden md:hidden glass-nav border-t border-slate-800 px-6 py-6 space-y-4">
-            <a href="#hero" class="block text-base font-medium text-slate-300 hover:text-cyan-400 mobile-link">Overview</a>
-            <a href="#showroom" class="block text-base font-medium text-slate-300 hover:text-cyan-400 mobile-link">Showroom</a>
-            <a href="#features" class="block text-base font-medium text-slate-300 hover:text-cyan-400 mobile-link">Innovation</a>
-            <a href="#my-bookings" class="block text-base font-medium text-slate-300 hover:text-cyan-400 mobile-link flex items-center justify-between">
-                <span>My Bookings</span>
-                <span id="mobile-booking-badge" class="hidden bg-cyan-500 text-slate-950 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
-            </a>
-            <div class="pt-2">
-                <button onclick="openBookingModal()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-400 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
-                    <i class="fa-solid fa-key"></i> Book Test Drive
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section id="hero" class="relative min-h-screen flex items-center justify-center pt-28 pb-16 overflow-hidden hero-glow">
-        <!-- Background Gradients & Effects -->
-        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 blur-[140px] rounded-full pointer-events-none animate-pulse-glow"></div>
-        <div class="absolute bottom-10 right-10 w-[400px] h-[400px] bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                
-                <!-- Hero Content -->
-                <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-cyan-400 text-xs font-semibold tracking-wide uppercase">
-                        <span class="flex h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span>
-                        World Premiere 2025 Fleet
+            <!-- 1. Massive Floating Line Chart -->
+            <section class="lab-section" id="line-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 01 &bull; Chrono Stream</span>
+                        <h2>Massive Floating Line Chart</h2>
+                        <p class="section-desc">Fluid bezier curves sweeping across spatial coordinates with dynamic gradient fills and point hovering inspection.</p>
                     </div>
-
-                    <h1 class="font-orbitron text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
-                        THE FUTURE OF <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-300">AUTOMOTIVE POWER</span>
-                    </h1>
-
-                    <p class="text-slate-300 text-lg sm:text-xl max-w-2xl mx-auto lg:mx-0 font-light">
-                        Experience uncompromised aerodynamics, hyper-acceleration electric powertrains, and handcrafted luxury. Configure your dream machine and schedule your exclusive test drive today.
-                    </p>
-
-                    <!-- Key Performance Badges -->
-                    <div class="grid grid-cols-3 gap-4 pt-2 max-w-lg mx-auto lg:mx-0">
-                        <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
-                            <div class="font-orbitron font-bold text-2xl text-cyan-400">1,020</div>
-                            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Horsepower</div>
-                        </div>
-                        <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
-                            <div class="font-orbitron font-bold text-2xl text-cyan-400">1.9s</div>
-                            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">0-60 MPH</div>
-                        </div>
-                        <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
-                            <div class="font-orbitron font-bold text-2xl text-cyan-400">520 mi</div>
-                            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Max Range</div>
-                        </div>
-                    </div>
-
-                    <!-- Hero CTAs -->
-                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-                        <a href="#showroom" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center justify-center gap-3 shadow-lg shadow-blue-600/30 transition-all transform hover:-translate-y-0.5">
-                            <span>Explore Showroom</span>
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </a>
-                        <button onclick="openBookingModal()" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-card hover:bg-slate-800 text-white font-semibold flex items-center justify-center gap-3 border border-slate-700 transition-all">
-                            <i class="fa-regular fa-calendar-days text-cyan-400"></i>
-                            <span>Book Test Drive</span>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('line')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
                         </button>
                     </div>
                 </div>
 
-                <!-- Hero Featured Car Visual -->
-                <div class="lg:col-span-5 relative">
-                    <div class="relative mx-auto max-w-md lg:max-w-none">
-                        <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-400 opacity-30 blur-xl"></div>
-                        <div class="relative rounded-3xl overflow-hidden border border-slate-700/80 shadow-2xl bg-slate-900">
-                            <img id="hero-car-img" src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80" alt="Apex Hyperion GT" class="w-full h-[420px] object-cover object-center transform hover:scale-105 transition-transform duration-700">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
-                            <div class="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                                <div>
-                                    <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Flagship Edition</span>
-                                    <h3 class="font-orbitron text-2xl font-bold text-white">Apex Hyperion GT</h3>
-                                </div>
-                                <button onclick="openCarDetails('car-1')" class="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all">
-                                    Specs <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
-                                </button>
+                <div class="canvas-layout-1">
+                    <div class="vis-card">
+                        <svg class="line-chart-svg" viewBox="0 0 800 350" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="var(--accent)" />
+                                    <stop offset="50%" stop-color="var(--accent-cyan)" />
+                                    <stop offset="100%" stop-color="var(--accent-purple)" />
+                                </linearGradient>
+                                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="rgba(255,59,48,0.3)" />
+                                    <stop offset="100%" stop-color="rgba(255,59,48,0)" />
+                                </linearGradient>
+                            </defs>
+                            <path class="chart-area" id="line-area-path" d="M 0,350 L 0,250 Q 200,50 400,180 T 800,100 L 800,350 Z"></path>
+                            <path class="chart-path" id="line-chart-path" d="M 0,250 Q 200,50 400,180 T 800,100"></path>
+                            <g id="line-points-group"></g>
+                        </svg>
+                    </div>
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop" alt="Abstract Light">
+                        <div class="photo-caption">
+                            <span>Spectral Refraction</span>
+                            <span>Series A-09</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Organic Clay Bar Chart -->
+            <section class="lab-section" id="bar-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 02 &bull; Tactile Mass</span>
+                        <h2>Organic Clay Bar Chart</h2>
+                        <p class="section-desc">Tactile 3D-styled clay pillars responding to spatial hover physics and dynamic volume variation.</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('bar')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
+                        </button>
+                    </div>
+                </div>
+
+                <div class="canvas-layout-2">
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" alt="Clay Texture">
+                        <div class="photo-caption">
+                            <span>Clay & Monolith</span>
+                            <span>Series B-14</span>
+                        </div>
+                    </div>
+                    <div class="vis-card">
+                        <div class="clay-container" id="clay-bars-container">
+                            <!-- Generated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Glass Donut Visualization -->
+            <section class="lab-section" id="donut-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 03 &bull; Translucent Ring</span>
+                        <h2>Glass Donut Visualization</h2>
+                        <p class="section-desc">Multi-layered glass surfaces dividing proportional vectors into illuminated segments.</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('donut')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
+                        </button>
+                    </div>
+                </div>
+
+                <div class="canvas-layout-symmetric">
+                    <div class="vis-card">
+                        <div class="donut-wrapper" style="position: relative;">
+                            <svg class="donut-svg" viewBox="0 0 200 200">
+                                <circle class="donut-ring" cx="100" cy="100" r="75" stroke="var(--accent)" stroke-dasharray="140 330" stroke-dashoffset="0"></circle>
+                                <circle class="donut-ring" cx="100" cy="100" r="75" stroke="var(--accent-cyan)" stroke-dasharray="110 360" stroke-dashoffset="-140"></circle>
+                                <circle class="donut-ring" cx="100" cy="100" r="75" stroke="var(--accent-purple)" stroke-dasharray="90 380" stroke-dashoffset="-250"></circle>
+                                <circle class="donut-ring" cx="100" cy="100" r="75" stroke="var(--accent-success)" stroke-dasharray="67 400" stroke-dashoffset="-340"></circle>
+                            </svg>
+                            <div class="donut-center-info">
+                                <div class="donut-center-val" id="donut-center-val">41.8%</div>
+                                <div class="donut-center-lbl">Primary Index</div>
+                            </div>
+                            <div class="donut-legend" id="donut-legend">
+                                <!-- Generated via JS -->
                             </div>
                         </div>
                     </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Showroom Section -->
-    <section id="showroom" class="py-24 relative bg-slate-950/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <!-- Section Header -->
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-cyan-400 text-sm font-bold uppercase tracking-widest mb-3">Interactive Showroom</h2>
-                <p class="font-orbitron text-3xl sm:text-5xl font-extrabold text-white tracking-tight">CHOOSE YOUR APEX MACHINE</p>
-                <p class="text-slate-400 mt-4 text-base">Explore our cutting-edge lineup engineered for unprecedented performance, luxury, and zero-emission supremacy.</p>
-            </div>
-
-            <!-- Category Filter Tabs -->
-            <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
-                <button onclick="filterCars('all')" class="filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20" data-filter="all">
-                    All Models
-                </button>
-                <button onclick="filterCars('electric')" class="filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800" data-filter="electric">
-                    <i class="fa-solid fa-bolt mr-1 text-cyan-400"></i> Electric
-                </button>
-                <button onclick="filterCars('suv')" class="filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800" data-filter="suv">
-                    <i class="fa-solid fa-truck-monster mr-1 text-cyan-400"></i> Luxury SUV
-                </button>
-                <button onclick="filterCars('sedan')" class="filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800" data-filter="sedan">
-                    <i class="fa-solid fa-car mr-1 text-cyan-400"></i> Sedan
-                </button>
-                <button onclick="filterCars('sports')" class="filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800" data-filter="sports">
-                    <i class="fa-solid fa-flag-checkered mr-1 text-cyan-400"></i> Hypercar
-                </button>
-            </div>
-
-            <!-- Car Cards Grid -->
-            <div id="car-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Dynamically populated via JavaScript -->
-            </div>
-
-        </div>
-    </section>
-
-    <!-- Innovation Highlights Section -->
-    <section id="features" class="py-24 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-cyan-400 text-sm font-bold uppercase tracking-widest mb-3">Next-Gen Engineering</h2>
-                <p class="font-orbitron text-3xl sm:text-4xl font-extrabold text-white tracking-tight">BUILT WITHOUT COMPROMISE</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass-card p-8 rounded-3xl border border-slate-800 hover:border-cyan-500/50 transition-all">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-cyan-400 text-2xl mb-6">
-                        <i class="fa-solid fa-battery-full"></i>
-                    </div>
-                    <h3 class="font-orbitron font-bold text-xl text-white mb-3">Quantum Solid-State Battery</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Next-gen energy density delivering over 500 miles of range with ultra-fast 350kW hyper-charging capability from 10% to 80% in just 12 minutes.
-                    </p>
-                </div>
-
-                <div class="glass-card p-8 rounded-3xl border border-slate-800 hover:border-cyan-500/50 transition-all">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-cyan-400 text-2xl mb-6">
-                        <i class="fa-solid fa-wind"></i>
-                    </div>
-                    <h3 class="font-orbitron font-bold text-xl text-white mb-3">Active Aero Dynamics 3.0</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Real-time intelligent downforce optimization adjusting wing geometry and front splitter flaps dynamically for cornering stability and minimum drag.
-                    </p>
-                </div>
-
-                <div class="glass-card p-8 rounded-3xl border border-slate-800 hover:border-cyan-500/50 transition-all">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-cyan-400 text-2xl mb-6">
-                        <i class="fa-solid fa-microchip"></i>
-                    </div>
-                    <h3 class="font-orbitron font-bold text-xl text-white mb-3">Apex Neural Cockpit</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Immersive augmented reality HUD, biometric driver profiling, holographic climate control, and 28-speaker immersive studio sound system.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- My Bookings Section / Quick Status -->
-    <section id="my-bookings" class="py-16 bg-slate-900/60 border-t border-b border-slate-800">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-                <div>
-                    <h2 class="font-orbitron text-2xl font-bold text-white flex items-center gap-3">
-                        <i class="fa-solid fa-calendar-check text-cyan-400"></i> My Test Drive Appointments
-                    </h2>
-                    <p class="text-slate-400 text-sm mt-1">Manage or review your scheduled showroom appointments.</p>
-                </div>
-                <button onclick="openBookingModal()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-blue-600/20">
-                    <i class="fa-solid fa-plus"></i> New Booking
-                </button>
-            </div>
-
-            <div id="bookings-container" class="space-y-4">
-                <!-- Populated dynamically via JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-slate-950 py-16 border-t border-slate-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-                <div class="space-y-4 md:col-span-1">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white">
-                            <i class="fa-solid fa-bolt text-sm"></i>
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop" alt="Glass Architecture">
+                        <div class="photo-caption">
+                            <span>Prism Glass</span>
+                            <span>Series C-02</span>
                         </div>
-                        <span class="font-orbitron font-extrabold text-lg text-white">APEX<span class="text-cyan-400">MOTORS</span></span>
-                    </div>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Redefining high-performance luxury automotive engineering for the discerning driver.
-                    </p>
-                </div>
-
-                <div>
-                    <h4 class="font-orbitron font-bold text-white text-sm uppercase tracking-wider mb-4">Showroom</h4>
-                    <ul class="space-y-2.5 text-sm text-slate-400">
-                        <li><a href="#showroom" class="hover:text-cyan-400 transition-colors">Hyperion GT</a></li>
-                        <li><a href="#showroom" class="hover:text-cyan-400 transition-colors">Vortex R SUV</a></li>
-                        <li><a href="#showroom" class="hover:text-cyan-400 transition-colors">Spectre Sedan</a></li>
-                        <li><a href="#showroom" class="hover:text-cyan-400 transition-colors">Titan X Performance</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-orbitron font-bold text-white text-sm uppercase tracking-wider mb-4">Experience</h4>
-                    <ul class="space-y-2.5 text-sm text-slate-400">
-                        <li><a href="#features" class="hover:text-cyan-400 transition-colors">Quantum Tech</a></li>
-                        <li><a href="#" onclick="openBookingModal(); return false;" class="hover:text-cyan-400 transition-colors">Book Test Drive</a></li>
-                        <li><a href="#my-bookings" class="hover:text-cyan-400 transition-colors">Manage Appointments</a></li>
-                        <li><a href="#" onclick="alert('Apex VIP Concierge: +1 (800) 555-APEX'); return false;" class="hover:text-cyan-400 transition-colors">VIP Concierge</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-orbitron font-bold text-white text-sm uppercase tracking-wider mb-4">Global Showrooms</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed mb-4">
-                        Beverly Hills • Monaco • Tokyo • London • Dubai
-                    </p>
-                    <div class="flex items-center gap-3">
-                        <a href="#" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="#" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-all"><i class="fa-brands fa-youtube"></i></a>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="border-t border-slate-900 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-                <p>&copy; 2025 Apex Motors Inc. All rights reserved.</p>
-                <div class="flex gap-6 mt-4 sm:mt-0">
-                    <a href="#" class="hover:text-slate-400">Privacy Policy</a>
-                    <a href="#" class="hover:text-slate-400">Terms of Service</a>
-                    <a href="#" class="hover:text-slate-400">Cookie Settings</a>
+            <!-- 4. Animated Scatter Plot -->
+            <section class="lab-section" id="scatter-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 04 &bull; Brownian Drift</span>
+                        <h2>Animated Scatter Plot</h2>
+                        <p class="section-desc">Multi-variable correlation nodes floating in gravitational equilibrium and reacting to cursor illumination.</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('scatter')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </footer>
 
-    <!-- ================= MODALS ================= -->
+                <div class="canvas-layout-1">
+                    <div class="vis-card">
+                        <div class="scatter-canvas-box" id="scatter-canvas">
+                            <!-- Generated via JS -->
+                            <div class="scatter-tooltip" id="scatter-tooltip">Node X: 45.2, Y: 82.1</div>
+                        </div>
+                    </div>
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop" alt="Ocean Depth">
+                        <div class="photo-caption">
+                            <span>Sub-surface Field</span>
+                            <span>Series D-08</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <!-- Car Detail Modal -->
-    <div id="car-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
-        <div class="glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <button onclick="closeCarDetails()" class="absolute top-5 right-5 z-10 w-10 h-10 rounded-full bg-slate-900/80 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
+            <!-- 5. 3D-Inspired Radial Visualization -->
+            <section class="lab-section" id="radial-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 05 &bull; Radar Spiral</span>
+                        <h2>3D-Inspired Radial Visualization</h2>
+                        <p class="section-desc">Concentric radar matrix simulating multi-dimensional depth layers and rotation physics.</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('radial')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
+                        </button>
+                    </div>
+                </div>
 
-            <div id="car-detail-content" class="p-6 sm:p-10">
-                <!-- Dynamically populated -->
-            </div>
-        </div>
+                <div class="canvas-layout-2">
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000&auto=format&fit=crop" alt="Circuit Abstract">
+                        <div class="photo-caption">
+                            <span>Core Circuitry</span>
+                            <span>Series E-19</span>
+                        </div>
+                    </div>
+                    <div class="vis-card">
+                        <div class="radial-box">
+                            <svg class="radial-svg" viewBox="0 0 300 300">
+                                <circle class="radial-grid-circle" cx="150" cy="150" r="120"></circle>
+                                <circle class="radial-grid-circle" cx="150" cy="150" r="80"></circle>
+                                <circle class="radial-grid-circle" cx="150" cy="150" r="40"></circle>
+                                <line x1="150" y1="0" x2="150" y2="300" stroke="var(--glass-border)" stroke-dasharray="4 4"></line>
+                                <line x1="0" y1="150" x2="300" y2="150" stroke="var(--glass-border)" stroke-dasharray="4 4"></line>
+                                <polygon class="radial-polygon" id="radial-polygon-shape" points="150,50 240,110 210,230 90,240 60,120"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Interactive Heatmap -->
+            <section class="lab-section" id="heatmap-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 06 &bull; Density Matrix</span>
+                        <h2>Interactive Heatmap</h2>
+                        <p class="section-desc">High-density metric cells shifting color saturation and scale upon cursor proximity.</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('heatmap')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
+                        </button>
+                    </div>
+                </div>
+
+                <div class="canvas-layout-symmetric">
+                    <div class="vis-card">
+                        <div class="heatmap-grid" id="heatmap-grid-container">
+                            <!-- Generated via JS -->
+                        </div>
+                    </div>
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?q=80&w=1000&auto=format&fit=crop" alt="Color Spectrum">
+                        <div class="photo-caption">
+                            <span>Chromatic Matrix</span>
+                            <span>Series F-04</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Geographic Visualization -->
+            <section class="lab-section" id="geo-section">
+                <div class="section-header">
+                    <div class="section-meta-group">
+                        <span class="section-number">Experiment 07 &bull; Global Hubs</span>
+                        <h2>Geographic Visualization</h2>
+                        <p class="section-desc">Abstract vector node networks with animated bezier flow arcs tracing international transmissions.</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="openFocusMode('geo')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                            Focus Mode
+                        </button>
+                    </div>
+                </div>
+
+                <div class="canvas-layout-1">
+                    <div class="vis-card">
+                        <div class="geo-box">
+                            <svg class="geo-svg" viewBox="0 0 800 350">
+                                <path class="geo-path" d="M 100,250 Q 300,50 500,180 T 750,100"></path>
+                                <path class="geo-path" d="M 150,100 Q 400,300 650,200"></path>
+                                <circle class="geo-node" cx="100" cy="250" r="8"></circle>
+                                <circle class="geo-node" cx="500" cy="180" r="6"></circle>
+                                <circle class="geo-node" cx="750" cy="100" r="10"></circle>
+                                <circle class="geo-node" cx="150" cy="100" r="7"></circle>
+                                <circle class="geo-node" cx="650" cy="200" r="9"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="photo-card">
+                        <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop" alt="Global Night">
+                        <div class="photo-caption">
+                            <span>Planetary Grid</span>
+                            <span>Series G-11</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="lab-footer">
+            <div class="footer-brand">VISUAL LAB &bull; 2025</div>
+            <div>Curated by Experimental Data Research Group</div>
+            <div>Awwwards Exhibition Edition</div>
+        </footer>
+
     </div>
 
-    <!-- Test Drive Booking Modal -->
-    <div id="booking-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
-        <div class="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <button onclick="closeBookingModal()" class="absolute top-5 right-5 z-10 w-10 h-10 rounded-full bg-slate-900/80 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-
-            <div class="p-6 sm:p-10">
-                <div class="mb-8">
-                    <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Exclusive Experience</span>
-                    <h3 class="font-orbitron text-2xl sm:text-3xl font-bold text-white mt-1">Book Your Test Drive</h3>
-                    <p class="text-slate-400 text-sm mt-1">Select your preferred model, date, and provide your details to secure your appointment.</p>
-                </div>
-
-                <!-- Step Progress Indicator -->
-                <div class="flex items-center justify-between mb-8 relative">
-                    <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-800 z-0"></div>
-                    <div class="relative z-10 flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-full border border-blue-500/50 text-cyan-400 text-xs font-semibold">
-                        <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</span> Vehicle & Slot
-                    </div>
-                    <div id="step-indicator-2" class="relative z-10 flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-full border border-slate-800 text-slate-400 text-xs font-semibold">
-                        <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px]">2</span> Personal Details
-                    </div>
-                </div>
-
-                <!-- Booking Form -->
-                <form id="test-drive-form" onsubmit="handleBookingSubmit(event)">
-                    
-                    <!-- Step 1: Vehicle & Appointment -->
-                    <div id="booking-step-1" class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">Select Car Model *</label>
-                            <select id="booking-car-select" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                                <!-- Populated dynamically -->
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Preferred Date *</label>
-                                <input type="date" id="booking-date" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Preferred Time Slot *</label>
-                                <select id="booking-time" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                                    <option value="09:00 AM">09:00 AM - Showroom VIP Track</option>
-                                    <option value="11:00 AM">11:00 AM - Scenic Highway Route</option>
-                                    <option value="02:00 PM">02:00 PM - Afternoon Performance Test</option>
-                                    <option value="04:00 PM">04:00 PM - Sunset Drive</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">Showroom Location *</label>
-                            <select id="booking-location" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                                <option value="Beverly Hills Flagship Experience Center, CA">Beverly Hills Flagship Experience Center, CA</option>
-                                <option value="Monaco Harbourfront Showroom, Monaco">Monaco Harbourfront Showroom, Monaco</option>
-                                <option value="Ginza Innovation Hub, Tokyo, Japan">Ginza Innovation Hub, Tokyo, Japan</option>
-                                <option value="Mayfair Luxury Pavilion, London, UK">Mayfair Luxury Pavilion, London, UK</option>
-                            </select>
-                        </div>
-
-                        <div class="pt-4 flex justify-end">
-                            <button type="button" onclick="goToBookingStep(2)" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all">
-                                Next: Your Details <i class="fa-solid fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Personal Details -->
-                    <div id="booking-step-2" class="space-y-6 hidden">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Full Name *</label>
-                                <input type="text" id="user-name" required placeholder="Alex Mercer" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Email Address *</label>
-                                <input type="email" id="user-email" required placeholder="alex@example.com" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Phone Number *</label>
-                                <input type="tel" id="user-phone" required placeholder=\"+1 (555) 019-2834\" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Driver's License Number *</label>
-                                <input type="text" id="user-license" required placeholder="DL-98765432-X" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">Special Requests or Concierge Notes (Optional)</label>
-                            <textarea id="user-notes" rows="2" placeholder="Require child seat or specific driving instructor preference..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 transition-all"></textarea>
-                        </div>
-
-                        <div class="pt-4 flex items-center justify-between">
-                            <button type="button" onclick="goToBookingStep(1)" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center gap-2 transition-all">
-                                <i class="fa-solid fa-arrow-left"></i> Back
-                            </button>
-                            <button type="submit" class="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-400 hover:opacity-90 text-white font-semibold flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all">
-                                <i class="fa-solid fa-check"></i> Confirm Booking
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Confirmation Modal -->
-    <div id="success-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
-        <div class="glass-card w-full max-w-md rounded-3xl border border-slate-700 shadow-2xl p-8 text-center animate-in zoom-in-95 duration-200">
-            <div class="w-16 h-16 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-400 text-3xl mx-auto mb-6 shadow-lg shadow-cyan-500/20">
-                <i class="fa-solid fa-check"></i>
-            </div>
-
-            <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Appointment Confirmed</span>
-            <h3 class="font-orbitron text-2xl font-bold text-white mt-1">You're All Set!</h3>
-            <p class="text-slate-400 text-sm mt-2 mb-6">
-                Your test drive appointment has been scheduled successfully. Our VIP concierge has sent a confirmation package to your email.
-            </p>
-
-            <div id="success-details" class="bg-slate-900/80 rounded-2xl p-4 text-left text-xs space-y-2 mb-6 border border-slate-800">
-                <!-- Populated dynamically -->
-            </div>
-
-            <div class="flex gap-3">
-                <button onclick="closeSuccessModal()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/20 transition-all">
-                    View My Bookings
-                </button>
+    <!-- Focus Mode Fullscreen Modal Overlay -->
+    <div class="focus-modal-overlay" id="focus-modal">
+        <div class="focus-modal-content">
+            <button class="focus-close-btn" onclick="closeFocusMode()">&times;</button>
+            <div id="focus-modal-title" style="font-family: var(--font-display); font-size: 28px; font-weight: 700;">Focus Exhibition View</div>
+            <div class="focus-body-area" id="focus-modal-body">
+                <!-- Dynamically injected chart copy for fullscreen -->
             </div>
         </div>
     </div>
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Car Data Store
-        const carsData = [
-            {
-                id: 'car-1',
-                name: 'Apex Hyperion GT',
-                category: 'electric',
-                tagline: 'Flagship Electric Hyper-Tourer',
-                price: '$285,000',
-                rating: '4.95',
-                specs: {
-                    horsepower: '1,020 hp',
-                    zeroToSixty: '1.9 sec',
-                    topSpeed: '215 mph',
-                    range: '520 miles',
-                    charging: '350 kW (12 min)'
-                },
-                description: 'The Hyperion GT represents the pinnacle of electric vehicle architecture. Combining carbon-titanium monocoque construction with quad-motor torque vectoring, it delivers blistering acceleration and sublime long-distance touring luxury.',
-                images: [
-                    'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
-                ]
-            },
-            {
-                id: 'car-2',
-                name: 'Vortex R SUV',
-                category: 'suv',
-                tagline: 'All-Terrain Luxury Performance SUV',
-                price: '$145,000',
-                rating: '4.88',
-                specs: {
-                    horsepower: '850 hp',
-                    zeroToSixty: '3.2 sec',
-                    topSpeed: '180 mph',
-                    range: '450 miles',
-                    charging: '300 kW (15 min)'
-                },
-                description: 'Engineered to conquer alpine passes and city galas alike. The Vortex R features adaptive air suspension, active roll stabilization, and a cavernous executive lounge interior.',
-                images: [
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=80'
-                ]
-            },
-            {
-                id: 'car-3',
-                name: 'Apex Spectre Sedan',
-                category: 'sedan',
-                tagline: 'Executive Electric Fastback',
-                price: '$120,000',
-                rating: '4.90',
-                specs: {
-                    horsepower: '760 hp',
-                    zeroToSixty: '3.4 sec',
-                    topSpeed: '175 mph',
-                    range: '480 miles',
-                    charging: '320 kW (14 min)'
-                },
-                description: 'Unmatched aerodynamic elegance meets business-class comfort. The Spectre delivers whisper-quiet cabin acoustics, biometric seating adjustment, and autonomous highway cruising.',
-                images: [
-                    'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80'
-                ]
-            },
-            {
-                id: 'car-4',
-                name: 'Apex Titan X Track Edition',
-                category: 'sports',
-                tagline: 'Track-Focused Carbon Hypercar',
-                price: '$450,000',
-                rating: '4.99',
-                specs: {
-                    horsepower: '1,350 hp',
-                    zeroToSixty: '1.7 sec',
-                    topSpeed: '250 mph',
-                    range: '380 miles',
-                    charging: '350 kW (12 min)'
-                },
-                description: 'Born on the Nürburgring. The Titan X features Le Mans-derived aerodynamics, pushrod suspension, and carbon-ceramic brakes capable of 2.2G deceleration.',
-                images: [
-                    'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80'
-                ]
-            },
-            {
-                id: 'car-5',
-                name: 'Vortex Alpha Crossover',
-                category: 'suv',
-                tagline: 'Urban Smart Performance Crossover',
-                price: '$89,000',
-                rating: '4.82',
-                specs: {
-                    horsepower: '550 hp',
-                    zeroToSixty: '4.1 sec',
-                    topSpeed: '155 mph',
-                    range: '410 miles',
-                    charging: '250 kW (18 min)'
-                },
-                description: 'Agile, connected, and relentlessly efficient. The Alpha Crossover is tailored for urban trailblazers seeking uncompromising daily practicality with sports car agility.',
-                images: [
-                    'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80'
-                ]
-            },
-            {
-                id: 'car-6',
-                name: 'Apex Nebula Roadster',
-                category: 'sports',
-                tagline: 'Open-Air Electric Speedster',
-                price: '$320,000',
-                rating: '4.94',
-                specs: {
-                    horsepower: '1,100 hp',
-                    zeroToSixty: '1.95 sec',
-                    topSpeed: '230 mph',
-                    range: '440 miles',
-                    charging: '350 kW (12 min)'
-                },
-                description: 'Feel the storm with the Nebula Roadster. A removable carbon hardtop exposes you to the roar of acoustic harmonizers and visceral instant torque.',
-                images: [
-                    'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80',
-                    'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80'
-                ]
-            }
-        ];
+        // Global State & Datasets
+        const state = {
+            activeDatasetId: 1,
+            lineData: [250, 180, 120, 220, 140, 90, 160, 100],
+            clayData: [65, 85, 45, 95, 75, 55, 80, 90],
+            donutData: [41, 28, 18, 13],
+            scatterData: Array.from({ length: 25 }, () => ({ x: Math.random() * 90 + 5, y: Math.random() * 80 + 10, size: Math.random() * 12 + 8 })),
+            radialData: [150, 220, 180, 240, 190],
+            heatmapData: Array.from({ length: 32 }, () => Math.floor(Math.random() * 99 + 1)),
+            activeFocusId: null
+        };
 
-        // Application State
-        let currentFilter = 'all';
-        let bookings = JSON.parse(localStorage.getItem('apex_bookings') || '[]');
-
-        // Initialize Application
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCarGrid(carsData);
-            populateBookingCarSelect();
-            renderUserBookings();
-            updateBookingBadges();
-
-            // Mobile Menu Toggle Event
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-
-            // Close mobile menu on link click
-            document.querySelectorAll('.mobile-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
-                });
-            });
-
-            // Set default date picker to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('booking-date').valueAsDate = tomorrow;
+        // Cursor Lighting & Parallax
+        const cursorLight = document.getElementById('cursor-light');
+        window.addEventListener('mousemove', (e) => {
+            cursorLight.style.left = `${e.clientX}px`;
+            cursorLight.style.top = `${e.clientY}px`;
         });
 
-        // Render Car Showroom Grid
-        function renderCarGrid(cars) {
-            const grid = document.getElementById('car-grid');
-            grid.innerHTML = '';
-
-            if (cars.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">No vehicle models found matching the selected filter.</div>`;
-                return;
-            }
-
-            cars.forEach(car => {
-                const card = document.createElement('div');
-                card.className = 'glass-card rounded-3xl overflow-hidden border border-slate-800 car-card-hover flex flex-col justify-between';
-                card.innerHTML = `
-                    <div>
-                        <div class="relative h-64 overflow-hidden group">
-                            <img src="${car.images[0]}" alt="${car.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
-                            <div class="absolute top-4 left-4">
-                                <span class="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-cyan-400 text-xs font-semibold uppercase tracking-wider border border-slate-700/80">
-                                    ${car.category}
-                                </span>
-                            </div>
-                            <div class="absolute top-4 right-4">
-                                <span class="px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-amber-400 text-xs font-bold flex items-center gap-1 border border-slate-700/80">
-                                    <i class="fa-solid fa-star"></i> ${car.rating}
-                                </span>
-                            </div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <span class="text-xs text-slate-300 font-medium">${car.tagline}</span>
-                                <h3 class="font-orbitron text-xl font-bold text-white">${car.name}</h3>
-                            </div>
-                        </div>
-
-                        <div class="p-6 space-y-4">
-                            <div class="grid grid-cols-3 gap-2 py-2 border-y border-slate-800/80 text-center">
-                                <div>
-                                    <div class="text-xs text-slate-400 uppercase">Power</div>
-                                    <div class="font-orbitron font-semibold text-sm text-cyan-400 mt-0.5">${car.specs.horsepower}</div>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-slate-400 uppercase">0-60</div>
-                                    <div class="font-orbitron font-semibold text-sm text-white mt-0.5">${car.specs.zeroToSixty}</div>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-slate-400 uppercase">Range</div>
-                                    <div class="font-orbitron font-semibold text-sm text-white mt-0.5">${car.specs.range}</div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between pt-1">
-                                <div>
-                                    <span class="text-xs text-slate-400 block">Starting at</span>
-                                    <span class="font-orbitron font-bold text-lg text-white">${car.price}</span>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="openCarDetails('${car.id}')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all border border-slate-700">
-                                        Specs
-                                    </button>
-                                    <button onclick="openBookingModalForCar('${car.id}')" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all flex items-center gap-1.5">
-                                        <i class="fa-solid fa-key text-[10px]"></i> Test Drive
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // Filter Cars by Category
-        function filterCars(category) {
-            currentFilter = category;
-            
-            // Update button styles
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.dataset.filter === category) {
-                    btn.className = 'filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20';
-                } else {
-                    btn.className = 'filter-btn px-6 py-2.5 rounded-xl font-semibold text-sm transition-all bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800';
+        // Number Counting Animation Utility
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (!obj) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const current = Math.floor(progress * (end - start) + start);
+                obj.innerHTML = current.toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
                 }
-            });
+            };
+            window.requestAnimationFrame(step);
+        }
 
-            if (category === 'all') {
-                renderCarGrid(carsData);
-            } else {
-                const filtered = carsData.filter(car => car.category === category);
-                renderCarGrid(filtered);
+        // Render Line Chart
+        function renderLineChart() {
+            const pathEl = document.getElementById('line-chart-path');
+            const areaEl = document.getElementById('line-area-path');
+            const pointsGroup = document.getElementById('line-points-group');
+            if (!pathEl) return;
+
+            const data = state.lineData;
+            const stepX = 800 / (data.length - 1);
+            let pathStr = `M 0,${data[0]}`;
+            let areaStr = `M 0,350 L 0,${data[0]}`;
+
+            for (let i = 1; i < data.length; i++) {
+                const prevX = (i - 1) * stepX;
+                const prevY = data[i - 1];
+                const currX = i * stepX;
+                const currY = data[i];
+                const cpX = (prevX + currX) / 2;
+                pathStr += ` Q ${cpX},${prevY} ${currX},${currY}`;
+                areaStr += ` L ${currX},${currY}`;
             }
-        }
+            areaStr += ` L 800,350 Z`;
 
-        // Open Car Detail Modal with Photo Gallery & Specs
-        function openCarDetails(carId) {
-            const car = carsData.find(c => c.id === carId);
-            if (!car) return;
+            pathEl.setAttribute('d', pathStr);
+            areaEl.setAttribute('d', areaStr);
 
-            const content = document.getElementById('car-detail-content');
-            content.innerHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <!-- Photo Gallery -->
-                    <div class="lg:col-span-7 space-y-4">
-                        <div class="relative rounded-2xl overflow-hidden border border-slate-700 bg-slate-900 h-[320px] sm:h-[400px]">
-                            <img id="active-gallery-img" src="${car.images[0]}" alt="${car.name}" class="w-full h-full object-cover">
-                            <div class="absolute top-4 left-4">
-                                <span class="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-cyan-400 text-xs font-semibold uppercase tracking-wider border border-slate-700">
-                                    ${car.category}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Thumbnails -->
-                        <div class="flex gap-3 overflow-x-auto pb-2">
-                            ${car.images.map((img, idx) => `
-                                <button onclick="switchGalleryImage('${img}', this)" class="thumbnail-btn flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden border-2 ${idx === 0 ? 'border-cyan-400' : 'border-slate-800'} transition-all">
-                                    <img src="${img}" class="w-full h-full object-cover">
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Specs & Info -->
-                    <div class="lg:col-span-5 space-y-6">
-                        <div>
-                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">${car.tagline}</span>
-                            <h2 class="font-orbitron text-2xl sm:text-3xl font-bold text-white mt-1">${car.name}</h2>
-                            <p class="text-slate-300 text-sm mt-3 leading-relaxed">${car.description}</p>
-                        </div>
-
-                        <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 space-y-3">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Key Specifications</div>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div class="flex justify-between py-1 border-b border-slate-800">
-                                    <span class="text-slate-400">Horsepower:</span>
-                                    <span class="font-orbitron font-semibold text-cyan-400">${car.specs.horsepower}</span>
-                                </div>
-                                <div class="flex justify-between py-1 border-b border-slate-800">
-                                    <span class="text-slate-400">0-60 MPH:</span>
-                                    <span class="font-orbitron font-semibold text-white">${car.specs.zeroToSixty}</span>
-                                </div>
-                                <div class="flex justify-between py-1 border-b border-slate-800">
-                                    <span class="text-slate-400">Top Speed:</span>
-                                    <span class="font-orbitron font-semibold text-white">${car.specs.topSpeed}</span>
-                                </div>
-                                <div class="flex justify-between py-1 border-b border-slate-800">
-                                    <span class="text-slate-400">Range:</span>
-                                    <span class="font-orbitron font-semibold text-white">${car.specs.range}</span>
-                                </div>
-                                <div class="flex justify-between py-1 col-span-2">
-                                    <span class="text-slate-400">Hyper-Charging:</span>
-                                    <span class="font-orbitron font-semibold text-white">${car.specs.charging}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-2">
-                            <div>
-                                <span class="text-xs text-slate-400 block">MSRP Starting Price</span>
-                                <span class="font-orbitron font-bold text-2xl text-white">${car.price}</span>
-                            </div>
-                            <button onclick="closeCarDetails(); openBookingModalForCar('${car.id}');" class="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/30 flex items-center gap-2 transition-all">
-                                <i class="fa-solid fa-key"></i> Book Test Drive
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('car-detail-modal').classList.remove('hidden');
-        }
-
-        function closeCarDetails() {
-            document.getElementById('car-detail-modal').classList.add('hidden');
-        }
-
-        function switchGalleryImage(url, btn) {
-            document.getElementById('active-gallery-img').src = url;
-            document.querySelectorAll('.thumbnail-btn').forEach(b => b.classList.remove('border-cyan-400'));
-            document.querySelectorAll('.thumbnail-btn').forEach(b => b.classList.add('border-slate-800'));
-            btn.classList.remove('border-slate-800');
-            btn.classList.add('border-cyan-400');
-        }
-
-        // Populate Booking Car Select Dropdown
-        function populateBookingCarSelect() {
-            const select = document.getElementById('booking-car-select');
-            select.innerHTML = '';
-            carsData.forEach(car => {
-                const option = document.createElement('option');
-                option.value = car.name;
-                option.textContent = `${car.name} (${car.price} - ${car.tagline})`;
-                select.appendChild(option);
+            // Render points
+            pointsGroup.innerHTML = '';
+            data.forEach((y, i) => {
+                const cx = i * stepX;
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', cx);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', '6');
+                circle.setAttribute('class', 'chart-point');
+                pointsGroup.appendChild(circle);
             });
         }
 
-        // Booking Modal Operations
-        function openBookingModal() {
-            document.getElementById('booking-modal').classList.remove('hidden');
-            goToBookingStep(1);
+        // Render Clay Bar Chart
+        function renderClayBars() {
+            const container = document.getElementById('clay-bars-container');
+            if (!container) return;
+            container.innerHTML = '';
+            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Ext'];
+
+            state.clayData.forEach((val, i) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'clay-bar-wrapper';
+
+                const valueSpan = document.createElement('div');
+                valueSpan.className = 'clay-bar-val';
+                valueSpan.innerText = val * 12;
+
+                const bar = document.createElement('div');
+                bar.className = 'clay-bar';
+                bar.style.height = `${val * 3}px`;
+
+                const label = document.createElement('div');
+                label.className = 'clay-bar-label';
+                label.innerText = labels[i];
+
+                wrapper.appendChild(valueSpan);
+                wrapper.appendChild(bar);
+                wrapper.appendChild(label);
+                container.appendChild(wrapper);
+            });
         }
 
-        function openBookingModalForCar(carId) {
-            const car = carsData.find(c => c.id === carId);
-            if (car) {
-                document.getElementById('booking-car-select').value = car.name;
-            }
-            openBookingModal();
+        // Render Donut Legend
+        function renderDonutLegend() {
+            const legend = document.getElementById('donut-legend');
+            if (!legend) return;
+            const items = [
+                { label: 'Neural Alpha', color: 'var(--accent)', val: state.donutData[0] + '%' },
+                { label: 'Quantum Beta', color: 'var(--accent-cyan)', val: state.donutData[1] + '%' },
+                { label: 'Synthetic Gamma', color: 'var(--accent-purple)', val: state.donutData[2] + '%' },
+                { label: 'Matrix Delta', color: 'var(--accent-success)', val: state.donutData[3] + '%' }
+            ];
+            legend.innerHTML = '';
+            items.forEach((item) => {
+                const el = document.createElement('div');
+                el.className = 'donut-legend-item';
+                el.innerHTML = `<div class="legend-color" style="background: ${item.color}"></div><span>${item.label} (${item.val})</span>`;
+                legend.appendChild(el);
+            });
+            document.getElementById('donut-center-val').innerText = state.donutData[0] + '%';
         }
 
-        function closeBookingModal() {
-            document.getElementById('booking-modal').classList.add('hidden');
+        // Render Scatter Plot Nodes
+        function renderScatterPlot() {
+            const box = document.getElementById('scatter-canvas');
+            if (!box) return;
+            // Clear existing nodes except tooltip
+            const tooltip = document.getElementById('scatter-tooltip');
+            box.innerHTML = '';
+            box.appendChild(tooltip);
+
+            state.scatterData.forEach((pt) => {
+                const node = document.createElement('div');
+                node.className = 'scatter-node';
+                node.style.left = `${pt.x}%`;
+                node.style.top = `${pt.y}%`;
+                node.style.width = `${pt.size}px`;
+                node.style.height = `${pt.size}px`;
+
+                node.addEventListener('mouseenter', () => {
+                    tooltip.style.opacity = '1';
+                    tooltip.innerText = `Vector X: ${pt.x.toFixed(1)} | Y: ${pt.y.toFixed(1)}`;
+                });
+                node.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = '0';
+                });
+
+                box.appendChild(node);
+            });
         }
 
-        function goToBookingStep(step) {
-            const step1 = document.getElementById('booking-step-1');
-            const step2 = document.getElementById('booking-step-2');
-            const indicator2 = document.getElementById('step-indicator-2');
-
-            if (step === 1) {
-                step1.classList.remove('hidden');
-                step2.classList.add('hidden');
-                indicator2.className = 'relative z-10 flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-full border border-slate-800 text-slate-400 text-xs font-semibold';
-                indicator2.children[0].className = 'w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px]';
-            } else if (step === 2) {
-                // Validate step 1 fields if needed
-                const date = document.getElementById('booking-date').value;
-                if (!date) {
-                    alert('Please select a preferred date.');
-                    return;
-                }
-                step1.classList.add('hidden');
-                step2.classList.remove('hidden');
-                indicator2.className = 'relative z-10 flex items-center gap-2 bg-slate-900 px-3 py-1 rounded-full border border-blue-500/50 text-cyan-400 text-xs font-semibold';
-                indicator2.children[0].className = 'w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]';
-            }
+        // Render Radial Visualization
+        function renderRadial() {
+            const poly = document.getElementById('radial-polygon-shape');
+            if (!poly) return;
+            const points = state.radialData.map((val, i) => {
+                const angle = (i * 72 * Math.PI) / 180;
+                const r = val;
+                const x = 150 + r * Math.cos(angle);
+                const y = 150 + r * Math.sin(angle);
+                return `${x},${y}`;
+            }).join(' ');
+            poly.setAttribute('points', points);
         }
 
-        // Handle Booking Submission
-        function handleBookingSubmit(e) {
-            e.preventDefault();
+        // Render Heatmap
+        function renderHeatmap() {
+            const container = document.getElementById('heatmap-grid-container');
+            if (!container) return;
+            container.innerHTML = '';
+            state.heatmapData.forEach((val) => {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                cell.innerText = val;
+                const alpha = val / 100;
+                cell.style.background = `rgba(0, 229, 255, ${alpha * 0.4})`;
+                cell.style.borderColor = `rgba(0, 229, 255, ${alpha})`;
+                container.appendChild(cell);
+            });
+        }
 
-            const newBooking = {
-                id: 'APEX-' + Math.floor(100000 + Math.random() * 900000),
-                car: document.getElementById('booking-car-select').value,
-                date: document.getElementById('booking-date').value,
-                time: document.getElementById('booking-time').value,
-                location: document.getElementById('booking-location').value,
-                name: document.getElementById('user-name').value,
-                email: document.getElementById('user-email').value,
-                phone: document.getElementById('user-phone').value,
-                license: document.getElementById('user-license').value,
-                notes: document.getElementById('user-notes').value,
-                createdAt: new Date().toLocaleDateString()
+        // Master Render Function
+        function renderAllCharts() {
+            renderLineChart();
+            renderClayBars();
+            renderDonutLegend();
+            renderScatterPlot();
+            renderRadial();
+            renderHeatmap();
+        }
+
+        // Random Dataset Generator Engine
+        document.getElementById('global-random-btn').addEventListener('click', () => {
+            // Randomize state arrays
+            state.lineData = Array.from({ length: 8 }, () => Math.floor(Math.random() * 250 + 50));
+            state.clayData = Array.from({ length: 8 }, () => Math.floor(Math.random() * 80 + 20));
+            const d1 = Math.floor(Math.random() * 50 + 20);
+            const d2 = Math.floor(Math.random() * (70 - d1));
+            const d3 = Math.floor(Math.random() * (90 - d1 - d2));
+            const d4 = 100 - d1 - d2 - d3;
+            state.donutData = [d1, d2, d3, d4];
+            state.scatterData = Array.from({ length: 25 }, () => ({ x: Math.random() * 90 + 5, y: Math.random() * 80 + 10, size: Math.random() * 12 + 8 }));
+            state.radialData = Array.from({ length: 5 }, () => Math.floor(Math.random() * 120 + 40));
+            state.heatmapData = Array.from({ length: 32 }, () => Math.floor(Math.random() * 99 + 1));
+
+            // Animate metric tickers
+            animateValue('metric-1', 50, Math.floor(Math.random() * 60 + 60), 800);
+            animateValue('metric-2', 1000, Math.floor(Math.random() * 1000 + 1000), 800);
+
+            // Re-render gallery
+            renderAllCharts();
+        });
+
+        // Focus Mode Fullscreen Handler
+        function openFocusMode(chartKey) {
+            state.activeFocusId = chartKey;
+            const modal = document.getElementById('focus-modal');
+            const title = document.getElementById('focus-modal-title');
+            const body = document.getElementById('focus-modal-body');
+
+            const titles = {
+                line: 'Massive Floating Line Chart — Fullscreen Focus',
+                bar: 'Organic Clay Bar Chart — Fullscreen Focus',
+                donut: 'Glass Donut Visualization — Fullscreen Focus',
+                scatter: 'Animated Scatter Plot — Fullscreen Focus',
+                radial: '3D-Inspired Radial Visualization — Fullscreen Focus',
+                heatmap: 'Interactive Heatmap Matrix — Fullscreen Focus',
+                geo: 'Geographic Global Hubs — Fullscreen Focus'
             };
 
-            bookings.unshift(newBooking);
-            localStorage.setItem('apex_bookings', JSON.stringify(bookings));
+            title.innerText = titles[chartKey] || 'Fullscreen Exhibition';
 
-            closeBookingModal();
-            renderUserBookings();
-            updateBookingBadges();
-            showSuccessModal(newBooking);
+            // Clone corresponding section card content into modal
+            const sectionEl = document.getElementById(`${chartKey}-section`) || document.getElementById('line-section');
+            const sourceCard = sectionEl.querySelector('.vis-card');
+            body.innerHTML = '';
+            body.appendChild(sourceCard.cloneNode(true));
 
-            // Reset form
-            document.getElementById('test-drive-form').reset();
+            modal.classList.add('active');
         }
 
-        // Success Modal
-        function showSuccessModal(booking) {
-            const details = document.getElementById('success-details');
-            details.innerHTML = `
-                <div class="flex justify-between"><span class="text-slate-400">Reference ID:</span><span class="font-orbitron font-bold text-cyan-400">${booking.id}</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Vehicle:</span><span class="font-semibold text-white">${booking.car}</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Date & Time:</span><span class="text-white">${booking.date} at ${booking.time}</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Location:</span><span class="text-white truncate max-w-[200px]">${booking.location}</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Guest:</span><span class="text-white">${booking.name}</span></div>
-            `;
-            document.getElementById('success-modal').classList.remove('hidden');
+        function closeFocusMode() {
+            const modal = document.getElementById('focus-modal');
+            modal.classList.remove('active');
+            // Re-render to restore original placement DOM elements if needed
+            setTimeout(renderAllCharts, 300);
         }
 
-        function closeSuccessModal() {
-            document.getElementById('success-modal').classList.add('hidden');
-            // Scroll to my bookings section
-            document.getElementById('my-bookings').scrollIntoView({ behavior: 'smooth' });
-        }
+        // Escape key closes modal
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeFocusMode();
+        });
 
-        // Render User Bookings List
-        function renderUserBookings() {
-            const container = document.getElementById('bookings-container');
-            container.innerHTML = '';
-
-            if (bookings.length === 0) {
-                container.innerHTML = `
-                    <div class="glass-card rounded-2xl p-8 text-center border border-slate-800 text-slate-400">
-                        <i class="fa-regular fa-calendar-xmark text-3xl mb-3 text-slate-500"></i>
-                        <p>No active test drive appointments scheduled yet.</p>
-                        <button onclick="openBookingModal()" class="mt-4 px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500 transition-all">
-                            Book Your First Test Drive
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            bookings.forEach(b => {
-                const card = document.createElement('div');
-                card.className = 'glass-card rounded-2xl p-6 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
-                card.innerHTML = `
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-3">
-                            <span class="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-orbitron font-bold text-xs border border-cyan-500/30">${b.id}</span>
-                            <span class="text-xs text-slate-400">Booked on ${b.createdAt}</span>
-                        </div>
-                        <h4 class="font-orbitron font-bold text-lg text-white mt-1">${b.car}</h4>
-                        <p class="text-sm text-slate-300 flex items-center gap-2">
-                            <i class="fa-regular fa-calendar text-cyan-400"></i> ${b.date} &bull; ${b.time}
-                        </p>
-                        <p class="text-xs text-slate-400 flex items-center gap-2">
-                            <i class="fa-solid fa-location-dot text-slate-500"></i> ${b.location}
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                        <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
-                            Confirmed VIP
-                        </span>
-                        <button onclick="cancelBooking('${b.id}')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition-all border border-slate-700" title="Cancel Appointment">
-                            <i class="fa-solid fa-trash-can text-sm"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Cancel Booking
-        function cancelBooking(id) {
-            if (confirm('Are you sure you want to cancel this test drive appointment?')) {
-                bookings = bookings.filter(b => b.id !== id);
-                localStorage.setItem('apex_bookings', JSON.stringify(bookings));
-                renderUserBookings();
-                updateBookingBadges();
-            }
-        }
-
-        // Update UI Booking Badges
-        function updateBookingBadges() {
-            const count = bookings.length;
-            const badge = document.getElementById('booking-badge');
-            const mobileBadge = document.getElementById('mobile-booking-badge');
-
-            if (count > 0) {
-                badge.textContent = count;
-                badge.classList.remove('hidden');
-                mobileBadge.textContent = count;
-                mobileBadge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-                mobileBadge.classList.add('hidden');
-            }
-        }
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAllCharts();
+        });
     </script>
 </body>
 </html>

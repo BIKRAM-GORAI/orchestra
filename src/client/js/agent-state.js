@@ -466,6 +466,13 @@ class AgentStateManager {
   }
 
   /**
+   * Helper to set agent status directly.
+   */
+  setAgentStatus(agentId, status, updates = {}, options = {}) {
+    return this.setAgentState(agentId, { status, ...updates }, options);
+  }
+
+  /**
    * Central method to update an agent's real activity state.
    */
   setAgentState(agentId, updates = {}, { log = true } = {}) {

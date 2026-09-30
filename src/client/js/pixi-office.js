@@ -13,7 +13,18 @@
  * - Smooth camera panning, zooming (0.8x - 1.8x), and click-to-focus on agents
  */
 
-import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js';
+import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=3';
+
+export const WORKFLOW_STATE = {
+  IDLE: 'IDLE',
+  GOING_TO_MEETING: 'GOING_TO_MEETING',
+  IN_MEETING: 'IN_MEETING',
+  RETURNING_TO_DESK: 'RETURNING_TO_DESK',
+  WORKING: 'WORKING',
+  TASK_COMPLETED: 'TASK_COMPLETED',
+  GOING_TO_REVIEW: 'GOING_TO_REVIEW',
+  IN_REVIEW: 'IN_REVIEW'
+};
 
 export const AGENT_ROSTER = {
   // 1. Executive Manager
@@ -611,20 +622,20 @@ export class PixiOffice {
       manager: {
         id: 'manager',
         name: "Manager's Office Door",
-        x: 220,
-        y: 125,
-        w: 6,
-        h: 36,
-        type: 'vertical',
+        x: 100,
+        y: 184,
+        w: 40,
+        h: 6,
+        type: 'horizontal',
         openProgress: 0,
         targetOpen: 0
       },
       meeting_south: {
         id: 'meeting_south',
         name: 'Conference Room South Door',
-        x: 375,
+        x: 370,
         y: 184,
-        w: 36,
+        w: 40,
         h: 6,
         type: 'horizontal',
         openProgress: 0,
@@ -633,9 +644,9 @@ export class PixiOffice {
       server: {
         id: 'server',
         name: 'Server Room Door',
-        x: 635,
+        x: 630,
         y: 184,
-        w: 36,
+        w: 40,
         h: 6,
         type: 'horizontal',
         openProgress: 0,
@@ -661,6 +672,7 @@ export class PixiOffice {
       this.agents[id] = {
         ...def,
         status: centralState ? centralState.status : AGENT_STATUS.IDLE,
+        workflowState: WORKFLOW_STATE.IDLE,
         currentTask: centralState ? centralState.currentTask : null,
         lastAction: centralState ? centralState.lastAction : null,
         x: def.home.x,
@@ -680,6 +692,14 @@ export class PixiOffice {
       this.syncAgentFromState(agentState);
     });
 
+    // Bind workflow orchestration methods to instance
+    this.sendAgentToDesk = this.sendAgentToDesk.bind(this);
+    this.holdOneOnOneReview = this.holdOneOnOneReview.bind(this);
+    this.callReviewMeeting = this.callReviewMeeting.bind(this);
+    this.callQuorumMeeting = this.callQuorumMeeting.bind(this);
+    this.returnAgentsToDesks = this.returnAgentsToDesks.bind(this);
+    this.reportToManager = this.reportToManager.bind(this);
+
     this.initCanvas();
     this.bindEvents();
     this.start();
@@ -688,6 +708,7 @@ export class PixiOffice {
   syncAgentFromState(agentState) {
     const agent = this.agents[agentState.id];
     if (!agent) return;
+    if (agent.inChoreography) return; // Choreography has priority over passive background sync
 
     agent.status = agentState.status;
     agent.currentTask = agentState.currentTask;
@@ -750,38 +771,38 @@ export class PixiOffice {
     nav.setRect(0, this.worldHeight - 20, this.worldWidth, 20, 1);
 
     // 2. Interior Walls
-    // Manager Suite (x: 20..220, y: 20..190)
-    nav.setRect(220, 20, 12, 105, 1);
-    nav.setRect(220, 161, 12, 30, 1);
-    nav.setRect(20, 184, 212, 12, 1);
+    // Manager Suite (x: 20..220, y: 20..184)
+    nav.setRect(220, 20, 12, 164, 1);
+    nav.setRect(20, 184, 80, 12, 1);
+    nav.setRect(140, 184, 80, 12, 1);
 
-    // Meeting Room (x: 236..540, y: 20..190)
-    nav.setRect(232, 20, 10, 170, 1);
-    nav.setRect(232, 184, 143, 12, 1);
-    nav.setRect(411, 184, 135, 12, 1);
-    nav.setRect(540, 20, 12, 176, 1);
+    // Meeting Room (x: 232..540, y: 20..184)
+    nav.setRect(232, 20, 10, 164, 1);
+    nav.setRect(540, 20, 12, 164, 1);
+    nav.setRect(232, 184, 138, 12, 1);
+    nav.setRect(410, 184, 130, 12, 1);
 
-    // Server Room (x: 556..740, y: 20..190)
-    nav.setRect(540, 184, 95, 12, 1);
-    nav.setRect(671, 184, 70, 12, 1);
+    // Server Room (x: 552..740, y: 20..184)
+    nav.setRect(540, 184, 90, 12, 1);
+    nav.setRect(670, 184, 70, 12, 1);
 
     // Coffee Lounge Left Partition (x: 536, y: 196..520)
     nav.setRect(536, 196, 12, 149, 1);
     nav.setRect(536, 381, 12, 140, 1);
 
     // 3. Mark Doorways as Transition Tiles (3: WALKABLE!)
-    nav.setRect(220, 125, 16, 36, 3); // Manager Door
-    nav.setRect(375, 184, 36, 16, 3); // Meeting South Door
-    nav.setRect(635, 184, 36, 16, 3); // Server Door
-    nav.setRect(536, 345, 16, 36, 3); // Coffee Lounge Door
+    nav.setRect(100, 184, 40, 16, 3); // Manager South Doorway (Walkable!)
+    nav.setRect(370, 184, 40, 16, 3); // Meeting South Doorway (Walkable!)
+    nav.setRect(630, 184, 40, 16, 3); // Server Doorway
+    nav.setRect(536, 345, 16, 36, 3); // Coffee Lounge Doorway
 
     // 4. Mark Furniture / Desks as BLOCKED (2)
-    // Manager Desk & Credenza
-    nav.setRect(75, 55, 90, 40, 2);
+    // Manager Desk (Atlas sits at 110, 120 facing up to desk)
+    nav.setRect(80, 55, 60, 32, 2);
     nav.setRect(25, 30, 40, 70, 2); // Bookshelf
 
-    // Meeting Table & Chairs
-    nav.setRect(310, 65, 150, 60, 2);
+    // Meeting Table
+    nav.setRect(320, 65, 140, 60, 2);
 
     // Server Racks
     nav.setRect(570, 25, 150, 45, 2);
@@ -958,7 +979,219 @@ export class PixiOffice {
     });
   }
 
-  // Office Presets
+  // ============================================================================
+  // Choreographed Workflow: Quorum Meetings, Gated Desk Work, Review Protocols
+  // ============================================================================
+  navigateToAsync(agent, targetX, targetY) {
+    return new Promise((resolve) => {
+      if (Math.hypot(agent.x - targetX, agent.y - targetY) < 6) {
+        agent.x = targetX;
+        agent.y = targetY;
+        agent.waypoints = [];
+        agent.currentSpeed = 0;
+        resolve();
+        return;
+      }
+      this.navigateTo(agent, targetX, targetY, {
+        onComplete: () => {
+          agent.x = targetX;
+          agent.y = targetY;
+          agent.currentSpeed = 0;
+          resolve();
+        }
+      });
+    });
+  }
+
+  callQuorumMeeting(agentIds, topic = 'Sprint Directives') {
+    // Specific, designated chairs around the Conference Table
+    const meetingSeats = {
+      atlas: { x: 390, y: 45, facing: 'down' },  // Head of Table (North)
+      pixel: { x: 350, y: 45, facing: 'down' },  // North Left
+      nova: { x: 430, y: 45, facing: 'down' },   // North Right
+      scout: { x: 350, y: 140, facing: 'up' },   // South Left
+      byte: { x: 390, y: 140, facing: 'up' },    // South Center
+      query: { x: 430, y: 140, facing: 'up' },   // South Right
+      chroma: { x: 310, y: 55, facing: 'down' },
+      blueprint: { x: 450, y: 55, facing: 'down' },
+      beacon: { x: 310, y: 135, facing: 'up' },
+      cipher: { x: 450, y: 135, facing: 'up' }
+    };
+
+    const fallbackSeats = [
+      { x: 300, y: 95, facing: 'right' },
+      { x: 480, y: 95, facing: 'left' }
+    ];
+
+    let fallbackIdx = 0;
+    const promises = [];
+
+    agentIds.forEach(id => {
+      const agent = this.agents[id];
+      if (!agent) return;
+
+      agent.workflowState = WORKFLOW_STATE.GOING_TO_MEETING;
+      agent.inChoreography = true;
+      agent.isSeated = false;
+      agent.bubbleText = 'To Meeting Room 👥';
+      agent.bubbleTimer = 260;
+
+      const seat = meetingSeats[id] || fallbackSeats[fallbackIdx++ % fallbackSeats.length];
+
+      promises.push(
+        this.navigateToAsync(agent, seat.x, seat.y).then(() => {
+          // Strictly mark IN_MEETING only upon physical arrival at chair
+          agent.workflowState = WORKFLOW_STATE.IN_MEETING;
+          agent.x = seat.x;
+          agent.y = seat.y;
+          agent.facing = seat.facing;
+          agent.isSeated = true;
+          agent.bubbleText = id === 'atlas' ? 'Quorum Assembled 📋' : 'Present ✋';
+          agent.bubbleTimer = 300;
+        })
+      );
+    });
+
+    return Promise.all(promises);
+  }
+
+  returnAgentsToDesks(agentIds, onIndividualArrival = null) {
+    const promises = [];
+
+    agentIds.forEach(id => {
+      const agent = this.agents[id];
+      if (!agent) return;
+
+      agent.workflowState = WORKFLOW_STATE.RETURNING_TO_DESK;
+      agent.isSeated = false;
+      agent.bubbleText = 'Returning to desk 🚶';
+      agent.bubbleTimer = 240;
+
+      promises.push(
+        this.navigateToAsync(agent, agent.home.x, agent.home.y).then(() => {
+          // STRICT RULE: Only when agent physically reaches their desk do they start working!
+          agent.workflowState = WORKFLOW_STATE.WORKING;
+          agent.x = agent.home.x;
+          agent.y = agent.home.y;
+          agent.isSeated = true;
+          agent.facing = agent.home.facing;
+          agent.bubbleText = id === 'byte' ? 'Coding at desk 💻' : (id === 'atlas' ? 'Directing sprint 👑' : 'Working at desk ⚙️');
+          agent.bubbleTimer = 350;
+
+          if (onIndividualArrival) {
+            onIndividualArrival(id);
+          }
+        })
+      );
+    });
+
+    return Promise.all(promises);
+  }
+
+  callReviewMeeting(reviewerId = 'query', workerId = 'byte', topic = 'Code Review') {
+    const reviewer = this.agents[reviewerId];
+    const worker = this.agents[workerId];
+    if (!reviewer || !worker) return Promise.resolve();
+
+    reviewer.workflowState = WORKFLOW_STATE.GOING_TO_REVIEW;
+    worker.workflowState = WORKFLOW_STATE.GOING_TO_REVIEW;
+    reviewer.inChoreography = true;
+    worker.inChoreography = true;
+    reviewer.isSeated = false;
+    worker.isSeated = false;
+
+    reviewer.bubbleText = 'To Review Meeting 🔍';
+    reviewer.bubbleTimer = 260;
+    worker.bubbleText = 'Bringing Code 📋';
+    worker.bubbleTimer = 260;
+
+    // Reviewer sits at West Chair (facing right), Worker sits at East Chair (facing left)
+    const seatReviewer = { x: 295, y: 95, facing: 'right' };
+    const seatWorker = { x: 475, y: 95, facing: 'left' };
+
+    return Promise.all([
+      this.navigateToAsync(reviewer, seatReviewer.x, seatReviewer.y).then(() => {
+        reviewer.workflowState = WORKFLOW_STATE.IN_REVIEW;
+        reviewer.x = seatReviewer.x;
+        reviewer.y = seatReviewer.y;
+        reviewer.facing = seatReviewer.facing;
+        reviewer.isSeated = true;
+      }),
+      this.navigateToAsync(worker, seatWorker.x, seatWorker.y).then(() => {
+        worker.workflowState = WORKFLOW_STATE.IN_REVIEW;
+        worker.x = seatWorker.x;
+        worker.y = seatWorker.y;
+        worker.facing = seatWorker.facing;
+        worker.isSeated = true;
+      })
+    ]);
+  }
+
+  reportToManager(reviewerId = 'query', reportTopic = 'Audit Report') {
+    const reviewer = this.agents[reviewerId];
+    const boss = this.agents.atlas;
+    if (!reviewer) return Promise.resolve();
+
+    reviewer.workflowState = WORKFLOW_STATE.GOING_TO_MEETING;
+    reviewer.isSeated = false;
+    reviewer.bubbleText = 'Reporting to Boss 🚶';
+    reviewer.bubbleTimer = 260;
+
+    // In front of Atlas desk at (110, 115), Atlas is at (110, 85)
+    return this.navigateToAsync(reviewer, 110, 115).then(() => {
+      reviewer.workflowState = WORKFLOW_STATE.IN_MEETING;
+      reviewer.x = 110;
+      reviewer.y = 115;
+      reviewer.facing = 'up';
+      reviewer.isSeated = false;
+      if (boss) {
+        boss.facing = 'down';
+      }
+    });
+  }
+
+  sendAgentToDesk(agentId, label = '') {
+    const agent = this.agents[agentId];
+    if (!agent) return Promise.resolve();
+    agent.workflowState = WORKFLOW_STATE.RETURNING_TO_DESK;
+    agent.isSeated = false;
+    agent.bubbleText = 'Returning to desk 🚶';
+    agent.bubbleTimer = 220;
+
+    return this.navigateToAsync(agent, agent.home.x, agent.home.y).then(() => {
+      // Deterministically switch to WORKING state only upon physical desk arrival
+      agent.workflowState = WORKFLOW_STATE.WORKING;
+      agent.x = agent.home.x;
+      agent.y = agent.home.y;
+      agent.isSeated = true;
+      agent.facing = agent.home.facing;
+      agent.bubbleText = label || (agentId === 'byte' ? 'Coding at desk 💻' : 'Working at desk ⚙️');
+      agent.bubbleTimer = 350;
+    });
+  }
+
+  holdOneOnOneReview(reviewerId = 'query', workerId = 'byte', topic = 'Code Review') {
+    return this.callReviewMeeting(reviewerId, workerId, topic);
+  }
+
+  showSpeechBubble(agentId, text, durationFrames = 260) {
+    const agent = this.agents[agentId];
+    if (agent) {
+      agent.bubbleText = text;
+      agent.bubbleTimer = durationFrames;
+    }
+  }
+
+  releaseChoreographyLocks(agentIds = null) {
+    const ids = agentIds || Object.keys(this.agents);
+    ids.forEach(id => {
+      if (this.agents[id]) {
+        this.agents[id].inChoreography = false;
+      }
+    });
+  }
+
+  // Office Presets (Deterministic, zero random wandering)
   setPreset(preset) {
     this.currentPreset = preset;
 
@@ -983,6 +1216,7 @@ export class PixiOffice {
       }
     } else if (preset === 'focus') {
       for (const agent of Object.values(this.agents)) {
+        agent.workflowState = WORKFLOW_STATE.WORKING;
         this.navigateTo(agent, agent.home.x, agent.home.y, {
           onComplete: () => {
             agent.isSeated = true;
@@ -994,7 +1228,6 @@ export class PixiOffice {
         });
       }
     } else if (preset === 'meeting') {
-      // 12 distinct positions around the conference table (never stacked!)
       const meetingSeats = [
         { x: 380, y: 55 }, { x: 340, y: 55 }, { x: 420, y: 55 },
         { x: 340, y: 135 }, { x: 380, y: 135 }, { x: 420, y: 135 },
@@ -1006,6 +1239,7 @@ export class PixiOffice {
         const seat = meetingSeats[i % meetingSeats.length];
         this.navigateTo(agent, seat.x, seat.y, {
           onComplete: () => {
+            agent.workflowState = WORKFLOW_STATE.IN_MEETING;
             agent.state = 'meeting';
             agent.bubbleText = 'All-Hands 👥';
             agent.bubbleTimer = 600;
@@ -1013,39 +1247,7 @@ export class PixiOffice {
         });
         i++;
       }
-    } else if (preset === 'free') {
-      for (const agent of Object.values(this.agents)) {
-        agent.state = 'idle';
-        agent.bubbleText = 'Free roam 🚶';
-        agent.bubbleTimer = 300;
-        this.pickControlledDestination(agent);
-      }
     }
-  }
-
-  // Purposeful Autonomous Roaming (75% work at desk, 15% walk, 10% break)
-  pickControlledDestination(agent) {
-    const destinations = [
-      { x: agent.home.x, y: agent.home.y, state: 'working', label: 'Back to desk 💻' },
-      { x: 685, y: 280, state: 'coffee', label: 'Espresso ☕' },
-      { x: 600, y: 395, state: 'coffee', label: 'Break ☕' },
-      { x: 380, y: 95, state: 'meeting', label: 'Sync 👥' },
-      { x: 650, y: 145, state: 'working', label: 'Server check 🔧' },
-      { x: 236, y: 215, state: 'idle', label: 'Hallway 🚶' }
-    ];
-    // Heavily bias towards returning to assigned desk
-    const choice = (Math.random() < 0.6) ? destinations[0] : destinations[Math.floor(Math.random() * destinations.length)];
-    this.navigateTo(agent, choice.x, choice.y, {
-      onComplete: () => {
-        agent.state = choice.state;
-        agent.bubbleText = choice.label;
-        agent.bubbleTimer = 400;
-        if (choice.state === 'working') {
-          agent.isSeated = true;
-          agent.facing = agent.home.facing;
-        }
-      }
-    });
   }
 
   start() {
@@ -1161,6 +1363,19 @@ export class PixiOffice {
         }
       } else {
         agent.walkingFrame = 0;
+        agent.currentSpeed = 0;
+
+        // Strict station lock: If IDLE, WORKING, or TASK_COMPLETED, agent remains firmly seated at assigned workstation
+        if (
+          agent.workflowState === WORKFLOW_STATE.IDLE ||
+          agent.workflowState === WORKFLOW_STATE.WORKING ||
+          agent.workflowState === WORKFLOW_STATE.TASK_COMPLETED
+        ) {
+          agent.x = agent.home.x;
+          agent.y = agent.home.y;
+          agent.isSeated = true;
+          agent.facing = agent.home.facing;
+        }
       }
 
       if (agent.bubbleTimer > 0) {
@@ -1307,20 +1522,20 @@ export class PixiOffice {
     drawWall(this.worldWidth - 18, 0, 18, this.worldHeight);
     drawWall(0, this.worldHeight - 18, this.worldWidth, 18);
 
-    // 1. Manager Suite Walls (Cutout for door at y: 125..161)
-    drawWall(220, 18, 12, 107);
-    drawWall(220, 161, 12, 23);
-    drawWall(18, 184, 214, 12);
+    // 1. Manager Suite Walls (Cutout for South door at x: 100..140)
+    drawWall(220, 18, 12, 166);
+    drawWall(18, 184, 82, 12);
+    drawWall(140, 184, 82, 12);
 
-    // 2. Meeting Room Walls (Cutout for South door at x: 375..411)
-    drawWall(232, 18, 10, 172);
-    drawWall(232, 184, 143, 12);
-    drawWall(411, 184, 135, 12);
-    drawWall(540, 18, 12, 172);
+    // 2. Meeting Room Walls (Cutout for South door at x: 370..410)
+    drawWall(232, 18, 10, 166);
+    drawWall(232, 184, 138, 12);
+    drawWall(410, 184, 130, 12);
+    drawWall(540, 18, 12, 166);
 
-    // 3. Server Room South Wall (Cutout for door at x: 635..671)
-    drawWall(540, 184, 95, 12);
-    drawWall(671, 184, 71, 12);
+    // 3. Server Room South Wall (Cutout for door at x: 630..670)
+    drawWall(540, 184, 90, 12);
+    drawWall(670, 184, 71, 12);
 
     // 4. Coffee Lounge West Wall (Cutout for door at y: 345..381)
     drawWall(536, 196, 12, 149);
@@ -1708,14 +1923,40 @@ export class PixiOffice {
     ctx.fillRect(x - 6, y - 26 + bob, 2, 4);
     ctx.fillRect(x + 4, y - 26 + bob, 2, 4);
 
+    const isWorking = agent.status === AGENT_STATUS.WORKING || agent.status === AGENT_STATUS.CODING || agent.status === AGENT_STATUS.THINKING || agent.status === AGENT_STATUS.RUNNING;
+    const isCompleted = agent.status === AGENT_STATUS.COMPLETED;
+    const isFailed = agent.status === AGENT_STATUS.FAILED;
+
+    // State-based Desk Typing / Seated Meeting Animations
+    if (agent.isSeated && (agent.workflowState === WORKFLOW_STATE.WORKING || isWorking)) {
+      // Seated at desk actively typing on keyboard (alternating tap cadence)
+      const typeAlt = (Math.floor(this.tick / 6) % 2 === 0);
+      ctx.fillStyle = agent.skinColor || '#FAD4C0';
+      if (agent.facing === 'up') {
+        ctx.fillRect(x - 5, y - 20 - (typeAlt ? 1 : 0), 3, 2);
+        ctx.fillRect(x + 2, y - 20 - (typeAlt ? 0 : 1), 3, 2);
+      } else {
+        ctx.fillRect(x - 5, y - 13 - (typeAlt ? 1 : 0), 2, 2);
+        ctx.fillRect(x + 3, y - 13 - (typeAlt ? 0 : 1), 2, 2);
+      }
+    } else if (agent.isSeated && (agent.workflowState === WORKFLOW_STATE.IN_MEETING || agent.workflowState === WORKFLOW_STATE.IN_REVIEW)) {
+      // Seated attentively at conference table
+      ctx.fillStyle = agent.skinColor || '#FAD4C0';
+      if (agent.facing === 'down') {
+        ctx.fillRect(x - 4, y - 11, 2, 2);
+        ctx.fillRect(x + 2, y - 11, 2, 2);
+      } else if (agent.facing === 'up') {
+        ctx.fillRect(x - 4, y - 18, 2, 2);
+        ctx.fillRect(x + 2, y - 18, 2, 2);
+      } else {
+        ctx.fillRect(x - 2, y - 14, 2, 2);
+      }
+    }
+
     // Name Tag Badge beneath Agent with Live Status Indicator
     ctx.font = 'bold 8px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     const textWidth = ctx.measureText(agent.name).width;
-
-    const isWorking = agent.status === AGENT_STATUS.WORKING || agent.status === AGENT_STATUS.CODING || agent.status === AGENT_STATUS.THINKING || agent.status === AGENT_STATUS.RUNNING;
-    const isCompleted = agent.status === AGENT_STATUS.COMPLETED;
-    const isFailed = agent.status === AGENT_STATUS.FAILED;
 
     const badgeWidth = textWidth + 18;
     const badgeX = Math.round(x - badgeWidth / 2);

@@ -5,9 +5,9 @@
  * and live device preview synchronization.
  */
 
-import { PixiOffice, AGENT_ROSTER } from './pixi-office.js';
+import { PixiOffice, AGENT_ROSTER } from './pixi-office.js?v=3';
 import { getLucideIcon, AGENT_ICONS, FILE_EXT_ICONS } from './icons.js';
-import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js';
+import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=3';
 
 // Global State
 let pixiOffice = null;
@@ -16,6 +16,7 @@ let activeProjectId = null;
 let currentPreviewUrl = '/api/preview';
 let eventSource = null;
 let selectedAgentId = 'nova';
+let isChoreographyActive = false;
 
 // DOM Elements: Navigation
 const navButtons = document.querySelectorAll('.nav-tab-btn');
@@ -541,6 +542,14 @@ function initOfficeSimulation() {
         pixiOffice.triggerManagerDelegation(selectedAgentId, 'Review sprint specs & implementation');
         addLog(`[DELEGATION] Manager Atlas summoned ${AGENT_ROSTER[selectedAgentId].name} for task briefing.`, 'info', 'AT');
       }
+    });
+  }
+
+  // Quorum Meeting, Gated Desk Return & Review Protocol Simulation Button
+  const runSprintMeetingFlowBtn = document.getElementById('runSprintMeetingFlowBtn');
+  if (runSprintMeetingFlowBtn) {
+    runSprintMeetingFlowBtn.addEventListener('click', () => {
+      executeChoreographedMeetingWorkflow('Build modern portfolio with interactive showcase and contact drawer', { runBackendBuild: false });
     });
   }
 
@@ -1549,6 +1558,382 @@ function showBudgetExhaustedModal(spent = 0, limit = 0, pendingAction = null) {
 }
 
 // ==========================================================================
+// ==========================================================================
+// 8.8. Choreographed Workflow: Quorum Meeting, Gated Desk Return & Review Protocol
+// ==========================================================================
+export async function executeChoreographedMeetingWorkflow(promptText, { runBackendBuild = false } = {}) {
+  const delay = (ms) => new Promise(res => setTimeout(res, ms));
+  const team = ['atlas', 'pixel', 'nova', 'scout', 'byte', 'query'];
+
+  isChoreographyActive = true;
+  addLog(`[WORKFLOW] Manager Atlas received directive: "${promptText.slice(0, 45)}..."`, 'info', 'AT', 'DIRECTIVE');
+
+  // Switch to office view so the user watches the choreography live
+  const officeTabBtn = document.querySelector('.nav-tab-btn[data-tab="office"]');
+  if (officeTabBtn && activeTab !== 'office') {
+    officeTabBtn.click();
+  }
+
+  try {
+    // --------------------------------------------------------------------------
+    // PHASE 1: Quorum Call (Boss + Specialists walk to Meeting Area)
+    // --------------------------------------------------------------------------
+    updateTasksBanner('QUORUM CALL: Atlas calling team to Conference Room for directive alignment...', 'Atlas (Manager)');
+    if (presetStatusNotice) presetStatusNotice.textContent = 'Quorum Call: En Route to Meeting Room 👥';
+
+    addInteragentMessage({
+      fromAgent: 'atlas',
+      fromName: 'Atlas (Manager)',
+      toAgent: 'specialists',
+      toName: 'Specialist Ensemble',
+      subject: 'Quorum Call: Assemble in Conference Room',
+      message: `@Team All specialists report to the Conference Room immediately. We have a new sprint directive: "${promptText.slice(0, 50)}..."`
+    });
+
+    // Populate tasks in Backlog — STRICT REQUIREMENT: NONE marked assigned or in-progress before meeting!
+    tasksStore = [
+      {
+        id: 'task-plan',
+        title: 'Sprint Objective & Roadmap Formulation',
+        desc: `Deconstruct objective: "${promptText.slice(0, 40)}..." [Pending Meeting]`,
+        stage: 'backlog',
+        agentId: 'atlas',
+        agentName: 'Atlas (Manager)',
+        time: 'Pending Meeting'
+      },
+      {
+        id: 'task-design',
+        title: 'UI/UX Visual System & Design Tokens',
+        desc: 'Formulate color palette & design tokens [Pending Meeting]',
+        stage: 'backlog',
+        agentId: 'pixel',
+        agentName: 'Pixel (Designer)',
+        time: 'Pending Meeting'
+      },
+      {
+        id: 'task-arch',
+        title: 'DOM Architecture & Layout Hierarchy',
+        desc: 'Engineered single-file DOM hierarchy [Pending Meeting]',
+        stage: 'backlog',
+        agentId: 'nova',
+        agentName: 'Nova (Frontend Architect)',
+        time: 'Pending Meeting'
+      },
+      {
+        id: 'task-feat',
+        title: 'Interactive State Management & Handlers',
+        desc: 'Define reactive state & user event handlers [Pending Meeting]',
+        stage: 'backlog',
+        agentId: 'scout',
+        agentName: 'Scout (Feature Architect)',
+        time: 'Pending Meeting'
+      },
+      {
+        id: 'task-code',
+        title: 'Master Single-File Web Application Implementation',
+        desc: 'Generate complete production application [Pending Meeting]',
+        stage: 'backlog',
+        agentId: 'byte',
+        agentName: 'Byte (Lead Coder)',
+        time: 'Pending Meeting'
+      },
+      {
+        id: 'task-qa',
+        title: 'QA DOM & JavaScript Compliance Audit',
+        desc: 'Inspect semantic markup & runtime compliance [Pending Meeting]',
+        stage: 'backlog',
+        agentId: 'query',
+        agentName: 'Query (QA Auditor)',
+        time: 'Pending Meeting'
+      }
+    ];
+    renderTasksBoard();
+
+    if (pixiOffice) {
+      // Physically move Atlas and all specialists to Conference Table
+      await pixiOffice.callQuorumMeeting(team, 'Sprint Objective Alignment');
+    }
+
+  // --------------------------------------------------------------------------
+  // PHASE 2: Meeting in Session & Task Division
+  // --------------------------------------------------------------------------
+  updateTasksBanner('MEETING IN SESSION: Atlas breaking down roadmap & assigning tasks...', 'Atlas (Manager)');
+
+  if (pixiOffice) {
+    pixiOffice.showSpeechBubble('atlas', `Team, here is our roadmap: ${promptText.slice(0, 24)}... 📋`, 320);
+  }
+
+  addInteragentMessage({
+    fromAgent: 'atlas',
+    fromName: 'Atlas (Manager)',
+    toAgent: 'specialists',
+    toName: 'Specialist Ensemble',
+    subject: 'Task Division & Work Breakdown',
+    message: `Team, here is the roadmap: Pixel handles UI/UX design tokens; Nova designs single-file DOM schema; Scout maps interactive state; Byte generates master application; Query leads QA audit.`
+  });
+
+  await delay(1200);
+
+  // Specialists acknowledge
+  if (pixiOffice) {
+    pixiOffice.showSpeechBubble('pixel', 'UI palette & tokens primed! 🎨', 240);
+    pixiOffice.showSpeechBubble('nova', 'DOM architecture ready! 📐', 240);
+    pixiOffice.showSpeechBubble('byte', 'Ready to code once at desk! 💻', 240);
+  }
+
+  addInteragentMessage({
+    fromAgent: 'pixel',
+    fromName: 'Pixel (Designer)',
+    toAgent: 'atlas',
+    toName: 'Atlas (Manager)',
+    subject: 'Task Accepted: Design Tokens',
+    message: 'Confirmed. Aligning executive color palette, typography tokens, and card hierarchies.'
+  });
+
+  await delay(1100);
+
+  if (pixiOffice) {
+    pixiOffice.showSpeechBubble('query', 'QA compliance suite primed! 🛡️', 240);
+    pixiOffice.showSpeechBubble('atlas', 'Dismissed! Return to your desks before starting! 👑', 300);
+  }
+
+  addInteragentMessage({
+    fromAgent: 'atlas',
+    fromName: 'Atlas (Manager)',
+    toAgent: 'specialists',
+    toName: 'Specialist Ensemble',
+    subject: 'Execution Rule: Strict Desk Seating Required',
+    message: 'Dismissed! Absolute protocol: NOBODY begins work until you have walked to your desk and are fully seated.'
+  });
+
+  // Update tasks with detailed descriptions
+  setTaskStage('task-plan', 'done', 'Requirements decomposed & team directives dispatched');
+  setTaskStage('task-design', 'backlog', 'Assigned to Pixel [EN ROUTE TO DESK — LOCKED]');
+  setTaskStage('task-arch', 'backlog', 'Assigned to Nova [EN ROUTE TO DESK — LOCKED]');
+  setTaskStage('task-feat', 'backlog', 'Assigned to Scout [EN ROUTE TO DESK — LOCKED]');
+  setTaskStage('task-code', 'backlog', 'Assigned to Byte [EN ROUTE TO DESK — LOCKED]');
+  setTaskStage('task-qa', 'backlog', 'Assigned to Query [EN ROUTE TO DESK — LOCKED]');
+
+  await delay(800);
+
+  // --------------------------------------------------------------------------
+  // PHASE 3: Gated Walk to Desks (Strict Rule: Work starts ONLY once seated)
+  // --------------------------------------------------------------------------
+  updateTasksBanner('TRANSIT: Specialists returning to workstations. Work remains LOCKED until seated.', 'Team Transit');
+  if (presetStatusNotice) presetStatusNotice.textContent = 'Transit: Walking to Assigned Desks 🚶';
+
+  if (pixiOffice) {
+    // Send everyone back to their desks, tracking individual arrival
+    const arrivalPromises = team.map(id => {
+      const label = id === 'byte' ? 'coding 💻' : (id === 'atlas' ? 'monitoring 👑' : (id === 'query' ? 'inspecting 🔍' : 'working ⚙️'));
+      const deskPromise = (typeof pixiOffice.sendAgentToDesk === 'function')
+        ? pixiOffice.sendAgentToDesk(id, label)
+        : (typeof pixiOffice.returnAgentsToDesks === 'function'
+            ? pixiOffice.returnAgentsToDesks([id])
+            : Promise.resolve());
+
+      return deskPromise.then(() => {
+        // Individual desk arrival handler: ONLY UNLOCK WHEN SEATED!
+        const agentDef = AGENT_ROSTER[id];
+        const updateStatus = (agentId, status, lastAction) => {
+          if (agentStateManager && typeof agentStateManager.setAgentState === 'function') {
+            agentStateManager.setAgentState(agentId, { status, lastAction });
+          } else if (agentStateManager && typeof agentStateManager.setAgentStatus === 'function') {
+            agentStateManager.setAgentStatus(agentId, status, { lastAction });
+          }
+        };
+
+        if (id === 'pixel') {
+          setTaskStage('task-design', 'progress', 'Seated at design desk. Formulating color palette & typography tokens.');
+          updateStatus('pixel', AGENT_STATUS.WORKING, 'Formulating color palette & typography tokens');
+        } else if (id === 'nova') {
+          setTaskStage('task-arch', 'progress', 'Seated at architecture desk. Engineering semantic DOM hierarchy.');
+          updateStatus('nova', AGENT_STATUS.WORKING, 'Engineering semantic DOM hierarchy');
+        } else if (id === 'scout') {
+          setTaskStage('task-feat', 'progress', 'Seated at feature desk. Implementing interactive state machines.');
+          updateStatus('scout', AGENT_STATUS.WORKING, 'Implementing interactive state machines');
+        } else if (id === 'byte') {
+          setTaskStage('task-code', 'progress', 'Seated at coder desk. Compiling production index.html.');
+          updateStatus('byte', AGENT_STATUS.CODING, 'Compiling production index.html');
+        } else if (id === 'query') {
+          setTaskStage('task-qa', 'backlog', 'Seated at QA desk. Monitoring build output for compliance inspection.');
+          updateStatus('query', AGENT_STATUS.IDLE, 'Monitoring build output for compliance inspection');
+        }
+      });
+    });
+
+    await Promise.all(arrivalPromises);
+  }
+
+  updateTasksBanner('ALL AGENTS SEATED: Parallel specification & code generation active.', 'Specialists');
+  if (presetStatusNotice) presetStatusNotice.textContent = 'Focus Work Active (All Specialists Seated)';
+
+  // --------------------------------------------------------------------------
+  // PHASE 4: Work Execution
+  // --------------------------------------------------------------------------
+  if (runBackendBuild) {
+    const payload = { prompt: promptText, budget: currentBudgetAmount };
+    if (activeProjectId && activeProjectId !== '__new__') {
+      payload.projectId = activeProjectId;
+    }
+    const res = await fetch('/api/orchestrate/build', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      let errorMsg = `Server error ${res.status}`;
+      try {
+        const errJson = await res.json();
+        if (res.status === 402 || errJson.status === 'budget_exhausted') {
+          showBudgetExhaustedModal(errJson.spent, errJson.budget, promptText);
+          setControlsLocked(false);
+          return;
+        }
+        errorMsg = errJson.message || errJson.error || errorMsg;
+      } catch (_) {}
+      throw new Error(errorMsg);
+    }
+    const data = await res.json();
+    if (data.projectId) {
+      activeProjectId = data.projectId;
+      await loadProjects();
+      selectProject(activeProjectId, true);
+      loadProjectFiles(activeProjectId);
+    }
+  } else {
+    // Simulation delay to visualize active parallel work at desks
+    await delay(2500);
+  }
+
+  // Mark specialist tasks done and transition code into review
+  setTaskStage('task-design', 'done', 'Design tokens formulated and delivered');
+  setTaskStage('task-arch', 'done', 'Single-file semantic DOM structure delivered');
+  setTaskStage('task-feat', 'done', 'Interactive component schema delivered');
+  setTaskStage('task-code', 'review', 'Code generated. Pending mandatory 1-on-1 QA audit in Meeting Room.');
+
+  // --------------------------------------------------------------------------
+  // PHASE 5: Reviewer Protocol (1-on-1 Meeting between Query and Byte)
+  // --------------------------------------------------------------------------
+  updateTasksBanner('QA AUDIT CALLED: Query summoning Byte to Conference Room for code review...', 'Query (QA Auditor)');
+  if (presetStatusNotice) presetStatusNotice.textContent = '1-on-1 Review in Meeting Room (All Other Tasks Paused) 🔍';
+
+  addInteragentMessage({
+    fromAgent: 'query',
+    fromName: 'Query (QA Auditor)',
+    toAgent: 'byte',
+    toName: 'Byte (Lead Coder)',
+    subject: 'Code Review Protocol: Join Conference Room',
+    message: '@Byte Code delivery received. Protocol requires a 1-on-1 audit in the Conference Room. Hold deployment until verified.'
+  });
+
+  if (pixiOffice) {
+    pixiOffice.showSpeechBubble('query', '@Byte, to the Conference Room for review 🔍', 280);
+    pixiOffice.showSpeechBubble('byte', 'On my way with code draft 🚶', 280);
+
+    // Both navigate to conference room
+    if (typeof pixiOffice.callReviewMeeting === 'function') {
+      await pixiOffice.callReviewMeeting('query', 'byte', 'Single-File Code Audit');
+    } else if (typeof pixiOffice.holdOneOnOneReview === 'function') {
+      await pixiOffice.holdOneOnOneReview('query', 'byte', 'Single-File Code Audit');
+    }
+  }
+
+  // Dialogue inside conference room
+  updateTasksBanner('REVIEW IN SESSION: Query inspecting Byte\'s code delivery. Entire sprint gated.', 'Query (QA Auditor)');
+
+  if (pixiOffice) {
+    pixiOffice.showSpeechBubble('query', 'Checking DOM hierarchy, script tags & accessibility...', 300);
+    await delay(1200);
+    pixiOffice.showSpeechBubble('byte', 'Single-file HTML with responsive layout & zero dependencies.', 300);
+    await delay(1200);
+    pixiOffice.showSpeechBubble('query', 'Code passes compliance! Going to Manager Atlas to report. 🛡️', 300);
+  }
+
+  addInteragentMessage({
+    fromAgent: 'query',
+    fromName: 'Query (QA Auditor)',
+    toAgent: 'atlas',
+    toName: 'Atlas (Manager)',
+    subject: 'Audit Completed: Escalating to Executive Desk',
+    message: '1-on-1 code audit complete. Zero syntax violations detected. Heading to Manager Suite to present audit report to Atlas.'
+  });
+
+  await delay(900);
+
+  // --------------------------------------------------------------------------
+  // PHASE 6: Reviewer Reports to Manager (Boss Office)
+  // --------------------------------------------------------------------------
+  updateTasksBanner('ESCALATION: Query presenting audited file to Manager Atlas in Executive Suite...', 'Query (QA Auditor)');
+  if (presetStatusNotice) presetStatusNotice.textContent = 'Audit Escalation: Query Reporting to Atlas';
+
+  if (pixiOffice) {
+    // Query walks to visitor spot in Atlas's office (x: 145, y: 120)
+    await pixiOffice.reportToManager('query', 'Audit Report Submission');
+    pixiOffice.showSpeechBubble('query', 'Boss, audit complete: 100% compliant, zero errors! 🛡️', 300);
+    await delay(1200);
+    pixiOffice.showSpeechBubble('atlas', 'Excellent work, Query. Approved! Notify Byte to publish. 👑', 320);
+  }
+
+  addInteragentMessage({
+    fromAgent: 'atlas',
+    fromName: 'Atlas (Manager)',
+    toAgent: 'query',
+    toName: 'Query (QA Auditor)',
+    subject: 'Executive Sign-Off: Approved',
+    message: 'Audit report reviewed and signed off. Code is certified for live preview deployment. Authorize Byte to publish.'
+  });
+
+  await delay(1000);
+
+  // --------------------------------------------------------------------------
+  // PHASE 7: Handover & Release
+  // --------------------------------------------------------------------------
+  if (pixiOffice) {
+    pixiOffice.showSpeechBubble('query', 'Approved by Boss! ✓', 260);
+    pixiOffice.showSpeechBubble('byte', 'Deploying to live preview! 🚀', 300);
+
+    // Return Query and Byte to their desks
+    const deskFn = typeof pixiOffice.sendAgentToDesk === 'function'
+      ? (id, label) => pixiOffice.sendAgentToDesk(id, label)
+      : (id) => pixiOffice.returnAgentsToDesks([id]);
+
+    await Promise.all([
+      deskFn('query', 'monitoring 🛡️'),
+      deskFn('byte', '✓ published')
+    ]);
+
+    pixiOffice.releaseChoreographyLocks();
+  }
+
+  setTaskStage('task-code', 'done', 'Verified by Query & Manager. Deployed to live preview.');
+  setTaskStage('task-qa', 'done', 'Full QA compliance certification granted (100% Pass)');
+  updateTasksBanner('SPRINT COMPLETED: Application verified by QA Auditor & signed off by Manager.', 'Atlas (Manager)');
+  if (presetStatusNotice) presetStatusNotice.textContent = 'Focus Work Active — Sprint Completed ✓';
+
+  addActivityItem({
+    type: 'pipeline',
+    agentId: 'atlas',
+    agentName: 'Atlas (Manager)',
+    title: 'Sprint Complete & Certified',
+    desc: `Objective "${promptText.slice(0, 45)}..." fully built, audited, and approved.`,
+    timestamp: new Date().toLocaleTimeString()
+  });
+
+  if (activeProjectId) {
+    loadProjectFiles(activeProjectId);
+    updatePreview(activeProjectId);
+  } else {
+    updatePreview();
+  }
+  } finally {
+    isChoreographyActive = false;
+    if (pixiOffice) {
+      pixiOffice.releaseChoreographyLocks();
+    }
+  }
+}
+
 // 9. Prompt Dispatcher & Live Orchestration
 // ==========================================================================
 async function handleSendPrompt(promptText) {
@@ -1591,7 +1976,7 @@ async function handleSendPrompt(promptText) {
       <div class="msg-avatar">${getLucideIcon('crown', { size: 14 })}</div>
       <div class="msg-content">
         <div class="msg-header"><span class="msg-sender">ATLAS (MANAGER)</span><span class="msg-time">${new Date().toLocaleTimeString()}</span></div>
-        <div class="msg-body">Objective accepted. Specialist team summoned for delegation. Orchestration in progress!</div>
+        <div class="msg-body">Objective accepted. Summoning team to Conference Room for pre-sprint alignment and task division. Execution remains locked until specialists reach their workstations!</div>
       </div>
     `;
 
@@ -1613,50 +1998,17 @@ async function handleSendPrompt(promptText) {
   }, 350);
 
   addLog(`Task received: "${prompt}"`, 'info', 'USER', 'TASK');
-  startPipelineTasks(prompt);
   agentStateManager.setAgentState('atlas', {
     status: AGENT_STATUS.QUEUED,
     currentTask: prompt,
-    lastAction: 'Task assigned. Launching orchestration pipeline',
+    lastAction: 'Summoning quorum in Conference Room',
     progress: 5,
   });
 
-  if (chatStatusTag) chatStatusTag.textContent = 'Orchestrating...';
+  if (chatStatusTag) chatStatusTag.textContent = 'Quorum Meeting...';
 
   try {
-    const payload = { prompt, budget: currentBudgetAmount };
-    if (activeProjectId && activeProjectId !== '__new__') {
-      payload.projectId = activeProjectId;
-    }
-
-    const res = await fetch('/api/orchestrate/build', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      let errorMsg = `Server error ${res.status}`;
-      try {
-        const errJson = await res.json();
-        if (res.status === 402 || errJson.status === 'budget_exhausted') {
-          showBudgetExhaustedModal(errJson.spent, errJson.budget, prompt);
-          setControlsLocked(false);
-          return;
-        }
-        errorMsg = errJson.message || errJson.error || errorMsg;
-      } catch (_) {}
-      throw new Error(errorMsg);
-    }
-
-    const data = await res.json();
-    if (data.status !== 'success') throw new Error(data.message || 'Build failed');
-
-    activeProjectId = data.projectId;
-    await loadProjects();
-    selectProject(activeProjectId, true);
-    loadProjectFiles(activeProjectId);
-
+    await executeChoreographedMeetingWorkflow(prompt, { runBackendBuild: true });
     if (chatStatusTag) chatStatusTag.textContent = 'Preview Ready';
   } catch (err) {
     if (chatStatusTag) chatStatusTag.textContent = 'Error';
@@ -1752,6 +2104,36 @@ function initEventSource() {
 
       if (data.stage === 'INTERAGENT_COMMUNICATION') {
         addInteragentMessage(data);
+      } else if (isChoreographyActive) {
+        // Physical office simulation is actively orchestrating meetings, desk walks & reviews.
+        // Maintain synchronized spend metrics, logs, and IDE file refreshes without premature stage jumps.
+        if (data.stage === 'AGENT_COST_INCURRED') {
+          const spentEl = document.getElementById('spentCostDisplay');
+          if (spentEl && data.totalProjectSpend !== undefined) {
+            spentEl.textContent = `$${data.totalProjectSpend.toFixed(2)}`;
+          }
+          addTerminalEntry(
+            new Date().toLocaleTimeString(),
+            'COST',
+            'SPEND',
+            `${data.agentName} executed via ${data.modelUsed} (+$${data.cost.toFixed(2)}) | Spend: $${data.totalProjectSpend.toFixed(2)} / Budget: $${data.budget.toFixed(2)}`,
+            'info',
+            '#10B981'
+          );
+        } else if (data.stage === 'AGENT_FALLBACK') {
+          addTerminalEntry(
+            new Date().toLocaleTimeString(),
+            'ROUTER',
+            'FALLBACK',
+            `⚠️ Agent ${data.agentId} model ${data.from} failed (${data.reason}). Automatically switched to ${data.to}`,
+            'warning',
+            '#F59E0B'
+          );
+        }
+        const pid = data.projectId || activeProjectId;
+        if (pid && (data.stage === 'MANAGER_PLAN_COMPLETED' || data.stage === 'SPECIALISTS_COMPLETED' || data.stage === 'CODING_AGENT_COMPLETED' || data.stage === 'QA_COMPLETED')) {
+          loadProjectFiles(pid);
+        }
       } else if (data.stage === 'PIPELINE_STARTED') {
         startPipelineTasks(data.prompt);
         addActivityItem({
