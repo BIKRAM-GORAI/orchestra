@@ -32,11 +32,19 @@ const presetButtons = document.querySelectorAll('.preset-btn');
 const presetStatusNotice = document.getElementById('presetStatusNotice');
 const callToBossBtn = document.getElementById('callToBossBtn');
 
-// 10-Agent Focused Studio Emoji Map (8 Core + 2 Demo Agents)
+// 16-Agent Agency Orchestra Emoji Map
 export const AGENT_EMOJIS = {
-  atlas: '👑', nova: '💻', byte: '⚡', pixel: '🎨',
-  query: '🛡️', forge: '🔧', scout: '🔍', echo: '✍️',
-  luna: '📊', rex: '🔒'
+  atlas: '👑',
+  // Designers
+  pixel: '🎨', chroma: '✨', canvas: '🖌️',
+  // Frontend Architects
+  nova: '📐', blueprint: '🏗️', apex: '🖥️',
+  // Feature Architects
+  scout: '⚡', beacon: '🧭', compass: '🎯',
+  // Coders
+  byte: '💻', cipher: '⌨️', matrix: '🚀',
+  // QA Auditors
+  query: '🛡️', audit: '🔍', sentinel: '⚖️',
 };
 
 // DOM Elements: Agent Identity Inspector & Current Task Panel
@@ -222,6 +230,92 @@ export function updateInspectorDetails(agentState) {
   }
 }
 
+/**
+ * Prebuilt automated model routing & fallback chain metadata helper:
+ * - Free Tier (Pixel, Nova, Scout, Byte, Query):
+ *     Primary: Qwen 3.8 27B ($0.00 Free)
+ *     Fallback 1: Kimi K3 ($0.05)
+ *     Fallback 2: Gemini 3.5 Flash Lite ($0.10)
+ * - Pro Tier (Chroma, Blueprint, Beacon, Cipher, Audit):
+ *     Primary: Kimi K3 ($0.05)
+ *     Fallback 1: Gemini 3.5 Flash Lite ($0.10)
+ *     Fallback 2: Qwen 3.8 27B ($0.00 Free)
+ * - Max Tier (Canvas, Apex, Compass, Matrix, Sentinel) & Manager (Atlas):
+ *     Primary: Gemini 3.5 Flash Lite ($0.10)
+ *     Fallback 1: Kimi K3 ($0.05)
+ *     Fallback 2: Qwen 3.8 27B ($0.00 Free)
+ */
+export function getAgentRoutingInfo(agent) {
+  if (!agent) {
+    return {
+      tier: 'pro',
+      tierLabel: 'Pro Tier',
+      tierBadgeClass: 'badge-tier-pro',
+      costTag: '$0.05',
+      primaryModel: 'Kimi K3',
+      primaryCost: '$0.05',
+      primaryDesc: 'Deep Reasoning',
+      fallbackChain: [
+        { name: 'Gemini 3.5 Flash Lite', cost: '$0.10' },
+        { name: 'Qwen 3.8 27B', cost: '$0.00 Free' },
+      ],
+    };
+  }
+
+  const m = (agent.model || agent.modelId || '').toLowerCase();
+  const id = (agent.id || agent.backendId || '').toLowerCase();
+  const name = (agent.name || '').toLowerCase();
+
+  // Tier classification: Free, Pro, or Max
+  const isFree = m.includes('qwen') || id.includes('free') || id.endsWith('-1') || name.includes('junior') || name.includes('(free');
+  const isPro = !isFree && (m.includes('kimi') || id.includes('pro') || id.endsWith('-2') || name.includes('(pro'));
+
+  if (isFree) {
+    return {
+      tier: 'free',
+      tierLabel: 'Free Tier',
+      tierBadgeClass: 'badge-tier-free',
+      costTag: '$0.00 Free',
+      primaryModel: 'Qwen 3.8 27B',
+      primaryCost: '$0.00 Free',
+      primaryDesc: 'Fast & Free',
+      fallbackChain: [
+        { name: 'Kimi K3', cost: '$0.05' },
+        { name: 'Gemini 3.5 Flash Lite', cost: '$0.10' },
+      ],
+    };
+  } else if (isPro) {
+    return {
+      tier: 'pro',
+      tierLabel: 'Pro Tier',
+      tierBadgeClass: 'badge-tier-pro',
+      costTag: '$0.05',
+      primaryModel: 'Kimi K3',
+      primaryCost: '$0.05',
+      primaryDesc: 'Deep Reasoning',
+      fallbackChain: [
+        { name: 'Gemini 3.5 Flash Lite', cost: '$0.10' },
+        { name: 'Qwen 3.8 27B', cost: '$0.00 Free' },
+      ],
+    };
+  } else {
+    // Max Tier & Manager
+    return {
+      tier: 'max',
+      tierLabel: id.includes('manager') ? 'Lead Architect' : 'Max Tier',
+      tierBadgeClass: 'badge-tier-max',
+      costTag: '$0.10',
+      primaryModel: 'Gemini 3.5 Flash Lite',
+      primaryCost: '$0.10',
+      primaryDesc: 'Highest Fidelity',
+      fallbackChain: [
+        { name: 'Kimi K3', cost: '$0.05' },
+        { name: 'Qwen 3.8 27B', cost: '$0.00 Free' },
+      ],
+    };
+  }
+}
+
 export function showAgentInspector(agentId) {
   selectedAgentId = agentId;
   const agentState = agentStateManager.getAgent(agentId);
@@ -236,10 +330,48 @@ export function showAgentInspector(agentId) {
   inspAvatar.innerHTML = getLucideIcon(AGENT_ICONS[agentId] || 'bot', { size: 18 });
   inspAvatar.style.background = `${def.color || '#38BDF8'}22`;
   inspAvatar.style.borderColor = def.color || '#38BDF8';
-  inspModelTag.textContent = def.model;
+  if (inspModelTag) inspModelTag.textContent = def.model;
   inspSkillsWrap.innerHTML = (def.skills || []).map(s => `<span class="skill-chip">${s}</span>`).join('');
 
   updateInspectorDetails(agentState || def);
+
+  // Update prebuilt intelligence routing
+  const routing = getAgentRoutingInfo(agentState || def);
+  const inspCostTag = document.getElementById('inspCostTag');
+  const inspCoreTag = document.getElementById('inspCoreTag');
+  const inspPrimaryBadge = document.getElementById('inspPrimaryBadge');
+  const inspPrimaryText = document.getElementById('inspPrimaryText');
+  const inspFallbackList = document.getElementById('inspFallbackList');
+  const inspRoutingCard = document.getElementById('inspRoutingCard');
+
+  if (inspCoreTag) {
+    inspCoreTag.textContent = def.backendId || def.id;
+  }
+
+  if (inspCostTag) {
+    inspCostTag.textContent = `${routing.costTag} / call`;
+  }
+
+  if (inspRoutingCard) {
+    inspRoutingCard.className = `prebuilt-route-card ${routing.tierBadgeClass}`;
+  }
+
+  if (inspPrimaryText) {
+    inspPrimaryText.textContent = `${routing.primaryModel} (${routing.primaryCost})`;
+  } else if (inspPrimaryBadge) {
+    inspPrimaryBadge.innerHTML = `
+      <span class="route-dot"></span>
+      <span id="inspPrimaryText">${routing.primaryModel} (${routing.primaryCost})</span>
+      <span class="route-locked-pill" style="margin-left: auto;">PREBUILT</span>
+    `;
+  }
+
+  if (inspFallbackList) {
+    inspFallbackList.innerHTML = routing.fallbackChain.map((fb, idx) => `
+      ${idx > 0 ? '<span class="route-arrow">→</span>' : ''}
+      <span class="route-step-chip">${fb.name} <small>(${fb.cost})</small></span>
+    `).join('');
+  }
 
   // Update active chip in sidebar strip
   document.querySelectorAll('.agent-mini-chip').forEach(el => {
@@ -376,7 +508,7 @@ function renderAgentRosters() {
             <div class="dossier-meta">
               <div class="name-row">
                 <span class="dossier-name">${agent.name}</span>
-                ${agent.core ? '<span class="core-tag">CORE</span>' : ''}
+                ${agent.isHired ? '<span class="core-tag" style="background:#10B98120;color:#10B981;border-color:#10B98140;">HIRED</span>' : '<span class="core-tag" style="background:#64748B20;color:#64748B;border-color:#64748B40;">STANDBY</span>'}
               </div>
               <span class="dossier-role">${agent.role}</span>
             </div>
@@ -395,9 +527,30 @@ function renderAgentRosters() {
             </div>
           </div>
 
-          <div class="insp-section" style="margin-top:6px;">
-            <span class="section-label">Intelligence Model</span>
-            <span class="dossier-model-badge">${agent.model}</span>
+          <div class="insp-section model-config-section" style="margin-top:6px;">
+            <div class="section-label-row">
+              <span class="section-label">Prebuilt Model Routing</span>
+              <span class="cost-tag">${getAgentRoutingInfo(agent).costTag}</span>
+            </div>
+            <div class="prebuilt-route-card ${getAgentRoutingInfo(agent).tierBadgeClass}">
+              <div class="route-primary-row">
+                <div class="route-primary-chip">
+                  <span class="route-dot"></span>
+                  <span class="route-model-name">${getAgentRoutingInfo(agent).primaryModel}</span>
+                  <span class="route-model-cost">(${getAgentRoutingInfo(agent).primaryCost})</span>
+                </div>
+                <span class="route-locked-pill" title="Prebuilt & Locked: Automated cascade on rate limit/failure">LOCKED</span>
+              </div>
+              <div class="route-fallback-row">
+                <span class="route-fallback-title">↳ Auto Fallbacks:</span>
+                <div class="route-fallback-steps">
+                  ${getAgentRoutingInfo(agent).fallbackChain.map((fb, idx) => `
+                    ${idx > 0 ? '<span class="route-arrow">→</span>' : ''}
+                    <span class="route-step-chip">${fb.name} <small>(${fb.cost})</small></span>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="insp-section">
@@ -663,6 +816,11 @@ export function setControlsLocked(locked) {
   if (headerProjectSelect) headerProjectSelect.disabled = locked;
   if (ideProjectSelect) ideProjectSelect.disabled = locked;
 
+  const sidebarSendInlineBtn = document.getElementById('sidebarSendInlineBtn');
+  const chatSendInlineBtn = document.getElementById('chatSendInlineBtn');
+  if (sidebarSendInlineBtn) sidebarSendInlineBtn.disabled = locked;
+  if (chatSendInlineBtn) chatSendInlineBtn.disabled = locked;
+
   if (sidebarPromptInput) {
     sidebarPromptInput.disabled = locked;
     sidebarPromptInput.placeholder = locked
@@ -857,7 +1015,13 @@ async function handleApplyFeedback() {
       body: JSON.stringify({ projectId: activeProjectId, feedback })
     });
     const data = await res.json();
-    if (!res.ok || data.status !== 'success') throw new Error(data.message || 'Feedback failed');
+    if (!res.ok || data.status !== 'success') {
+      if (res.status === 402 || data.status === 'budget_exhausted') {
+        showBudgetExhaustedModal(data.spent, data.budget, handleApplyFeedback);
+        return;
+      }
+      throw new Error(data.message || data.error || 'Feedback failed');
+    }
 
     feedbackInput.value = '';
     updatePreview(activeProjectId || data.projectId);
@@ -878,6 +1042,126 @@ if (feedbackInput) {
       handleApplyFeedback();
     }
   });
+}
+
+// ==========================================================================
+// 8.5. Prompt Budget Sync & Exhaustion Controls
+// ==========================================================================
+let currentBudgetAmount = 0.35;
+
+function updateBudgetControls(val) {
+  currentBudgetAmount = Math.max(0, parseFloat(val) || 0);
+  const rounded = Math.round(currentBudgetAmount * 100) / 100;
+
+  let label = `$${rounded.toFixed(2)}`;
+  let activeTier = 'moderate';
+  if (rounded <= 0.001) {
+    label = 'Free ($0.00)';
+    activeTier = 'free';
+  } else if (rounded < 0.25) {
+    label = `Lean ($${rounded.toFixed(2)})`;
+    activeTier = 'lean';
+  } else if (rounded < 0.50) {
+    label = `Mid ($${rounded.toFixed(2)})`;
+    activeTier = 'moderate';
+  } else {
+    label = `Max ($${rounded.toFixed(2)})`;
+    activeTier = 'max';
+  }
+
+  const sideTag = document.getElementById('sidebarBudgetTierTag');
+  const chatTag = document.getElementById('chatBudgetTierTag');
+  const sideNumInput = document.getElementById('sidebarBudgetNumberInput');
+  const chatNumInput = document.getElementById('chatBudgetNumberInput');
+  const sideSlider = document.getElementById('sidebarBudgetSlider');
+  const chatSlider = document.getElementById('chatBudgetSlider');
+
+  if (sideTag) sideTag.textContent = label;
+  if (chatTag) chatTag.textContent = label;
+  if (sideNumInput && parseFloat(sideNumInput.value) !== rounded) sideNumInput.value = rounded.toFixed(2);
+  if (chatNumInput && parseFloat(chatNumInput.value) !== rounded) chatNumInput.value = rounded.toFixed(2);
+  if (sideSlider && parseFloat(sideSlider.value) !== rounded) sideSlider.value = rounded;
+  if (chatSlider && parseFloat(chatSlider.value) !== rounded) chatSlider.value = rounded;
+
+  // Sync active pill state
+  document.querySelectorAll('.budget-pill').forEach(pill => {
+    const pillVal = parseFloat(pill.dataset.budget);
+    let isPillActive = false;
+    if (activeTier === 'free' && pillVal === 0.00) isPillActive = true;
+    else if (activeTier === 'lean' && pillVal === 0.15) isPillActive = true;
+    else if (activeTier === 'moderate' && pillVal === 0.35) isPillActive = true;
+    else if (activeTier === 'max' && pillVal === 1.00) isPillActive = true;
+    pill.classList.toggle('active', isPillActive);
+  });
+}
+
+async function handleBudgetSliderChange(val) {
+  updateBudgetControls(val);
+  try {
+    const res = await fetch('/api/budget/allocate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ budget: currentBudgetAmount }),
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      if (data.selectedAgents) {
+        agentStateManager.setHiredAgents(Object.values(data.selectedAgents));
+      }
+      if (data.assignments) {
+        Object.values(data.assignments).forEach(asg => {
+          agentStateManager.updateAgentModel(asg.agentId, asg.primaryModel);
+        });
+      }
+      renderAgentRosters();
+    }
+  } catch (err) {
+    console.warn('Failed to allocate budget:', err);
+  }
+}
+
+function showBudgetExhaustedModal(spent = 0, limit = 0, pendingAction = null) {
+  const modal = document.getElementById('budgetExhaustedModal');
+  const spentEl = document.getElementById('budgetModalSpent');
+  const limitEl = document.getElementById('budgetModalLimit');
+  if (!modal) return;
+
+  if (spentEl) spentEl.textContent = `$${parseFloat(spent || 0).toFixed(2)}`;
+  if (limitEl) limitEl.textContent = `$${parseFloat(limit || 0).toFixed(2)}`;
+  modal.style.display = 'flex';
+
+  const closeBtn = document.getElementById('closeBudgetModalBtn');
+  const cancelBtn = document.getElementById('cancelBudgetModalBtn');
+  const confirmBtn = document.getElementById('confirmIncreaseBudgetBtn');
+  const select = document.getElementById('increaseBudgetSelect');
+
+  const closeModal = () => { modal.style.display = 'none'; };
+  if (closeBtn) closeBtn.onclick = closeModal;
+  if (cancelBtn) cancelBtn.onclick = closeModal;
+
+  if (confirmBtn) {
+    confirmBtn.onclick = async () => {
+      const added = parseFloat(select?.value || '0.25');
+      const newBudget = (added === 0) ? 0.00 : ((parseFloat(limit) || 0.25) + added);
+      try {
+        await fetch('/api/budget/allocate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ budget: newBudget }),
+        });
+        updateBudgetControls(newBudget);
+        closeModal();
+        addTerminalEntry(new Date().toLocaleTimeString(), 'BUDGET', 'EXTEND', `Budget extended to $${newBudget.toFixed(2)}. Resuming operation...`, 'info', '#10B981');
+        if (typeof pendingAction === 'function') {
+          pendingAction();
+        } else if (typeof pendingAction === 'string') {
+          handleSendPrompt(pendingAction);
+        }
+      } catch (err) {
+        alert('Failed to update budget: ' + err.message);
+      }
+    };
+  }
 }
 
 // ==========================================================================
@@ -955,7 +1239,7 @@ async function handleSendPrompt(promptText) {
   if (chatStatusTag) chatStatusTag.textContent = 'Orchestrating...';
 
   try {
-    const payload = { prompt };
+    const payload = { prompt, budget: currentBudgetAmount };
     if (activeProjectId && activeProjectId !== '__new__') {
       payload.projectId = activeProjectId;
     }
@@ -970,6 +1254,11 @@ async function handleSendPrompt(promptText) {
       let errorMsg = `Server error ${res.status}`;
       try {
         const errJson = await res.json();
+        if (res.status === 402 || errJson.status === 'budget_exhausted') {
+          showBudgetExhaustedModal(errJson.spent, errJson.budget, prompt);
+          setControlsLocked(false);
+          return;
+        }
         errorMsg = errJson.message || errJson.error || errorMsg;
       } catch (_) {}
       throw new Error(errorMsg);
@@ -996,26 +1285,6 @@ async function handleSendPrompt(promptText) {
   }
 }
 
-if (chatSendBtn) {
-  chatSendBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const val = chatPromptInput.value;
-    chatPromptInput.value = '';
-    handleSendPrompt(val);
-  });
-}
-
-if (chatPromptInput) {
-  chatPromptInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const val = chatPromptInput.value;
-      chatPromptInput.value = '';
-      handleSendPrompt(val);
-    }
-  });
-}
-
 // Quick Chat Chips
 document.querySelectorAll('.chat-chip').forEach(chip => {
   chip.addEventListener('click', () => {
@@ -1027,20 +1296,52 @@ document.querySelectorAll('.chat-chip').forEach(chip => {
   });
 });
 
-// Sidebar Quick Dispatcher (runs directly without leaving office!)
-if (sidebarLaunchBtn && sidebarPromptInput) {
-  sidebarLaunchBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const val = sidebarPromptInput.value;
+// Prompt Dispatch Handlers (NO auto-send on Enter! Plain Enter creates newline)
+const dispatchSidebarPrompt = (e) => {
+  if (e) e.preventDefault();
+  if (!sidebarPromptInput) return;
+  const val = sidebarPromptInput.value;
+  if (val && val.trim()) {
     sidebarPromptInput.value = '';
     handleSendPrompt(val);
-  });
+  }
+};
+
+const dispatchChatPrompt = (e) => {
+  if (e) e.preventDefault();
+  if (!chatPromptInput) return;
+  const val = chatPromptInput.value;
+  if (val && val.trim()) {
+    chatPromptInput.value = '';
+    handleSendPrompt(val);
+  }
+};
+
+// Wire inline send buttons inside textboxes & footer buttons
+const sidebarSendInlineBtn = document.getElementById('sidebarSendInlineBtn');
+const chatSendInlineBtn = document.getElementById('chatSendInlineBtn');
+
+if (sidebarSendInlineBtn) sidebarSendInlineBtn.addEventListener('click', dispatchSidebarPrompt);
+if (sidebarLaunchBtn) sidebarLaunchBtn.addEventListener('click', dispatchSidebarPrompt);
+
+if (chatSendInlineBtn) chatSendInlineBtn.addEventListener('click', dispatchChatPrompt);
+if (chatSendBtn) chatSendBtn.addEventListener('click', dispatchChatPrompt);
+
+// Optional shortcut: Ctrl+Enter or Cmd+Enter to dispatch (regular Enter just inserts newline)
+if (sidebarPromptInput) {
   sidebarPromptInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      const val = sidebarPromptInput.value;
-      sidebarPromptInput.value = '';
-      handleSendPrompt(val);
+      dispatchSidebarPrompt();
+    }
+  });
+}
+
+if (chatPromptInput) {
+  chatPromptInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      dispatchChatPrompt();
     }
   });
 }
@@ -1063,6 +1364,43 @@ function initEventSource() {
     try {
       const data = JSON.parse(e.data);
       agentStateManager.handlePipelineEvent(data);
+
+      if (data.stage === 'AGENT_COST_INCURRED') {
+        const spentEl = document.getElementById('spentCostDisplay');
+        if (spentEl && data.totalProjectSpend !== undefined) {
+          spentEl.textContent = `$${data.totalProjectSpend.toFixed(2)}`;
+        }
+        addTerminalEntry(
+          new Date().toLocaleTimeString(),
+          'COST',
+          'SPEND',
+          `${data.agentName} executed via ${data.modelUsed} (+$${data.cost.toFixed(2)}) | Spend: $${data.totalProjectSpend.toFixed(2)} / Budget: $${data.budget.toFixed(2)}`,
+          'info',
+          '#10B981'
+        );
+      } else if (data.stage === 'AGENT_FALLBACK') {
+        addTerminalEntry(
+          new Date().toLocaleTimeString(),
+          'ROUTER',
+          'FALLBACK',
+          `⚠️ Agent ${data.agentId} model ${data.from} failed (${data.reason}). Automatically switched to ${data.to}`,
+          'warning',
+          '#F59E0B'
+        );
+      } else if (data.stage === 'BUDGET_ALLOCATED') {
+        if (data.selectedAgents) {
+          agentStateManager.setHiredAgents(Object.values(data.selectedAgents));
+          renderAgentRosters();
+        }
+        addTerminalEntry(
+          new Date().toLocaleTimeString(),
+          'BUDGET',
+          'TEAM',
+          `Budget set to $${data.budget.toFixed(2)} (${data.tier.toUpperCase()}). Est. run cost: $${data.estimatedCost.toFixed(2)}`,
+          'info',
+          '#3B82F6'
+        );
+      }
 
       if (data.stage === 'PIPELINE_COMPLETED') {
         setControlsLocked(false);
@@ -1113,6 +1451,111 @@ function bootstrap() {
   agentStateManager.onTerminalLog((log) => {
     addTerminalEntry(log.timestamp, log.agentTag, log.status, log.message, log.type, log.agentColor);
   });
+
+  // Prompt Embedded Budget Controls (Pills, Number Inputs, and Sliders)
+  const sidebarBudgetSlider = document.getElementById('sidebarBudgetSlider');
+  const chatBudgetSlider = document.getElementById('chatBudgetSlider');
+  const sidebarBudgetNumberInput = document.getElementById('sidebarBudgetNumberInput');
+  const chatBudgetNumberInput = document.getElementById('chatBudgetNumberInput');
+
+  // 1. Sliders
+  if (sidebarBudgetSlider) {
+    sidebarBudgetSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      handleBudgetSliderChange(val);
+    });
+  }
+
+  if (chatBudgetSlider) {
+    chatBudgetSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      handleBudgetSliderChange(val);
+    });
+  }
+
+  // 2. Custom Numeric Inputs
+  const handleNumberInput = (e) => {
+    const val = parseFloat(e.target.value);
+    if (!isNaN(val) && val >= 0) {
+      handleBudgetSliderChange(val);
+    }
+  };
+
+  if (sidebarBudgetNumberInput) {
+    sidebarBudgetNumberInput.addEventListener('input', handleNumberInput);
+    sidebarBudgetNumberInput.addEventListener('change', handleNumberInput);
+  }
+
+  if (chatBudgetNumberInput) {
+    chatBudgetNumberInput.addEventListener('input', handleNumberInput);
+    chatBudgetNumberInput.addEventListener('change', handleNumberInput);
+  }
+
+  // 3. Quick Budget Tier Pills (Free, Lean, Moderate, Max)
+  document.querySelectorAll('.budget-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      const budgetVal = parseFloat(pill.dataset.budget);
+      if (!isNaN(budgetVal)) {
+        handleBudgetSliderChange(budgetVal);
+      }
+    });
+  });
+
+  // Initialize budget controls at default Moderate ($0.35)
+  updateBudgetControls(0.35);
+
+  // Spawn Agent modal controller
+  const spawnAgentBtn = document.getElementById('spawnAgentBtn');
+  const spawnAgentModal = document.getElementById('spawnAgentModal');
+  const closeSpawnModalBtn = document.getElementById('closeSpawnModalBtn');
+  const cancelSpawnModalBtn = document.getElementById('cancelSpawnModalBtn');
+  const confirmSpawnAgentBtn = document.getElementById('confirmSpawnAgentBtn');
+  const newAgentRole = document.getElementById('newAgentRole');
+  const newAgentModel = document.getElementById('newAgentModel');
+
+  if (spawnAgentBtn && spawnAgentModal) {
+    spawnAgentBtn.addEventListener('click', () => {
+      spawnAgentModal.style.display = 'flex';
+    });
+    const closeModal = () => { spawnAgentModal.style.display = 'none'; };
+    if (closeSpawnModalBtn) closeSpawnModalBtn.addEventListener('click', closeModal);
+    if (cancelSpawnModalBtn) cancelSpawnModalBtn.addEventListener('click', closeModal);
+
+    if (confirmSpawnAgentBtn) {
+      confirmSpawnAgentBtn.addEventListener('click', async () => {
+        const role = newAgentRole?.value || 'designer';
+        const model = newAgentModel?.value || 'kimi-k3';
+        try {
+          const res = await fetch('/api/agents/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, model }),
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            addLog(`Spawned new agent ${data.agent.name} (${data.agent.id}) with model ${model}`, 'success', 'SYS', 'SPAWN');
+            closeModal();
+            agentStateManager.registerAgent({
+              id: data.agent.id,
+              backendId: data.agent.id,
+              name: data.agent.name,
+              tag: data.agent.id.slice(0, 2).toUpperCase(),
+              role: data.agent.role,
+              model: data.agent.model || model,
+              color: '#38BDF8',
+              room: 'Main Workspace',
+              core: false,
+              skills: data.agent.skills || ['Specialist Task'],
+            });
+            renderAgentRosters();
+          }
+        } catch (err) {
+          alert('Failed to spawn agent: ' + err.message);
+        }
+      });
+    }
+  }
 
   updateHeaderStats();
   addLog('Agent Orchestra Workspace initialized. 10 AI specialist agents ready on duty.', 'info', 'SYS', 'READY');

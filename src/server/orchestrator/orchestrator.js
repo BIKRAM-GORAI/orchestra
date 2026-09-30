@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import { agentRegistry } from '../agents/agentRegistry.js';
 import { getProject, updateProject, saveProjectHtml, getProjectHtml, saveAgentArtifact } from '../services/projectService.js';
+import { budgetService } from '../services/budgetService.js';
 
 /**
  * Helper to safely extract HTML content from various structured outputs
@@ -13,20 +14,44 @@ export function extractHtmlFromCodingResult(result, rawText = '') {
   }
 
   if (!content && typeof rawText === 'string') {
-    // Check for markdown code fences (including unclosed fences)
-    const fenceMatch = rawText.match(/```(?:html)?\s*([\s\S]*?)(?:```|$)/i);
-    if (fenceMatch && fenceMatch[1].trim().includes('<')) {
-      content = fenceMatch[1].trim();
-    } else {
+    // 1. Check for explicit html code fences: ```html ... ```
+    const htmlFenceMatch = rawText.match(/```html\s*([\s\S]*?)(?:```|$)/i);
+    if (htmlFenceMatch && htmlFenceMatch[1].trim().includes('<')) {
+      content = htmlFenceMatch[1].trim();
+    }
+
+    // 2. Check for "content": "...<!DOCTYPE html>..." inside raw JSON string
+    if (!content) {
+      const contentJsonMatch = rawText.match(/"content"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"|"\s*\}|$)/);
+      if (contentJsonMatch && contentJsonMatch[1].includes('<')) {
+        content = contentJsonMatch[1];
+      }
+    }
+
+    // 3. Fallback: find <!DOCTYPE html> ... </html>
+    if (!content) {
       const docIndex = rawText.indexOf('<!DOCTYPE html>');
       if (docIndex !== -1) {
-        content = rawText.slice(docIndex).trim();
+        const lastHtmlClose = rawText.lastIndexOf('</html>');
+        if (lastHtmlClose !== -1 && lastHtmlClose > docIndex) {
+          content = rawText.slice(docIndex, lastHtmlClose + 7).trim();
+        } else {
+          content = rawText.slice(docIndex).trim();
+        }
+      }
+    }
+
+    // 4. Fallback: generic code fences that are NOT json fences
+    if (!content) {
+      const fenceMatch = rawText.match(/```(?!(?:json))\w*\s*([\s\S]*?)(?:```|$)/i);
+      if (fenceMatch && fenceMatch[1].trim().includes('<')) {
+        content = fenceMatch[1].trim();
       }
     }
   }
 
   // Unescape literal JSON escape sequences if extracted from raw JSON string
-  if (content.includes('\\n')) {
+  if (content.includes('\\n') || content.includes('\\"')) {
     content = content
       .replace(/\\r\\n/g, '\n')
       .replace(/\\n/g, '\n')
@@ -72,9 +97,30 @@ export class Orchestrator extends EventEmitter {
     super();
     this.registry = registry;
 
-    // Relay agent state events
+    // Relay agent state and fallback events
     this.registry.on('agentState', (ev) => {
       this.emit('agentState', ev);
+    });
+    this.registry.on('agentFallback', (ev) => {
+      this.emitPipelineEvent('AGENT_FALLBACK', ev);
+    });
+  }
+
+  /**
+   * Record spend and emit cost tracking events
+   */
+  recordAgentExecution(projectId, agent, output) {
+    const cost = output?.cost ?? 0;
+    const modelUsed = output?.model ?? agent.modelId;
+    const totalSpend = budgetService.recordSpend(projectId, cost);
+    this.emitPipelineEvent('AGENT_COST_INCURRED', {
+      projectId,
+      agentId: agent.id,
+      agentName: agent.name,
+      modelUsed,
+      cost,
+      totalProjectSpend: totalSpend,
+      budget: budgetService.getBudget(),
     });
   }
 
@@ -105,6 +151,7 @@ export class Orchestrator extends EventEmitter {
     });
 
     const plan = managerOutput.result;
+    this.recordAgentExecution(projectId, manager, managerOutput);
     this.emitPipelineEvent('MANAGER_PLAN_COMPLETED', { plan });
 
     if (projectId) {
@@ -157,6 +204,7 @@ export class Orchestrator extends EventEmitter {
               response: out.result,
             }).catch(e => console.warn('[ARTIFACT] Error saving designer artifact:', e.message));
           }
+          this.recordAgentExecution(projectId, designer, out);
           return { agent: 'designer', output: out.result };
         })
       );
@@ -185,6 +233,7 @@ export class Orchestrator extends EventEmitter {
               response: out.result,
             }).catch(e => console.warn('[ARTIFACT] Error saving frontend_architect artifact:', e.message));
           }
+          this.recordAgentExecution(projectId, frontendArchitect, out);
           return { agent: 'frontend_architect', output: out.result };
         })
       );
@@ -213,6 +262,7 @@ export class Orchestrator extends EventEmitter {
               response: out.result,
             }).catch(e => console.warn('[ARTIFACT] Error saving feature_architect artifact:', e.message));
           }
+          this.recordAgentExecution(projectId, featureArchitect, out);
           return { agent: 'feature_architect', output: out.result };
         })
       );
@@ -273,6 +323,7 @@ Return a JSON object conforming to:
     });
 
     const unifiedSpec = synthesisOutput.result?.unified_specification || synthesisOutput.result;
+    this.recordAgentExecution(projectId, manager, synthesisOutput);
     this.emitPipelineEvent('MANAGER_SYNTHESIS_COMPLETED', { unifiedSpec });
 
     if (projectId) {
@@ -368,6 +419,8 @@ User Modification Request:\n"${userPrompt}"`;
       throw new Error('Coding Agent failed to produce valid HTML content');
     }
 
+    this.recordAgentExecution(projectId, codingAgent, codingOutput);
+
     // Persist into isolated project directory and mirror to workspace
     if (projectId) {
       await saveProjectHtml(projectId, htmlContent, changeNote);
@@ -417,6 +470,7 @@ Return a structured audit report with status "passed" or "issues_found". Do NOT 
     });
 
     const report = qaOutput.result || {};
+    this.recordAgentExecution(projectId, qaAgent, qaOutput);
     if (projectId) {
       await updateProject(projectId, { qaReport: report });
       saveAgentArtifact({

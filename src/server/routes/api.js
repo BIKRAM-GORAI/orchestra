@@ -6,6 +6,7 @@ import { modelGateway } from '../gateway/modelGateway.js';
 import { agentRegistry } from '../agents/agentRegistry.js';
 import { orchestrator } from '../orchestrator/orchestrator.js';
 import { listProjects, getProject, getProjectHtml, createProject, getProjectFiles, getProjectFileContent } from '../services/projectService.js';
+import { budgetService, BUDGET_TIERS } from '../services/budgetService.js';
 
 export const router = express.Router();
 
@@ -18,6 +19,7 @@ router.get('/health', (req, res) => {
     env: {
       hasNvidiaKey: Boolean(config.nvidiaApiKey),
       hasGeminiKey: Boolean(config.geminiApiKey),
+      hasOpenRouterKey: Boolean(config.openrouterApiKey),
       defaultModel: 'gemini-3.5-flash',
       port: config.port,
     },
@@ -33,6 +35,10 @@ router.get('/models', (req, res) => {
       name: m.name,
       provider: m.provider,
       model: m.model,
+      tier: m.tier,
+      speed: m.speed,
+      costPerCall: m.costPerCall,
+      costDisplay: m.costDisplay,
       capabilities: m.capabilities,
     })),
     policy: MODEL_POLICIES.default,
@@ -46,6 +52,34 @@ router.get('/agents', (req, res) => {
   });
 });
 
+// Dynamic agent creation endpoint
+router.post('/agents/create', (req, res) => {
+  const { role, model, id } = req.body;
+  try {
+    const newAgent = agentRegistry.createAgentInstance({ role, model, id });
+    res.json({
+      status: 'success',
+      agent: newAgent.toJSON(),
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Update agent configuration (model and fallback chain)
+router.put('/agents/:id/config', (req, res) => {
+  const { modelId, fallbackModels } = req.body;
+  try {
+    const updated = agentRegistry.updateAgentConfig(req.params.id, { modelId, fallbackModels });
+    res.json({
+      status: 'success',
+      agent: updated.toJSON(),
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.post('/agents/:id/model', (req, res) => {
   const { modelId } = req.body;
   try {
@@ -57,6 +91,38 @@ router.post('/agents/:id/model', (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+});
+
+// Budget Status and Allocation endpoints
+router.get('/budget/status', (req, res) => {
+  const projectId = req.query.projectId;
+  res.json({
+    currentBudget: budgetService.getBudget(),
+    projectSpend: projectId ? budgetService.getProjectSpend(projectId) : 0,
+    tiers: BUDGET_TIERS,
+    models: Object.values(MODEL_REGISTRY).map(m => ({
+      id: m.id,
+      name: m.name,
+      tier: m.tier,
+      speed: m.speed,
+      costPerCall: m.costPerCall,
+      costDisplay: m.costDisplay,
+    })),
+  });
+});
+
+router.post('/budget/allocate', (req, res) => {
+  const { budget, tier } = req.body;
+  let targetAmount = budget;
+  if (targetAmount === undefined && tier) {
+    targetAmount = BUDGET_TIERS[tier.toUpperCase()]?.maxBudget ?? 0.25;
+  }
+  const result = budgetService.allocateBudget(targetAmount, agentRegistry);
+  orchestrator.emitPipelineEvent('BUDGET_ALLOCATED', result);
+  res.json({
+    status: 'success',
+    ...result,
+  });
 });
 
 // Real-time Orchestration Event Stream (SSE)
@@ -124,8 +190,26 @@ router.post('/orchestrate/spec', async (req, res) => {
 
 // Phase 4: Full End-to-End Build Pipeline (Spec + Coding Agent)
 router.post('/orchestrate/build', async (req, res) => {
-  const { prompt, projectId, projectName } = req.body;
+  const { prompt, projectId, projectName, budget } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+  if (budget !== undefined) {
+    budgetService.allocateBudget(budget, agentRegistry);
+  }
+
+  let targetProjectId = projectId;
+  if (targetProjectId) {
+    const currentBudget = budgetService.getBudget();
+    const currentSpend = budgetService.getProjectSpend(targetProjectId);
+    if (currentBudget > 0 && currentSpend >= currentBudget) {
+      return res.status(402).json({
+        status: 'budget_exhausted',
+        error: 'Budget limit reached. Please increase your project budget to perform additional builds.',
+        spent: currentSpend,
+        budget: currentBudget,
+      });
+    }
+  }
 
   try {
     let targetProjectId = projectId;
@@ -157,8 +241,12 @@ router.post('/orchestrate/build', async (req, res) => {
 
 // Phase 7: Human Feedback Endpoint (Direct-to-Coder with Minimal Change Preservation)
 router.post('/orchestrate/feedback', async (req, res) => {
-  const { projectId, feedback } = req.body;
+  const { projectId, feedback, budget } = req.body;
   if (!feedback) return res.status(400).json({ error: 'Feedback message is required' });
+
+  if (budget !== undefined) {
+    budgetService.allocateBudget(budget, agentRegistry);
+  }
 
   try {
     let targetProjectId = projectId;
@@ -169,6 +257,17 @@ router.post('/orchestrate/feedback', async (req, res) => {
       } else {
         return res.status(400).json({ error: 'No active project found to modify' });
       }
+    }
+
+    const currentBudget = budgetService.getBudget();
+    const currentSpend = budgetService.getProjectSpend(targetProjectId);
+    if (currentBudget > 0 && currentSpend >= currentBudget) {
+      return res.status(402).json({
+        status: 'budget_exhausted',
+        error: 'Budget limit reached. Please increase your project budget to apply further edits.',
+        spent: currentSpend,
+        budget: currentBudget,
+      });
     }
 
     const result = await orchestrator.applyFeedback({

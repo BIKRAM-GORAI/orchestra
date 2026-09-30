@@ -12,6 +12,33 @@ export const AGENT_STATES = {
 };
 
 /**
+ * Prebuilt automated fallback chains based on agent model / tier hierarchy:
+ * - Free Model (qwen-3.8-27b):
+ *     Primary: Free model (qwen-3.8-27b)
+ *     Fallback 1: Next best model (kimi-k3)
+ *     Fallback 2: Top best model (gemini-3.5-flash-lite)
+ * - Pro Model (kimi-k3):
+ *     Primary: Moderate model (kimi-k3)
+ *     Fallback 1: Top best model (gemini-3.5-flash-lite)
+ *     Fallback 2: Free model backup (qwen-3.8-27b)
+ * - Premium Model (gemini-3.5-flash-lite / Manager):
+ *     Primary: Top best model (gemini-3.5-flash-lite)
+ *     Fallback 1: Second best model (kimi-k3)
+ *     Fallback 2: Third model (qwen-3.8-27b)
+ */
+export function getPrebuiltFallbackChain(modelId = '') {
+  const m = String(modelId).toLowerCase();
+  if (m.includes('qwen')) {
+    return ['kimi-k3', 'gemini-3.5-flash-lite'];
+  }
+  if (m.includes('kimi')) {
+    return ['gemini-3.5-flash-lite', 'qwen-3.8-27b'];
+  }
+  // Gemini or default premium
+  return ['kimi-k3', 'qwen-3.8-27b'];
+}
+
+/**
  * Base Agent
  * 
  * Logical entity encapsulating:
@@ -30,6 +57,7 @@ export class BaseAgent extends EventEmitter {
     description,
     skills = [],
     model = 'kimi-k3',
+    fallbackModels = null,
     systemPrompt = '',
     outputSchema = null,
   }) {
@@ -44,6 +72,9 @@ export class BaseAgent extends EventEmitter {
     this.description = description;
     this.skills = skills;
     this.modelId = model;
+    this.fallbackModels = Array.isArray(fallbackModels) && fallbackModels.length > 0
+      ? [...fallbackModels]
+      : getPrebuiltFallbackChain(model);
     this.systemPrompt = systemPrompt;
     this.outputSchema = outputSchema;
 
@@ -66,10 +97,20 @@ export class BaseAgent extends EventEmitter {
   }
 
   /**
-   * Set or update assigned model ID
+   * Set or update assigned model ID and synchronize prebuilt fallback chain
    */
   setModel(newModelId) {
     this.modelId = newModelId;
+    this.fallbackModels = getPrebuiltFallbackChain(newModelId);
+  }
+
+  /**
+   * Set or update fallback models list
+   */
+  setFallbackModels(models) {
+    if (Array.isArray(models)) {
+      this.fallbackModels = [...models];
+    }
   }
 
   /**
@@ -154,6 +195,7 @@ export class BaseAgent extends EventEmitter {
     try {
       const result = await gateway.generate({
         modelId: this.modelId,
+        fallbackModels: this.fallbackModels,
         messages,
         parameters,
         onChunk: (chunk) => {
@@ -165,6 +207,9 @@ export class BaseAgent extends EventEmitter {
         onStateChange: (state, details) => {
           if (state === 'retrying') {
             this.setState(AGENT_STATES.RETRYING, details);
+          } else if (state === 'fallback') {
+            this.setState(AGENT_STATES.RETRYING, { ...details, isFallback: true });
+            this.emit('fallback', { agentId: this.id, ...details });
           }
           if (onStateChange) onStateChange(state, details);
         },
@@ -176,6 +221,7 @@ export class BaseAgent extends EventEmitter {
         rawText: result.text,
         reasoningText: result.reasoningText,
         model: result.model,
+        cost: result.cost ?? 0,
         durationMs: result.durationMs,
         attempts: result.attempts,
       };
@@ -183,6 +229,8 @@ export class BaseAgent extends EventEmitter {
       this.setState(AGENT_STATES.COMPLETED, {
         durationMs: result.durationMs,
         attempts: result.attempts,
+        model: result.model,
+        cost: result.cost ?? 0,
       });
 
       return this.lastOutput;
@@ -203,6 +251,8 @@ export class BaseAgent extends EventEmitter {
       skills: this.skills,
       model: this.modelId,
       modelId: this.modelId,
+      primaryModel: this.modelId,
+      fallbackModels: this.fallbackModels || [],
       state: this.state,
     };
   }

@@ -38,6 +38,7 @@ export class ModelGateway {
    */
   async generate({
     modelId = 'kimi-k3',
+    fallbackModels = null,
     messages = [],
     parameters = {},
     onChunk = null,
@@ -45,7 +46,10 @@ export class ModelGateway {
     policyName = 'default',
   } = {}) {
     const policy = getModelPolicy(policyName);
-    const modelsToTry = [modelId, ...(policy.fallback || [])];
+    const fallbacks = Array.isArray(fallbackModels) && fallbackModels.length > 0
+      ? fallbackModels
+      : (policy.fallback || []);
+    const modelsToTry = [modelId, ...fallbacks.filter(m => m !== modelId)];
 
     let lastError = null;
     const overallStartTime = Date.now();
@@ -67,11 +71,11 @@ export class ModelGateway {
         attempt++;
         const attemptStartTime = Date.now();
 
-        // Setup timeout controller
-        const timeoutMs = policy.retry.timeoutMs || 90000;
+        // Setup timeout controller with streaming activity watchdog
+        const timeoutMs = policy.retry.timeoutMs || 120000;
         const abortController = new AbortController();
-        const timeoutId = setTimeout(() => {
-          abortController.abort(new Error(`Model Gateway request timed out after ${timeoutMs}ms`));
+        let timeoutId = setTimeout(() => {
+          abortController.abort(new Error(`Model Gateway request timed out after ${timeoutMs}ms (no initial response)`));
         }, timeoutMs);
 
         try {
@@ -96,6 +100,12 @@ export class ModelGateway {
               chunkReceived = true;
               if (onStateChange) onStateChange('streaming', { model: currentModelId });
             }
+            // Active stream watchdog: reset timeout so streaming continues uninterrupted
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+              abortController.abort(new Error(`Model Gateway stream stalled (no chunks received for 60000ms)`));
+            }, 60000);
+
             if (onChunk) onChunk(chunk);
           };
 
@@ -118,6 +128,8 @@ export class ModelGateway {
             attempts: attempt,
             modelId: currentModelId,
             provider: modelConfig.provider,
+            cost: modelConfig.costPerCall ?? 0,
+            tier: modelConfig.tier,
           };
         } catch (error) {
           clearTimeout(timeoutId);
@@ -147,9 +159,17 @@ export class ModelGateway {
         }
       }
 
-      // If we reach here for this model and have a fallback model, log fallback attempt
+      // If we reach here for this model and have a fallback model, notify and log fallback
       if (modelIndex < modelsToTry.length - 1) {
-        console.warn(`[MODEL GATEWAY] Primary model ${currentModelId} failed. Switching to fallback ${modelsToTry[modelIndex + 1]}...`);
+        const nextModel = modelsToTry[modelIndex + 1];
+        console.warn(`[MODEL GATEWAY] Model ${currentModelId} failed (${lastError?.message}). Switching to fallback ${nextModel}...`);
+        if (onStateChange) {
+          onStateChange('fallback', {
+            from: currentModelId,
+            to: nextModel,
+            reason: lastError?.message || 'Upstream model failed',
+          });
+        }
       }
     }
 

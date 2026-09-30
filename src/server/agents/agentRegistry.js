@@ -1,10 +1,10 @@
 import EventEmitter from 'events';
 import { ManagerAgent } from './definitions/managerAgent.js';
-import { DesignerAgent } from './definitions/designerAgent.js';
-import { FrontendArchitectAgent } from './definitions/frontendArchitectAgent.js';
-import { FeatureArchitectAgent } from './definitions/featureArchitectAgent.js';
-import { CodingAgent } from './definitions/codingAgent.js';
-import { QAAgent } from './definitions/qaAgent.js';
+import { DesignerAgent, DesignerAgentFree, DesignerAgentPro, DesignerAgentMax } from './definitions/designerAgent.js';
+import { FrontendArchitectAgent, FrontendArchitectAgentFree, FrontendArchitectAgentPro, FrontendArchitectAgentMax } from './definitions/frontendArchitectAgent.js';
+import { FeatureArchitectAgent, FeatureArchitectAgentFree, FeatureArchitectAgentPro, FeatureArchitectAgentMax } from './definitions/featureArchitectAgent.js';
+import { CodingAgent, CodingAgentFree, CodingAgentPro, CodingAgentMax } from './definitions/codingAgent.js';
+import { QAAgent, QAAgentFree, QAAgentPro, QAAgentMax } from './definitions/qaAgent.js';
 
 /**
  * Agent Registry
@@ -37,13 +37,18 @@ export class AgentRegistry extends EventEmitter {
     // Register backwards-compatible aliases
     this.aliasMap.set('manager', 'manager-1');
     this.aliasMap.set('designer', 'designer-1');
+    this.aliasMap.set('designer-pro-1', 'designer-1');
     this.aliasMap.set('frontend_architect', 'frontend-1');
     this.aliasMap.set('frontend', 'frontend-1');
+    this.aliasMap.set('frontend-pro-1', 'frontend-1');
     this.aliasMap.set('feature_architect', 'feature-1');
     this.aliasMap.set('feature', 'feature-1');
+    this.aliasMap.set('feature-pro-1', 'feature-1');
     this.aliasMap.set('coding_agent', 'coder-1');
     this.aliasMap.set('coder', 'coder-1');
+    this.aliasMap.set('coder-pro-1', 'coder-1');
     this.aliasMap.set('qa', 'qa-1');
+    this.aliasMap.set('qa-pro-1', 'qa-1');
   }
 
   registerAgent(agent) {
@@ -52,6 +57,21 @@ export class AgentRegistry extends EventEmitter {
     agent.on('state', (event) => {
       this.emit('agentState', event);
     });
+    agent.on('fallback', (event) => {
+      this.emit('agentFallback', event);
+    });
+  }
+
+  updateAgentConfig(id, { modelId, fallbackModels } = {}) {
+    const agent = this.getAgent(id);
+    if (modelId) agent.setModel(modelId);
+    if (Array.isArray(fallbackModels)) agent.setFallbackModels(fallbackModels);
+    this.emit('agentConfigUpdated', {
+      agentId: agent.id,
+      modelId: agent.modelId,
+      fallbackModels: agent.fallbackModels,
+    });
+    return agent;
   }
 
   /**
@@ -74,48 +94,188 @@ export class AgentRegistry extends EventEmitter {
   /**
    * Dynamically instantiate a new agent with a guaranteed unique sequential ID
    */
-  createAgentInstance({ role, model = 'gemini-3.5-flash-lite', id = null } = {}) {
+  createAgentInstance({ role, model = 'gemini-3.5-flash-lite', id = null, tier = null } = {}) {
     let agent;
     const normalizedRole = role?.toLowerCase() || 'designer';
 
     if (normalizedRole.includes('design')) {
       const uniqueId = id || this.generateNextAgentId('designer');
-      agent = new DesignerAgent(model, uniqueId);
+      agent = new DesignerAgent(model, uniqueId, tier);
     } else if (normalizedRole.includes('frontend')) {
       const uniqueId = id || this.generateNextAgentId('frontend');
-      agent = new FrontendArchitectAgent(model, uniqueId);
+      agent = new FrontendArchitectAgent(model, uniqueId, tier);
     } else if (normalizedRole.includes('feature')) {
       const uniqueId = id || this.generateNextAgentId('feature');
-      agent = new FeatureArchitectAgent(model, uniqueId);
+      agent = new FeatureArchitectAgent(model, uniqueId, tier);
     } else if (normalizedRole.includes('cod')) {
       const uniqueId = id || this.generateNextAgentId('coder');
-      agent = new CodingAgent(model, uniqueId);
+      agent = new CodingAgent(model, uniqueId, tier);
     } else if (normalizedRole.includes('qa') || normalizedRole.includes('audit')) {
       const uniqueId = id || this.generateNextAgentId('qa');
-      agent = new QAAgent(model, uniqueId);
+      agent = new QAAgent(model, uniqueId, tier);
     } else {
       const uniqueId = id || this.generateNextAgentId('agent');
-      agent = new DesignerAgent(model, uniqueId);
+      agent = new DesignerAgent(model, uniqueId, tier);
     }
 
     this.registerAgent(agent);
     return agent;
   }
 
-  getAgent(id) {
-    if (this.agents.has(id)) {
-      return this.agents.get(id);
-    }
-    if (this.aliasMap.has(id)) {
-      const realId = this.aliasMap.get(id);
-      if (this.agents.has(realId)) {
-        return this.agents.get(realId);
+  initFullAgencyRoster() {
+    const fullRoster = [
+      new ManagerAgent('gemini-3.5-flash-lite', 'manager-1'),
+
+      // 3 Designers
+      new DesignerAgentFree('qwen-3.8-27b', 'designer-1'),
+      new DesignerAgentPro('kimi-k3', 'designer-2'),
+      new DesignerAgentMax('gemini-3.5-flash-lite', 'designer-3'),
+
+      // 3 Frontend Architects
+      new FrontendArchitectAgentFree('qwen-3.8-27b', 'frontend-1'),
+      new FrontendArchitectAgentPro('kimi-k3', 'frontend-2'),
+      new FrontendArchitectAgentMax('gemini-3.5-flash-lite', 'frontend-3'),
+
+      // 3 Feature Architects
+      new FeatureArchitectAgentFree('qwen-3.8-27b', 'feature-1'),
+      new FeatureArchitectAgentPro('kimi-k3', 'feature-2'),
+      new FeatureArchitectAgentMax('gemini-3.5-flash-lite', 'feature-3'),
+
+      // 3 Coders
+      new CodingAgentFree('qwen-3.8-27b', 'coder-1'),
+      new CodingAgentPro('kimi-k3', 'coder-2'),
+      new CodingAgentMax('gemini-3.5-flash-lite', 'coder-3'),
+
+      // 3 QA Auditors
+      new QAAgentFree('qwen-3.8-27b', 'qa-1'),
+      new QAAgentPro('kimi-k3', 'qa-2'),
+      new QAAgentMax('gemini-3.5-flash-lite', 'qa-3'),
+    ];
+
+    for (const agent of fullRoster) {
+      if (!this.agents.has(agent.id)) {
+        this.registerAgent(agent);
       }
     }
-    throw new Error(`Agent "${id}" not found in registry. Registered: ${Array.from(this.agents.keys()).join(', ')}`);
   }
 
-  getAllAgents() {
+  getAgent(id) {
+    const targetId = this.aliasMap.get(id) || id;
+    if (this.agents.has(targetId)) {
+      return this.agents.get(targetId);
+    }
+
+    // Lazy tier instantiation for all 15 specialists
+    if (targetId === 'designer-1' || targetId === 'designer-free-1') {
+      const a = new DesignerAgentFree('qwen-3.8-27b', 'designer-1');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'designer-2' || targetId === 'designer-pro-1') {
+      const a = new DesignerAgentPro('kimi-k3', 'designer-2');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'designer-3' || targetId === 'designer-max-1') {
+      const a = new DesignerAgentMax('gemini-3.5-flash-lite', 'designer-3');
+      this.registerAgent(a);
+      return a;
+    }
+
+    if (targetId === 'frontend-1' || targetId === 'frontend-free-1') {
+      const a = new FrontendArchitectAgentFree('qwen-3.8-27b', 'frontend-1');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'frontend-2' || targetId === 'frontend-pro-1') {
+      const a = new FrontendArchitectAgentPro('kimi-k3', 'frontend-2');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'frontend-3' || targetId === 'frontend-max-1') {
+      const a = new FrontendArchitectAgentMax('gemini-3.5-flash-lite', 'frontend-3');
+      this.registerAgent(a);
+      return a;
+    }
+
+    if (targetId === 'feature-1' || targetId === 'feature-free-1') {
+      const a = new FeatureArchitectAgentFree('qwen-3.8-27b', 'feature-1');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'feature-2' || targetId === 'feature-pro-1') {
+      const a = new FeatureArchitectAgentPro('kimi-k3', 'feature-2');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'feature-3' || targetId === 'feature-max-1') {
+      const a = new FeatureArchitectAgentMax('gemini-3.5-flash-lite', 'feature-3');
+      this.registerAgent(a);
+      return a;
+    }
+
+    if (targetId === 'coder-1' || targetId === 'coder-free-1') {
+      const a = new CodingAgentFree('qwen-3.8-27b', 'coder-1');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'coder-2' || targetId === 'coder-pro-1') {
+      const a = new CodingAgentPro('kimi-k3', 'coder-2');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'coder-3' || targetId === 'coder-max-1') {
+      const a = new CodingAgentMax('gemini-3.5-flash-lite', 'coder-3');
+      this.registerAgent(a);
+      return a;
+    }
+
+    if (targetId === 'qa-1' || targetId === 'qa-free-1') {
+      const a = new QAAgentFree('qwen-3.8-27b', 'qa-1');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'qa-2' || targetId === 'qa-pro-1') {
+      const a = new QAAgentPro('kimi-k3', 'qa-2');
+      this.registerAgent(a);
+      return a;
+    }
+    if (targetId === 'qa-3' || targetId === 'qa-max-1') {
+      const a = new QAAgentMax('gemini-3.5-flash-lite', 'qa-3');
+      this.registerAgent(a);
+      return a;
+    }
+
+    throw new Error(`Agent "${id}" (target: "${targetId}") not found in registry. Registered: ${Array.from(this.agents.keys()).join(', ')}`);
+  }
+
+  /**
+   * Set active team selection for each logical role
+   */
+  setActiveAgents({ manager, designer, frontend, feature, coder, qa } = {}) {
+    if (manager) this.aliasMap.set('manager', manager);
+    if (designer) this.aliasMap.set('designer', designer);
+    if (frontend) this.aliasMap.set('frontend_architect', frontend);
+    if (feature) this.aliasMap.set('feature_architect', feature);
+    if (coder) {
+      this.aliasMap.set('coding_agent', coder);
+      this.aliasMap.set('coder', coder);
+    }
+    if (qa) this.aliasMap.set('qa', qa);
+  }
+
+  /**
+   * Returns active logical agents (default length: 6) or all 16 registered staff members
+   */
+  getAllAgents({ all = false } = {}) {
+    if (all) {
+      return Array.from(this.agents.values());
+    }
+    const logicalRoles = ['manager', 'designer', 'frontend_architect', 'feature_architect', 'coding_agent', 'qa'];
+    return logicalRoles.map(role => this.getAgent(role));
+  }
+
+  getAllStaff() {
     return Array.from(this.agents.values());
   }
 
@@ -138,3 +298,4 @@ export class AgentRegistry extends EventEmitter {
 }
 
 export const agentRegistry = new AgentRegistry();
+agentRegistry.initFullAgencyRoster();

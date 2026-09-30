@@ -96,10 +96,10 @@
           <span class="pill-val" id="headerAgentStats">10 Agents (Active)</span>
         </div>
 
-        <!-- Model Pill -->
-        <div class="header-pill model-pill" id="modelPill">
-          <span class="pill-label">Model:</span>
-          <span class="pill-val" id="currentModelDisplay">Gemini 3.5 Flash</span>
+        <!-- Real-Time Project Spend Counter (Navbar shows only spent budget) -->
+        <div class="header-pill spend-pill" id="spendPill" title="Accumulated Build Cost">
+          <span class="pill-label">Spent:</span>
+          <span class="pill-val highlight-val" id="spentCostDisplay">$0.00</span>
         </div>
       </div>
     </header>
@@ -190,10 +190,27 @@
                   </div>
                 </div>
 
-                <div class="insp-section">
-                  <span class="section-label">Intelligence Model</span>
-                  <div class="model-badge-row">
-                    <span class="agent-model-tag" id="inspModelTag">Gemini 3.5 Flash (Google AI)</span>
+                <div class="insp-section model-config-section">
+                  <div class="section-label-row">
+                    <span class="section-label">Prebuilt Model Routing</span>
+                    <span class="cost-tag" id="inspCostTag">$0.05 / call</span>
+                  </div>
+                  <div class="prebuilt-route-card" id="inspRoutingCard">
+                    <div class="route-primary-row">
+                      <div class="route-pill primary" id="inspPrimaryBadge">
+                        <span class="route-dot"></span>
+                        <span id="inspPrimaryText">Gemini 3.5 Flash Lite ($0.10)</span>
+                        <span class="route-locked-pill" style="margin-left: auto;">PREBUILT</span>
+                      </div>
+                    </div>
+                    <div class="route-fallback-row" style="margin-top: 6px;">
+                      <span class="route-fallback-title">↳ Auto Fallbacks:</span>
+                      <div class="route-fallback-steps" id="inspFallbackList">
+                        <span class="route-step-chip">Kimi K3 <small>($0.05)</small></span>
+                        <span class="route-arrow">→</span>
+                        <span class="route-step-chip">Qwen 3.8 27B <small>($0.00 Free)</small></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -243,7 +260,7 @@
                   <span class="terminal-title-text">zsh — orchestra-telemetry ~ 80×24</span>
                 </div>
                 <button class="btn-clear-logs" id="sidebarClearLogsBtn" title="Clear terminal logs">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                   <span>Clear</span>
                 </button>
               </div>
@@ -299,13 +316,37 @@
                 </div>
               </div>
 
-              <!-- Quick Task Dispatcher Bar -->
-              <div class="sidebar-prompt-dispatcher">
-                <input type="text" id="sidebarPromptInput" placeholder="Direct the team or suggest changes (e.g. 'Add product cards with cart')..." />
-                <button class="btn btn-sm btn-primary" id="sidebarLaunchBtn">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                  <span>Launch</span>
-                </button>
+              <!-- Task Dispatcher & Budget Box -->
+              <div class="sidebar-prompt-box">
+                <div class="prompt-budget-bar">
+                  <div class="budget-control-compact">
+                    <span class="budget-label">Budget:</span>
+                    <div class="budget-number-wrap">
+                      <span class="currency-symbol">$</span>
+                      <input type="number" id="sidebarBudgetNumberInput" class="budget-number-input" min="0" step="0.05" value="0.35" placeholder="0.35" title="Type any custom budget" />
+                    </div>
+                    <span class="budget-tier-tag" id="sidebarBudgetTierTag">Mid ($0.35)</span>
+                  </div>
+                  <div class="budget-tiers-pills">
+                    <button type="button" class="budget-pill" data-budget="0.00" title="Free models only ($0.00)">Free</button>
+                    <button type="button" class="budget-pill" data-budget="0.15" title="Lean / Coder Priority ($0.15)">Lean</button>
+                    <button type="button" class="budget-pill active" data-budget="0.35" title="All moderate specialists ($0.35)">Mid</button>
+                    <button type="button" class="budget-pill" data-budget="1.00" title="All highest/lead models ($1.00+)">Max</button>
+                  </div>
+                  <input type="range" id="sidebarBudgetSlider" min="0" max="2.00" step="0.05" value="0.35" style="display: none;" />
+                </div>
+
+                <div class="prompt-textarea-wrap">
+                  <textarea id="sidebarPromptInput" rows="3" class="sidebar-prompt-textarea" placeholder="Direct the team with your project goal or detailed modifications..."></textarea>
+                  <div class="prompt-textarea-footer">
+                    <span class="prompt-hint-kbd">Enter ↵ newline</span>
+                    <button class="btn-prompt-send-inline" id="sidebarSendInlineBtn" title="Send Directive (Click to send)">
+                      <span>Send</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                    </button>
+                    <button id="sidebarLaunchBtn" style="display: none;"></button>
+                  </div>
+                </div>
               </div>
             </div>
           </aside>
@@ -409,20 +450,43 @@
               <button class="chat-chip" data-prompt="Run comprehensive automated test suite and compliance audit">+ Run Tests</button>
             </div>
 
-            <div class="chat-input-bar">
-              <select class="agent-mention-select" id="chatMentionSelect">
-                <option value="@Team">@Team (All)</option>
-                <option value="@Atlas">@Atlas (Manager)</option>
-                <option value="@Nova">@Nova (Frontend)</option>
-                <option value="@Byte">@Byte (Backend)</option>
-                <option value="@Pixel">@Pixel (Designer)</option>
-                <option value="@Query">@Query (QA)</option>
-              </select>
-              <input type="text" id="chatPromptInput" class="chat-input-field" placeholder="Enter objective or instructions for the team (or use @Agent)..." />
-              <button class="btn btn-primary" id="chatSendBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                <span>Send</span>
-              </button>
+            <div class="chat-composer-box">
+              <div class="prompt-budget-bar">
+                <div class="budget-control-compact">
+                  <select class="agent-mention-select" id="chatMentionSelect">
+                    <option value="@Team">@Team (All Specialists)</option>
+                    <option value="@Atlas">@Atlas (Manager)</option>
+                    <option value="@Nova">@Nova (Frontend)</option>
+                    <option value="@Byte">@Byte (Lead Coder)</option>
+                    <option value="@Pixel">@Pixel (Designer)</option>
+                    <option value="@Query">@Query (QA Auditor)</option>
+                  </select>
+                  <div class="budget-number-wrap" style="margin-left: 4px;">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="chatBudgetNumberInput" class="budget-number-input" min="0" step="0.05" value="0.35" placeholder="0.35" title="Type any custom budget" />
+                  </div>
+                  <span class="budget-tier-tag" id="chatBudgetTierTag">Mid ($0.35)</span>
+                </div>
+                <div class="budget-tiers-pills">
+                  <button type="button" class="budget-pill" data-budget="0.00" title="Free models only ($0.00)">Free</button>
+                  <button type="button" class="budget-pill" data-budget="0.15" title="Lean / Coder Priority ($0.15)">Lean</button>
+                  <button type="button" class="budget-pill active" data-budget="0.35" title="All moderate specialists ($0.35)">Mid</button>
+                  <button type="button" class="budget-pill" data-budget="1.00" title="All highest/lead models ($1.00+)">Max</button>
+                </div>
+                <input type="range" id="chatBudgetSlider" min="0" max="2.00" step="0.05" value="0.35" style="display: none;" />
+              </div>
+
+              <div class="prompt-textarea-wrap">
+                <textarea id="chatPromptInput" rows="3" class="chat-prompt-textarea" placeholder="Enter comprehensive objective, feature request, or styling guidelines for the team..."></textarea>
+                <div class="prompt-textarea-footer">
+                  <span class="prompt-hint-kbd">Enter ↵ newline</span>
+                  <button class="btn-prompt-send-inline" id="chatSendInlineBtn" title="Send Directive (Click to send)">
+                    <span>Send Objective</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                  </button>
+                  <button id="chatSendBtn" style="display: none;"></button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -556,12 +620,87 @@
           <div class="tab-header-toolbar">
             <div class="toolbar-left">
               <h2 class="tab-heading">Autonomous Agent Team Directory</h2>
-              <span class="tag-subtext">10 specialized AI employees working in the virtual atelier</span>
+              <span class="tag-subtext">Multi-agent orchestrator with dynamic model routing & sequential IDs</span>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary btn-sm" id="spawnAgentBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <span>+ Spawn Agent</span>
+              </button>
             </div>
           </div>
 
           <div class="agents-directory-grid" id="agentsDirectoryGrid">
             <!-- Dynamically populated by app.js with Lucide icons -->
+          </div>
+        </div>
+
+        <!-- Spawn Agent Modal -->
+        <div class="modal-backdrop" id="spawnAgentModal" style="display:none;">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h3 class="modal-title">Spawn New Agent</h3>
+              <button class="btn-close-inspector" id="closeSpawnModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="newAgentRole">Agent Role:</label>
+                <select id="newAgentRole" class="modal-select">
+                  <option value="designer">UI/UX Designer (e.g. designer-2)</option>
+                  <option value="frontend">Frontend Architect (e.g. frontend-2)</option>
+                  <option value="feature">Feature Architect (e.g. feature-2)</option>
+                  <option value="coder">Coding Agent (e.g. coder-2)</option>
+                  <option value="qa">QA Auditor (e.g. qa-2)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="newAgentModel">Assigned Model:</label>
+                <select id="newAgentModel" class="modal-select">
+                  <option value="qwen-3.8-27b">Qwen 3.8 27B ($0.00 Free, Budget)</option>
+                  <option value="kimi-k3" selected>Kimi K3 ($0.05, Standard Reasoning)</option>
+                  <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ($0.10, Fast)</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-outline btn-sm" id="cancelSpawnModalBtn">Cancel</button>
+              <button class="btn btn-primary btn-sm" id="confirmSpawnAgentBtn">Create Agent</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget Exhausted Warning Modal -->
+        <div class="modal-backdrop" id="budgetExhaustedModal" style="display:none;">
+          <div class="modal-card">
+            <div class="modal-header" style="background:#FEF2F2;border-bottom:1px solid #FEE2E2;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:1.1rem;">⚠️</span>
+                <h3 class="modal-title" style="color:#991B1B;">Budget Limit Reached</h3>
+              </div>
+              <button class="btn-close-inspector" id="closeBudgetModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+              <p style="font-size:0.78rem;color:#475569;line-height:1.5;">
+                Your project has reached its allocated budget limit (<strong id="budgetModalSpent">$0.25</strong> spent of <strong id="budgetModalLimit">$0.25</strong> limit).
+              </p>
+              <p style="font-size:0.75rem;color:#64748B;margin-top:6px;">
+                To run additional builds, audits, or prompt modifications, please increase your budget or switch to the Free tier (Qwen 3.8 27B).
+              </p>
+              <div class="form-group" style="margin-top:8px;">
+                <label for="increaseBudgetSelect">Set New Budget:</label>
+                <select id="increaseBudgetSelect" class="modal-select">
+                  <option value="0.00">Switch to Free Tier ($0.00 / Qwen 3.8 27B)</option>
+                  <option value="0.25">Add $0.25 (Balanced Tier)</option>
+                  <option value="0.50" selected>Add $0.50 ($0.50 Total)</option>
+                  <option value="0.75">Premium Tier ($0.75 Total)</option>
+                  <option value="1.00">Max Quality Tier ($1.00 Total)</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-outline btn-sm" id="cancelBudgetModalBtn">Dismiss</button>
+              <button class="btn btn-primary btn-sm" id="confirmIncreaseBudgetBtn">Increase Budget & Continue</button>
+            </div>
           </div>
         </div>
       </section>

@@ -1,1 +1,2706 @@
-<!DOCTYPE html><html><body><h1>Original Clean Code</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blossom & Petal Boutique | Luxury Floral Arrangements</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --color-primary: #2D4A3E;
+            --color-secondary: #C86D51;
+            --color-accent: #E6B89C;
+            --color-background: #FAF8F5;
+            --color-surface: #FFFFFF;
+            --color-text-main: #1E2923;
+            --color-text-muted: #6E7C74;
+            --color-sage-tint: #DCE2DE;
+            --color-sage-light: #F0F4F1;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --shadow-subtle: 0 10px 30px rgba(45, 74, 62, 0.06);
+            --shadow-elevated: 0 20px 40px rgba(45, 74, 62, 0.12);
+            --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            
+            /* Typography Scale */
+            --h1-size: clamp(2.25rem, 5vw, 3.5rem);
+            --h2-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            --h3-size: clamp(1.4rem, 2.5vw, 1.75rem);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-background);
+            color: var(--color-text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-serif);
+            font-weight: 600;
+            color: var(--color-text-main);
+            line-height: 1.25;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+        }
+
+        /* Utility Classes */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.75rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-surface);
+        }
+
+        .btn-primary:hover {
+            background-color: #233b31;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            border-radius: 9999px;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--color-primary);
+            color: var(--color-surface);
+            transform: translateY(-2px);
+        }
+
+        .btn-accent {
+            background-color: var(--color-secondary);
+            color: var(--color-surface);
+        }
+
+        .btn-accent:hover {
+            background-color: #b25b42;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        /* Floating Floating Petals Background Animation */
+        .petal-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-petal {
+            position: absolute;
+            background: radial-gradient(circle, rgba(230,184,156,0.35) 0%, rgba(200,109,81,0.15) 100%);
+            border-radius: 150% 0 150% 0;
+            animation: floatPetal 12s infinite linear;
+            opacity: 0.6;
+        }
+
+        @keyframes floatPetal {
+            0% {
+                transform: translateY(-10%) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.6;
+            }
+            80% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(110vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Header & Navigation */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background-color: rgba(250, 248, 245, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--color-sage-tint);
+            transition: var(--transition-smooth);
+        }
+
+        .nav-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 85px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .logo i {
+            color: var(--color-secondary);
+            font-size: 1.35rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .nav-link {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--color-text-main);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--color-secondary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--color-secondary);
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.15rem;
+            color: var(--color-primary);
+            cursor: pointer;
+            position: relative;
+            padding: 0.5rem;
+            transition: var(--transition-smooth);
+        }
+
+        .icon-btn:hover {
+            color: var(--color-secondary);
+            transform: scale(1.08);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--color-secondary);
+            color: var(--color-surface);
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--color-primary);
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 85px;
+            background: linear-gradient(135deg, #FAF8F5 0%, #F0F4F1 100%);
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 3rem;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            padding: 4rem 0;
+        }
+
+        .hero-content {
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .hero-subtitle {
+            display: inline-block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-secondary);
+            margin-bottom: 1rem;
+            padding: 0.35rem 1rem;
+            background-color: rgba(200, 109, 81, 0.1);
+            border-radius: 9999px;
+        }
+
+        .hero-title {
+            font-size: var(--h1-size);
+            color: var(--color-primary);
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-title span {
+            font-style: italic;
+            color: var(--color-secondary);
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--color-text-muted);
+            margin-bottom: 2rem;
+            max-width: 520px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-visual {
+            position: relative;
+            height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 1.2s ease forwards;
+        }
+
+        .hero-main-img {
+            width: 380px;
+            height: 460px;
+            object-fit: cover;
+            border-radius: 200px 200px 20px 20px;
+            box-shadow: var(--shadow-elevated);
+            border: 6px solid var(--color-surface);
+            animation: floatImg 6s ease-in-out infinite;
+        }
+
+        .hero-floating-card {
+            position: absolute;
+            bottom: 40px;
+            left: -20px;
+            background: var(--color-surface);
+            padding: 1.25rem 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-elevated);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--color-sage-tint);
+            animation: floatCard 5s ease-in-out infinite 1s;
+        }
+
+        .hero-floating-card i {
+            font-size: 1.8rem;
+            color: var(--color-secondary);
+        }
+
+        .hero-floating-card h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .hero-floating-card p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        @keyframes floatImg {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(-1deg); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Catalog Section */
+        .catalog-section {
+            padding: 7rem 0 5rem 0;
+            background-color: var(--color-surface);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 3.5rem auto;
+        }
+
+        .section-tag {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-secondary);
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .section-title {
+            font-size: var(--h2-size);
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            color: var(--color-text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Filter & Search Bar */
+        .catalog-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 0.6rem 1.25rem;
+            background-color: var(--color-background);
+            border: 1px solid var(--color-sage-tint);
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .filter-tab:hover,
+        .filter-tab.active {
+            background-color: var(--color-primary);
+            color: var(--color-surface);
+            border-color: var(--color-primary);
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border-radius: 9999px;
+            border: 1px solid var(--color-sage-tint);
+            background-color: var(--color-background);
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+            transition: var(--transition-smooth);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background-color: var(--color-surface);
+            box-shadow: 0 0 0 3px rgba(45, 74, 62, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.15rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .product-card {
+            background: var(--color-surface);
+            border-radius: 16px;
+            border: 1px solid var(--color-sage-tint);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-elevated);
+            border-color: rgba(45, 74, 62, 0.2);
+        }
+
+        .product-img-wrapper {
+            position: relative;
+            height: 320px;
+            overflow: hidden;
+            background-color: var(--color-background);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.08);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background-color: var(--color-primary);
+            color: var(--color-surface);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .product-actions-overlay {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition-smooth);
+        }
+
+        .product-card:hover .product-actions-overlay {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .action-icon-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--color-surface);
+            color: var(--color-primary);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-subtle);
+            transition: var(--transition-smooth);
+        }
+
+        .action-icon-btn:hover {
+            background-color: var(--color-secondary);
+            color: var(--color-surface);
+            transform: scale(1.1);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-category {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .product-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-primary);
+        }
+
+        .product-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-sage-tint);
+        }
+
+        .product-price {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-secondary);
+        }
+
+        .add-to-cart-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--color-sage-light);
+            color: var(--color-primary);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: var(--color-primary);
+            color: var(--color-surface);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--color-text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Custom Bouquet Builder Section */
+        .custom-builder-section {
+            padding: 7rem 0;
+            background: linear-gradient(135deg, #F0F4F1 0%, #FAF8F5 100%);
+            border-top: 1px solid var(--color-sage-tint);
+            border-bottom: 1px solid var(--color-sage-tint);
+        }
+
+        .builder-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .builder-steps-wrapper {
+            background: var(--color-surface);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--color-sage-tint);
+        }
+
+        .builder-step-group {
+            margin-bottom: 2rem;
+        }
+
+        .builder-step-group h3 {
+            font-size: 1.2rem;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .builder-step-group h3 span {
+            width: 28px;
+            height: 28px;
+            background-color: var(--color-secondary);
+            color: var(--color-surface);
+            font-size: 0.85rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-sans);
+        }
+
+        .builder-options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.85rem;
+        }
+
+        .builder-option-card {
+            padding: 0.85rem;
+            border: 2px solid var(--color-sage-tint);
+            border-radius: 12px;
+            background: var(--color-background);
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition-smooth);
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-main);
+        }
+
+        .builder-option-card:hover {
+            border-color: var(--color-secondary);
+        }
+
+        .builder-option-card.selected {
+            border-color: var(--color-primary);
+            background-color: rgba(45, 74, 62, 0.05);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .builder-preview-card {
+            background: var(--color-surface);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow-elevated);
+            border: 1px solid var(--color-sage-tint);
+            text-align: center;
+            position: relative;
+        }
+
+        .preview-image-container {
+            width: 260px;
+            height: 320px;
+            margin: 0 auto 2rem auto;
+            border-radius: 150px 150px 16px 16px;
+            overflow: hidden;
+            border: 4px solid var(--color-surface);
+            box-shadow: var(--shadow-subtle);
+            position: relative;
+            background-color: #FAF2EE;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-smooth);
+        }
+
+        .preview-summary {
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+            min-height: 50px;
+        }
+
+        .preview-pricing {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-sage-tint);
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-price {
+            font-family: var(--font-serif);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-secondary);
+        }
+
+        /* About Boutique Section */
+        .about-section {
+            padding: 7rem 0;
+            background-color: var(--color-surface);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+
+        .about-img-collage {
+            position: relative;
+            height: 480px;
+        }
+
+        .about-img-1 {
+            width: 320px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .about-img-2 {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 240px;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 6px solid var(--color-surface);
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .about-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .about-feature-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .about-feature-item i {
+            font-size: 1.5rem;
+            color: var(--color-secondary);
+            margin-top: 0.2rem;
+        }
+
+        .about-feature-item h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .about-feature-item p {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 7rem 0;
+            background-color: var(--color-background);
+            border-top: 1px solid var(--color-sage-tint);
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3.5rem;
+        }
+
+        .review-card {
+            background: var(--color-surface);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--color-sage-tint);
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .review-stars {
+            color: #F59E0B;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .review-text {
+            font-style: italic;
+            color: var(--color-text-main);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .reviewer-info h4 {
+            font-size: 1rem;
+            color: var(--color-primary);
+        }
+
+        .reviewer-info p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Footer */
+        .site-footer {
+            background-color: var(--color-primary);
+            color: var(--color-surface);
+            padding: 5rem 0 2rem 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-brand .logo {
+            color: var(--color-surface);
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: #A3B8B0;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            max-width: 320px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-surface);
+            transition: var(--transition-smooth);
+        }
+
+        .social-link:hover {
+            background-color: var(--color-secondary);
+            transform: translateY(-3px);
+        }
+
+        .footer-col h4 {
+            font-size: 1.1rem;
+            color: var(--color-surface);
+            margin-bottom: 1.25rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #A3B8B0;
+            font-size: 0.9rem;
+            transition: var(--transition-smooth);
+        }
+
+        .footer-links a:hover {
+            color: var(--color-surface);
+            padding-left: 5px;
+        }
+
+        .footer-newsletter p {
+            color: #A3B8B0;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .newsletter-form input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--color-surface);
+            font-size: 0.9rem;
+        }
+
+        .newsletter-form input:focus {
+            outline: none;
+            border-color: var(--color-secondary);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #A3B8B0;
+        }
+
+        /* Slide-Out Cart Drawer */
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            background-color: var(--color-surface);
+            z-index: 1000;
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-drawer.open {
+            right: 0;
+        }
+
+        .cart-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--color-sage-tint);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cart-header h3 {
+            font-size: 1.25rem;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-cart-btn {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .close-cart-btn:hover {
+            color: var(--color-primary);
+        }
+
+        .cart-items-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-sage-tint);
+            align-items: center;
+        }
+
+        .cart-item-img {
+            width: 75px;
+            height: 85px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: var(--color-background);
+        }
+
+        .cart-item-details {
+            flex-grow: 1;
+        }
+
+        .cart-item-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .cart-item-price {
+            font-size: 0.95rem;
+            color: var(--color-secondary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .qty-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid var(--color-sage-tint);
+            background: var(--color-background);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: var(--transition-smooth);
+        }
+
+        .qty-btn:hover {
+            background: var(--color-primary);
+            color: var(--color-surface);
+            border-color: var(--color-primary);
+        }
+
+        .cart-item-qty {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .remove-item-btn {
+            background: none;
+            border: none;
+            color: #EF4444;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: auto;
+            transition: var(--transition-smooth);
+        }
+
+        .remove-item-btn:hover {
+            color: #DC2626;
+        }
+
+        .empty-cart-message {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--color-text-muted);
+        }
+
+        .empty-cart-message i {
+            font-size: 3rem;
+            color: var(--color-sage-tint);
+            margin-bottom: 1rem;
+        }
+
+        .cart-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--color-sage-tint);
+            background-color: var(--color-background);
+        }
+
+        .cart-subtotal {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .cart-subtotal span:last-child {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            color: var(--color-secondary);
+        }
+
+        /* Backdrop Overlay */
+        .backdrop-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(30, 41, 35, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 900;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .backdrop-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Quick View Modal & Checkout Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(30, 41, 35, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: var(--color-surface);
+            width: 100%;
+            max-width: 900px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-elevated);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--color-background);
+            border: 1px solid var(--color-sage-tint);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: var(--transition-smooth);
+        }
+
+        .modal-close-btn:hover {
+            background: var(--color-primary);
+            color: var(--color-surface);
+        }
+
+        .quickview-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow-y: auto;
+        }
+
+        .quickview-img-wrap {
+            height: 100%;
+            min-height: 420px;
+            background: var(--color-background);
+        }
+
+        .quickview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .quickview-details {
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quickview-category {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .quickview-title {
+            font-size: 1.8rem;
+            color: var(--color-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .quickview-price {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-secondary);
+            margin-bottom: 1.25rem;
+        }
+
+        .quickview-desc {
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .quickview-care {
+            background: var(--color-background);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 3px solid var(--color-primary);
+        }
+
+        .quickview-care h5 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-primary);
+        }
+
+        .quickview-care p {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Checkout Modal */
+        .checkout-modal-container {
+            max-width: 600px;
+            padding: 2.5rem;
+        }
+
+        .checkout-steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .checkout-steps-indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: var(--color-sage-tint);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-background);
+            border: 2px solid var(--color-sage-tint);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            position: relative;
+            z-index: 2;
+            transition: var(--transition-smooth);
+        }
+
+        .step-dot.active {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: var(--color-surface);
+        }
+
+        .step-dot.completed {
+            border-color: var(--color-secondary);
+            background: var(--color-secondary);
+            color: var(--color-surface);
+        }
+
+        .checkout-form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .checkout-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-primary);
+        }
+
+        .checkout-form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-sage-tint);
+            background: var(--color-background);
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+
+        .checkout-form-group input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background: var(--color-surface);
+        }
+
+        .checkout-form-group.error input {
+            border-color: #EF4444;
+            background-color: rgba(239, 68, 68, 0.02);
+        }
+
+        .checkout-form-group.success input {
+            border-color: #10B981;
+        }
+
+        .field-error-msg {
+            font-size: 0.75rem;
+            color: #EF4444;
+            margin-top: 0.35rem;
+            display: none;
+        }
+
+        .checkout-form-group.error .field-error-msg {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .success-screen i {
+            font-size: 4rem;
+            color: #10B981;
+            margin-bottom: 1rem;
+            animation: bounceIn 0.8s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--color-primary);
+            color: var(--color-surface);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-elevated);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            pointer-events: auto;
+            animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            max-width: 360px;
+        }
+
+        .toast.success i {
+            color: #34D399;
+        }
+
+        .toast.error i {
+            color: #F87171;
+        }
+
+        @keyframes slideInToast {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOutToast {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1024px) {
+            .hero-grid,
+            .builder-container,
+            .about-grid,
+            .quickview-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+            .hero-visual {
+                height: 400px;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 2.5rem;
+            }
+            .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 85px;
+                left: 0;
+                width: 100%;
+                background: var(--color-surface);
+                flex-direction: column;
+                padding: 2rem;
+                box-shadow: var(--shadow-elevated);
+                border-bottom: 1px solid var(--color-sage-tint);
+            }
+            .nav-menu.active {
+                display: flex;
+            }
+            .mobile-toggle {
+                display: block;
+            }
+            .catalog-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .builder-options-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .about-img-collage {
+                height: 360px;
+            }
+            .about-img-1 {
+                width: 240px;
+                height: 300px;
+            }
+            .about-img-2 {
+                width: 180px;
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body id="app-container">
+
+    <!-- Background Floating Petal Animation -->
+    <div class="petal-container" id="petal-container"></div>
+
+    <!-- Header / Navbar -->
+    <header class="site-header">
+        <div class="container nav-wrapper">
+            <a href="#hero" class="logo">
+                <i class="fa-solid fa-spa"></i> Blossom & Petal
+            </a>
+            <nav class="nav-menu" id="nav-menu">
+                <a href="#hero" class="nav-link active">Home</a>
+                <a href="#catalog" class="nav-link">Collection</a>
+                <a href="#custom-bouquet" class="nav-link">Custom Builder</a>
+                <a href="#about" class="nav-link">Our Story</a>
+                <a href="#reviews" class="nav-link">Reviews</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="icon-btn" id="cart-toggle-btn" aria-label="Shopping Cart">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-badge" id="cart-badge">0</span>
+                </button>
+                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Landmark -->
+    <main class="site-main">
+
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <span class="hero-subtitle">Artisanal Luxury Florals</span>
+                        <h1 class="hero-title">Bringing nature's <span>finest poetry</span> to your doorstep.</h1>
+                        <p class="hero-description">Hand-crafted floral arrangements designed with intention, curated with seasonal blooms, and delivered fresh to celebrate life's most cherished moments.</p>
+                        <div class="hero-btns">
+                            <a href="#catalog" class="btn btn-primary">
+                                Shop Collection <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                            <a href="#custom-bouquet" class="btn btn-secondary">
+                                Design Custom Bouquet
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&q=80&w=800" alt="Luxury Floral Bouquet" class="hero-main-img">
+                        <div class="hero-floating-card">
+                            <i class="fa-solid fa-seedling"></i>
+                            <div>
+                                <h4>100% Farm Fresh</h4>
+                                <p>Sourced sustainably daily</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Catalog Section -->
+        <section id="catalog" class="catalog-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Curated Collection</span>
+                    <h2 class="section-title">Signature Arrangements</h2>
+                    <p class="section-desc">Explore our master florists' seasonal creations, each telling a unique story of color, texture, and elegance.</p>
+                </div>
+
+                <!-- Toolbar: Filter Tabs & Search -->
+                <div class="catalog-toolbar">
+                    <div class="filter-tabs" id="filter-tabs">
+                        <button class="filter-tab active" data-category="all">All Arrangements</button>
+                        <button class="filter-tab" data-category="romantic">Romantic Roses</button>
+                        <button class="filter-tab" data-category="seasonal">Seasonal Wildflowers</button>
+                        <button class="filter-tab" data-category="luxury">Luxury Boxes</button>
+                        <button class="filter-tab" data-category="dried">Dried & Botanical</button>
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="Search flowers or style...">
+                    </div>
+                </div>
+
+                <!-- Product Grid Container -->
+                <div class="product-grid" id="product-grid">
+                    <!-- Dynamically Rendered Products -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Custom Bouquet Builder Section -->
+        <section id="custom-bouquet" class="custom-builder-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Bespoke Creation</span>
+                    <h2 class="section-title">Craft Your Custom Bouquet</h2>
+                    <p class="section-desc">Design a personalized floral masterpiece tailored precisely to your recipient's taste and occasion.</p>
+                </div>
+
+                <div class="builder-container">
+                    <div class="builder-steps-wrapper">
+                        <!-- Step 1: Stem Type -->
+                        <div class="builder-step-group">
+                            <h3><span>1</span> Select Primary Stem</h3>
+                            <div class="builder-options-grid" data-step="stem">
+                                <div class="builder-option-card selected" data-name="Ecuadorian Roses" data-price="45" data-img="https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&q=80&w=600">Roses ($45)</div>
+                                <div class="builder-option-card" data-name="French Tulips" data-price="38" data-img="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=600">Tulips ($38)</div>
+                                <div class="builder-option-card" data-name="Peonies" data-price="55" data-img="https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&q=80&w=600">Peonies ($55)</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Color Palette -->
+                        <div class="builder-step-group">
+                            <h3><span>2</span> Color Palette</h3>
+                            <div class="builder-options-grid" data-step="palette">
+                                <div class="builder-option-card selected" data-name="Blush & Peach" data-price="0">Blush & Peach</div>
+                                <div class="builder-option-card" data-name="Vibrant Sunset" data-price="5">Sunset</div>
+                                <div class="builder-option-card" data-name="Ivory Elegance" data-price="0">Ivory</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Vase Style -->
+                        <div class="builder-step-group">
+                            <h3><span>3</span> Vessel Finish</h3>
+                            <div class="builder-options-grid" data-step="vase">
+                                <div class="builder-option-card selected" data-name="Matte Ceramic Vase" data-price="20">Ceramic ($20)</div>
+                                <div class="builder-option-card" data-name="Hand-Blown Glass" data-price="28">Glass ($28)</div>
+                                <div class="builder-option-card" data-name="Kraft Paper Wrap" data-price="0">Eco Wrap ($0)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Builder Preview -->
+                    <div class="builder-preview-card">
+                        <div class="preview-image-container">
+                            <img id="builder-preview-img" src="https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&q=80&w=600" alt="Custom Bouquet Preview" class="preview-image">
+                        </div>
+                        <h3 id="builder-preview-title" style="font-size: 1.35rem; margin-bottom: 0.5rem; color: var(--color-primary);">Custom Ecuadorian Roses</h3>
+                        <p class="preview-summary" id="builder-preview-summary">Ecuadorian Roses with Blush & Peach palette in a Matte Ceramic Vase.</p>
+                        <div class="preview-pricing">
+                            <span style="font-weight: 600; color: var(--color-text-muted);">Total Price:</span>
+                            <span class="preview-price" id="builder-preview-price">$65.00</span>
+                        </div>
+                        <button class="btn btn-primary" id="add-custom-to-cart-btn" style="width: 100%;">
+                            Add Custom Bouquet to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Boutique Section -->
+        <section id="about" class="about-section">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-img-collage">
+                        <img src="https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?auto=format&fit=crop&q=80&w=700" alt="Florist working" class="about-img-1">
+                        <img src="https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&q=80&w=500" alt="Floral details" class="about-img-2">
+                    </div>
+                    <div class="about-content">
+                        <span class="section-tag">Our Philosophy</span>
+                        <h2 class="section-title">Rooted in Sustainability & Timeless Aesthetics</h2>
+                        <p class="section-desc" style="margin-bottom: 1.5rem;">Founded in 2018, Blossom & Petal was born out of a profound passion for botanical design and eco-conscious floral artistry. We partner directly with local family-owned flower farms to ensure exceptional freshness and ethical harvesting.</p>
+                        <div class="about-features">
+                            <div class="about-feature-item">
+                                <i class="fa-solid fa-leaf"></i>
+                                <div>
+                                    <h4>Zero Floral Foam</h4>
+                                    <p>100% biodegradable mechanics used in all arrangements.</p>
+                                </div>
+                            </div>
+                            <div class="about-feature-item">
+                                <i class="fa-solid fa-truck-fast"></i>
+                                <div>
+                                    <h4>Same-Day Delivery</h4>
+                                    <p>Hand-delivered in temperature-controlled eco-vans.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section id="reviews" class="reviews-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Testimonials</span>
+                    <h2 class="section-title">Loved by Our Clients</h2>
+                    <p class="section-desc">Read what our wonderful community has to say about our arrangements and service.</p>
+                </div>
+                <div class="reviews-grid">
+                    <div class="review-card">
+                        <div>
+                            <div class="review-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="review-text">"The arrangement for our anniversary exceeded all expectations. The roses were enormous, fragrant, and stayed fresh for nearly three weeks! Truly luxury quality."</p>
+                        </div>
+                        <div class="reviewer-info">
+                            <h4>Eleanor Vance</h4>
+                            <p>Verified Client</p>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div>
+                            <div class="review-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="review-text">"I used the Custom Bouquet Builder for my mother's birthday and she wept when they arrived. The presentation in the ceramic vase is stunning."</p>
+                        </div>
+                        <div class="reviewer-info">
+                            <h4>Marcus Sterling</h4>
+                            <p>Verified Client</p>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div>
+                            <div class="review-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="review-text">"Their commitment to sustainable, foam-free floristry makes them my absolute go-to boutique in the city. Exceptional customer service too!"</p>
+                        </div>
+                        <div class="reviewer-info">
+                            <h4>Sophia Chen</h4>
+                            <p>Interior Designer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#hero" class="logo">
+                        <i class="fa-solid fa-spa"></i> Blossom & Petal
+                    </a>
+                    <p>Elevating everyday moments and extraordinary celebrations through sustainable, artisanal floral design.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fa-brands fa-pinterest"></i></a>
+                        <a href="#" class="social-link"><i class="fa-brands fa-facebook-f"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul class="footer-links">
+                        <li><a href="#hero">Home</a></li>
+                        <li><a href="#catalog">Collection</a></li>
+                        <li><a href="#custom-bouquet">Custom Builder</a></li>
+                        <li><a href="#about">Our Story</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Customer Care</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Delivery Information</a></li>
+                        <li><a href="#">Flower Care Guide</a></li>
+                        <li><a href="#">FAQs & Policies</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col footer-newsletter">
+                    <h4>Botanical Journal</h4>
+                    <p>Subscribe to receive flower care tips, early access to seasonal collections, and 10% off your first order.</p>
+                    <form class="newsletter-form" id="newsletter-form">
+                        <input type="email" placeholder="Your email address" required>
+                        <button type="submit" class="btn btn-secondary" style="padding: 0.75rem 1rem; border-color: var(--color-surface); color: var(--color-surface);">Join</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Blossom & Petal Boutique. All rights reserved.</p>
+                <p>Designed with warm minimalist luxury.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Slide-Out Shopping Cart Drawer -->
+    <div class="backdrop-overlay" id="backdrop-overlay"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-header">
+            <h3><i class="fa-solid fa-bag-shopping"></i> Your Shopping Bag</h3>
+            <button class="close-cart-btn" id="close-cart-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="cart-items-container" id="cart-items-container">
+            <!-- Cart items populated by JS -->
+        </div>
+        <div class="cart-footer" id="cart-footer-section">
+            <div class="cart-subtotal">
+                <span>Subtotal:</span>
+                <span id="cart-subtotal-price">$0.00</span>
+            </div>
+            <button class="btn btn-primary" id="checkout-btn" style="width: 100%;">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Quick View Product Modal -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal-container">
+            <button class="modal-close-btn" id="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="quickview-content" id="quickview-content">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Simulation Modal -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-container checkout-modal-container">
+            <button class="modal-close-btn" id="checkout-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div id="checkout-modal-body">
+                <h2 style="font-size: 1.5rem; color: var(--color-primary); margin-bottom: 1.5rem; text-align: center;">Secure Checkout</h2>
+                <div class="checkout-steps-indicator">
+                    <div class="step-dot active" id="step-dot-1">1</div>
+                    <div class="step-dot" id="step-dot-2">2</div>
+                    <div class="step-dot" id="step-dot-3">3</div>
+                </div>
+                <form id="checkout-form">
+                    <!-- Step 1: Shipping -->
+                    <div class="checkout-step-content" id="checkout-step-1">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-primary);">Shipping Address</h3>
+                        <div class="form-row">
+                            <div class="checkout-form-group" id="group-firstName">
+                                <label>First Name</label>
+                                <input type="text" id="shipping-firstName" placeholder="Jane">
+                                <span class="field-error-msg">Please enter your first name.</span>
+                            </div>
+                            <div class="checkout-form-group" id="group-lastName">
+                                <label>Last Name</label>
+                                <input type="text" id="shipping-lastName" placeholder="Doe">
+                                <span class="field-error-msg">Please enter your last name.</span>
+                            </div>
+                        </div>
+                        <div class="checkout-form-group" id="group-address">
+                            <label>Street Address</label>
+                            <input type="text" id="shipping-address" placeholder="123 Garden Way, Apt 4B">
+                            <span class="field-error-msg">Please enter your street address.</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="checkout-form-group" id="group-city">
+                                <label>City</label>
+                                <input type="text" id="shipping-city" placeholder="San Francisco">
+                                <span class="field-error-msg">Please enter your city.</span>
+                            </div>
+                            <div class="checkout-form-group" id="group-postal">
+                                <label>Postal Code</label>
+                                <input type="text" id="shipping-postal" placeholder="94107">
+                                <span class="field-error-msg">Please enter a valid postal code (5 digits).</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="next-to-payment" style="width: 100%; margin-top: 1rem;">Continue to Payment</button>
+                    </div>
+
+                    <!-- Step 2: Payment -->
+                    <div class="checkout-step-content" id="checkout-step-2" style="display: none;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-primary);">Payment Details (Simulated)</h3>
+                        <div class="checkout-form-group" id="group-cardName">
+                            <label>Cardholder Name</label>
+                            <input type="text" id="payment-cardName" placeholder="Jane Doe">
+                            <span class="field-error-msg">Please enter the cardholder name.</span>
+                        </div>
+                        <div class="checkout-form-group" id="group-cardNumber">
+                            <label>Card Number</label>
+                            <input type="text" id="payment-cardNumber" placeholder="4242 4242 4242 4242">
+                            <span class="field-error-msg">Please enter a valid 16-digit card number.</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="checkout-form-group" id="group-expiry">
+                                <label>Expiration</label>
+                                <input type="text" id="payment-expiry" placeholder="MM/YY">
+                                <span class="field-error-msg">Use MM/YY format.</span>
+                            </div>
+                            <div class="checkout-form-group" id="group-cvv">
+                                <label>CVV</label>
+                                <input type="text" id="payment-cvv" placeholder="123">
+                                <span class="field-error-msg">Enter 3-4 digits.</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="complete-order-btn" style="width: 100%; margin-top: 1rem;">Complete Order</button>
+                    </div>
+                </form>
+
+                <!-- Step 3: Success -->
+                <div class="checkout-step-content" id="checkout-step-3" style="display: none;">
+                    <div class="success-screen">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <h2 style="font-size: 1.75rem; color: var(--color-primary); margin-bottom: 0.5rem;">Order Placed Successfully!</h2>
+                        <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Thank you for shopping with Blossom & Petal. A confirmation email with tracking details has been sent.</p>
+                        <button class="btn btn-primary" id="close-success-btn" style="width: 100%;">Continue Shopping</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Application JavaScript -->
+    <script>
+        // Product Catalog Database
+        const products = [
+            {
+                id: 'prod-1',
+                name: 'Elysian Rose Symphony',
+                category: 'romantic',
+                price: 85,
+                badge: 'Best Seller',
+                image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&q=80&w=600',
+                description: 'An opulent arrangement featuring two dozen premium Juliet garden roses, delicate eucalyptus sprigs, and fragrant lavender tied with raw silk ribbon.',
+                care: 'Trim stems at a 45-degree angle every 2 days and replace with fresh cold water with flower food.'
+            },
+            {
+                id: 'prod-2',
+                name: 'Meadow Whisper Wildflowers',
+                category: 'seasonal',
+                price: 64,
+                badge: 'New Season',
+                image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&q=80&w=600',
+                description: 'A whimsical, freshly foraged collection of chamomile, ranunculus, delphinium, and wild grasses capturing the spirit of an untamed meadow.',
+                care: 'Keep out of direct sunlight and drafts. Remove faded blooms to encourage new opening.'
+            },
+            {
+                id: 'prod-3',
+                name: 'Midnight Velvet Luxury Box',
+                category: 'luxury',
+                price: 120,
+                badge: 'Signature',
+                image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&q=80&w=600',
+                description: 'Deep burgundy and cream Eternity roses artfully presented in our signature velvet keepsake hat box. Requires zero watering.',
+                care: 'Do not water. Keep in a climate-controlled room away from moisture and direct sunlight.'
+            },
+            {
+                id: 'prod-4',
+                name: 'Golden Tuscan Sunflowers',
+                category: 'seasonal',
+                price: 55,
+                badge: 'Popular',
+                image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&q=80&w=600',
+                description: 'Radiant branching sunflowers paired with golden solidago and sturdy textured wheat stalks to brighten any living space.',
+                care: 'Fill vase high with water as sunflowers are heavy drinkers. Change water daily.'
+            },
+            {
+                id: 'prod-5',
+                name: 'Earthy Botanical Dried Crown',
+                category: 'dried',
+                price: 72,
+                badge: 'Everlasting',
+                image: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&q=80&w=600',
+                description: 'A textural masterpiece of preserved pampas grass, bleached ruscus, bunny tails, and natural eucalyptus that lasts for years.',
+                care: 'Dust gently with a hairdryer on the coolest, lowest speed setting.'
+            },
+            {
+                id: 'prod-6',
+                name: 'Blush Peony Dream',
+                category: 'romantic',
+                price: 95,
+                badge: 'Limited',
+                image: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?auto=format&fit=crop&q=80&w=600',
+                description: 'Luxurious double-petaled pink peonies accompanied by white waxflower and lush salal leaves in a heavy ceramic fluted vase.',
+                care: 'Display in a cool room. Add an ice cube to the vase water daily to prolong bloom life.'
+            }
+        ];
+
+        // Application State
+        let state = {
+            activeCategory: 'all',
+            searchQuery: '',
+            cart: JSON.parse(localStorage.getItem('blossom_cart')) || [],
+            isCartOpen: false,
+            activeModalProductId: null,
+            customBuilder: {
+                stemName: 'Ecuadorian Roses',
+                stemPrice: 45,
+                stemImg: 'https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&q=80&w=600',
+                paletteName: 'Blush & Peach',
+                palettePrice: 0,
+                vaseName: 'Matte Ceramic Vase',
+                vasePrice: 20
+            }
+        };
+
+        // DOM Elements
+        const petalContainer = document.getElementById('petal-container');
+        const navMenu = document.getElementById('nav-menu');
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const cartToggleBtn = document.getElementById('cart-toggle-btn');
+        const closeCartBtn = document.getElementById('close-cart-btn');
+        const cartDrawer = document.getElementById('cart-drawer');
+        const backdropOverlay = document.getElementById('backdrop-overlay');
+        const cartBadge = document.getElementById('cart-badge');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartSubtotalPrice = document.getElementById('cart-subtotal-price');
+        const cartFooterSection = document.getElementById('cart-footer-section');
+        const productGrid = document.getElementById('product-grid');
+        const filterTabs = document.getElementById('filter-tabs');
+        const searchInput = document.getElementById('search-input');
+        const productModal = document.getElementById('product-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const quickviewContent = document.getElementById('quickview-content');
+        const checkoutModal = document.getElementById('checkout-modal');
+        const checkoutCloseBtn = document.getElementById('checkout-close-btn');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const toastContainer = document.getElementById('toast-container');
+        const newsletterForm = document.getElementById('newsletter-form');
+
+        // Custom Builder Elements
+        const builderPreviewImg = document.getElementById('builder-preview-img');
+        const builderPreviewTitle = document.getElementById('builder-preview-title');
+        const builderPreviewSummary = document.getElementById('builder-preview-summary');
+        const builderPreviewPrice = document.getElementById('builder-preview-price');
+        const addCustomToCartBtn = document.getElementById('add-custom-to-cart-btn');
+
+        // Initialize App
+        function initApp() {
+            createFloatingPetals();
+            renderCatalog();
+            renderCart();
+            initEventListeners();
+            updateCustomBuilderPreview();
+        }
+
+        // Generate Floating Petals Animation
+        function createFloatingPetals() {
+            const petalCount = 15;
+            for (let i = 0; i < petalCount; i++) {
+                const petal = document.createElement('div');
+                petal.classList.add('floating-petal');
+                const size = Math.random() * 15 + 10;
+                petal.style.width = `${size}px`;
+                petal.style.height = `${size * 1.5}px`;
+                petal.style.left = `${Math.random() * 100}%`;
+                petal.style.top = `${-20 - Math.random() * 20}%`;
+                petal.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                petal.style.animationDelay = `${Math.random() * 5}s`;
+                petalContainer.appendChild(petal);
+            }
+        }
+
+        // Render Product Catalog
+        function renderCatalog() {
+            const filtered = products.filter(product => {
+                const matchesCategory = state.activeCategory === 'all' || product.category === state.activeCategory;
+                const matchesSearch = product.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                                      product.description.toLowerCase().includes(state.searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                productGrid.innerHTML = `
+                    <div class="no-results">
+                        <i class="fa-solid fa-seedling" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--color-sage-tint);"></i>
+                        <h3>No floral arrangements found</h3>
+                        <p>Try searching with different keywords or selecting another category.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            productGrid.innerHTML = filtered.map(product => `
+                <div class="product-card">
+                    <div class="product-img-wrapper">
+                        <span class="product-badge">${product.badge}</span>
+                        <img src="${product.image}" alt="${product.name}" class="product-img">
+                        <div class="product-actions-overlay">
+                            <button class="action-icon-btn quick-view-btn" data-id="${product.id}" title="Quick View">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">${product.category}</span>
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-footer">
+                            <span class="product-price">$${product.price.toFixed(2)}</span>
+                            <button class="add-to-cart-btn" data-id="${product.id}">
+                                Add to Bag
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Cart Drawer & Badge
+        function renderCart() {
+            const totalCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartBadge.textContent = totalCount;
+            
+            if (totalCount === 0) {
+                cartBadge.style.transform = 'scale(0.8)';
+                setTimeout(() => cartBadge.style.transform = 'scale(1)', 200);
+            }
+
+            if (state.cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="empty-cart-message">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                        <h3>Your bag is empty</h3>
+                        <p>Explore our collection and add some botanical beauty to your bag.</p>
+                    </div>
+                `;
+                cartSubtotalPrice.textContent = '$0.00';
+                cartFooterSection.style.display = 'none';
+                return;
+            }
+
+            cartFooterSection.style.display = 'block';
+            let subtotal = 0;
+
+            cartItemsContainer.innerHTML = state.cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                return `
+                    <div class="cart-item">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                        <div class="cart-item-details">
+                            <h4 class="cart-item-title">${item.name}</h4>
+                            <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
+                            <div class="cart-item-controls">
+                                <button class="qty-btn decrease-qty" data-id="${item.id}">-</button>
+                                <span class="cart-item-qty">${item.quantity}</span>
+                                <button class="qty-btn increase-qty" data-id="${item.id}">+</button>
+                                <button class="remove-item-btn" data-id="${item.id}" title="Remove">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            cartSubtotalPrice.textContent = `$${subtotal.toFixed(2)}`;
+            saveCartToStorage();
+        }
+
+        function saveCartToStorage() {
+            localStorage.setItem('blossom_cart', JSON.stringify(state.cart));
+        }
+
+        // Add item to cart
+        function addToCart(product, quantity = 1) {
+            const existingIndex = state.cart.findIndex(item => item.id === product.id);
+            if (existingIndex > -1) {
+                state.cart[existingIndex].quantity += quantity;
+            } else {
+                state.cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: quantity
+                });
+            }
+            renderCart();
+            showToast(`Added ${product.name} to your bag!`, 'success');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'} fa-lg"></i>
+                <span>${message}</span>
+            `;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOutToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Quick View Modal
+        function openProductModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            state.activeModalProductId = productId;
+            quickviewContent.innerHTML = `
+                <div class="quickview-img-wrap">
+                    <img src="${product.image}" alt="${product.name}" class="quickview-img">
+                </div>
+                <div class="quickview-details">
+                    <span class="quickview-category">${product.category}</span>
+                    <h2 class="quickview-title">${product.name}</h2>
+                    <div class="quickview-price">$${product.price.toFixed(2)}</div>
+                    <p class="quickview-desc">${product.description}</p>
+                    <div class="quickview-care">
+                        <h5><i class="fa-solid fa-heart-pulse"></i> Care Instructions</h5>
+                        <p>${product.care}</p>
+                    </div>
+                    <button class="btn btn-primary modal-add-btn" data-id="${product.id}">
+                        Add to Bag - $${product.price.toFixed(2)}
+                    </button>
+                </div>
+            `;
+            productModal.classList.add('active');
+        }
+
+        function closeModal() {
+            productModal.classList.remove('active');
+            checkoutModal.classList.remove('active');
+            state.activeModalProductId = null;
+        }
+
+        // Toggle Cart Drawer
+        function toggleCartDrawer() {
+            state.isCartOpen = !state.isCartOpen;
+            if (state.isCartOpen) {
+                cartDrawer.classList.add('open');
+                backdropOverlay.classList.add('active');
+            } else {
+                cartDrawer.classList.remove('open');
+                backdropOverlay.classList.remove('active');
+            }
+        }
+
+        // Custom Builder Logic
+        function updateCustomBuilderPreview() {
+            const total = state.customBuilder.stemPrice + state.customBuilder.palettePrice + state.customBuilder.vasePrice;
+            builderPreviewImg.src = state.customBuilder.stemImg;
+            builderPreviewTitle.textContent = `Custom ${state.customBuilder.stemName}`;
+            builderPreviewSummary.textContent = `${state.customBuilder.stemName} with ${state.customBuilder.paletteName} palette in a ${state.customBuilder.vaseName}.`;
+            builderPreviewPrice.textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Helper for clearing validation states
+        function clearFieldValidation(groupId) {
+            const group = document.getElementById(groupId);
+            if (group) {
+                group.classList.remove('error', 'success');
+            }
+        }
+
+        function setFieldError(groupId, customMsg) {
+            const group = document.getElementById(groupId);
+            if (group) {
+                group.classList.add('error');
+                group.classList.remove('success');
+                if (customMsg) {
+                    const msgEl = group.querySelector('.field-error-msg');
+                    if (msgEl) msgEl.textContent = customMsg;
+                }
+            }
+        }
+
+        function setFieldSuccess(groupId) {
+            const group = document.getElementById(groupId);
+            if (group) {
+                group.classList.remove('error');
+                group.classList.add('success');
+            }
+        }
+
+        // Event Listeners Initialization
+        function initEventListeners() {
+            // Mobile menu toggle
+            mobileToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+
+            // Close mobile menu when clicking links
+            navMenu.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => navMenu.classList.remove('active'));
+            });
+
+            // Cart toggle
+            cartToggleBtn.addEventListener('click', toggleCartDrawer);
+            closeCartBtn.addEventListener('click', toggleCartDrawer);
+            backdropOverlay.addEventListener('click', () => {
+                if (state.isCartOpen) toggleCartDrawer();
+                closeModal();
+            });
+
+            // Filter Tabs
+            filterTabs.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-tab')) {
+                    filterTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.activeCategory = e.target.getAttribute('data-category');
+                    renderCatalog();
+                }
+            });
+
+            // Search Input
+            searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.trim();
+                renderCatalog();
+            });
+
+            // Delegated Product Grid Actions (Add to Cart & Quick View)
+            productGrid.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('.add-to-cart-btn');
+                const quickBtn = e.target.closest('.quick-view-btn');
+
+                if (addBtn) {
+                    const id = addBtn.getAttribute('data-id');
+                    const product = products.find(p => p.id === id);
+                    if (product) addToCart(product);
+                }
+
+                if (quickBtn) {
+                    const id = quickBtn.getAttribute('data-id');
+                    openProductModal(id);
+                }
+            });
+
+            // Modal Quick View Add to Cart
+            productModal.addEventListener('click', (e) => {
+                const modalAddBtn = e.target.closest('.modal-add-btn');
+                if (modalAddBtn) {
+                    const id = modalAddBtn.getAttribute('data-id');
+                    const product = products.find(p => p.id === id);
+                    if (product) {
+                        addToCart(product);
+                        closeModal();
+                    }
+                }
+            });
+
+            modalCloseBtn.addEventListener('click', closeModal);
+
+            // Cart Item Interactions (Quantity adjust & remove)
+            cartItemsContainer.addEventListener('click', (e) => {
+                const incBtn = e.target.closest('.increase-qty');
+                const decBtn = e.target.closest('.decrease-qty');
+                const remBtn = e.target.closest('.remove-item-btn');
+
+                if (incBtn) {
+                    const id = incBtn.getAttribute('data-id');
+                    const item = state.cart.find(i => i.id === id);
+                    if (item) {
+                        item.quantity++;
+                        renderCart();
+                    }
+                }
+
+                if (decBtn) {
+                    const id = decBtn.getAttribute('data-id');
+                    const item = state.cart.find(i => i.id === id);
+                    if (item && item.quantity > 1) {
+                        item.quantity--;
+                        renderCart();
+                    } else if (item && item.quantity === 1) {
+                        state.cart = state.cart.filter(i => i.id !== id);
+                        renderCart();
+                    }
+                }
+
+                if (remBtn) {
+                    const id = remBtn.getAttribute('data-id');
+                    state.cart = state.cart.filter(i => i.id !== id);
+                    renderCart();
+                }
+            });
+
+            // Custom Bouquet Builder Selectors
+            document.querySelectorAll('.builder-options-grid').forEach(grid => {
+                grid.addEventListener('click', (e) => {
+                    const card = e.target.closest('.builder-option-card');
+                    if (!card) return;
+
+                    grid.querySelectorAll('.builder-option-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+
+                    const step = grid.getAttribute('data-step');
+                    const name = card.getAttribute('data-name');
+                    const price = parseFloat(card.getAttribute('data-price'));
+
+                    if (step === 'stem') {
+                        state.customBuilder.stemName = name;
+                        state.customBuilder.stemPrice = price;
+                        state.customBuilder.stemImg = card.getAttribute('data-img');
+                    } else if (step === 'palette') {
+                        state.customBuilder.paletteName = name;
+                        state.customBuilder.palettePrice = price;
+                    } else if (step === 'vase') {
+                        state.customBuilder.vaseName = name;
+                        state.customBuilder.vasePrice = price;
+                    }
+
+                    updateCustomBuilderPreview();
+                });
+            });
+
+            // Add Custom Bouquet to Cart
+            addCustomToCartBtn.addEventListener('click', () => {
+                const total = state.customBuilder.stemPrice + state.customBuilder.palettePrice + state.customBuilder.vasePrice;
+                const customProduct = {
+                    id: 'custom-' + Date.now(),
+                    name: `Custom ${state.customBuilder.stemName} (${state.customBuilder.paletteName})`,
+                    price: total,
+                    image: state.customBuilder.stemImg,
+                    quantity: 1
+                };
+                addToCart(customProduct);
+                toggleCartDrawer();
+            });
+
+            // Checkout Flow
+            checkoutBtn.addEventListener('click', () => {
+                if (state.cart.length === 0) return;
+                toggleCartDrawer();
+                checkoutModal.classList.add('active');
+                // Reset checkout modal steps and form validation
+                document.getElementById('checkout-step-1').style.display = 'block';
+                document.getElementById('checkout-step-2').style.display = 'none';
+                document.getElementById('checkout-step-3').style.display = 'none';
+                document.getElementById('step-dot-1').className = 'step-dot active';
+                document.getElementById('step-dot-2').className = 'step-dot';
+                document.getElementById('step-dot-3').className = 'step-dot';
+                document.querySelectorAll('.checkout-form-group').forEach(g => g.classList.remove('error', 'success'));
+                document.getElementById('checkout-form').reset();
+            });
+
+            checkoutCloseBtn.addEventListener('click', () => checkoutModal.classList.remove('active'));
+
+            // Live clearing of errors on input
+            document.querySelectorAll('#checkout-form input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const group = e.target.closest('.checkout-form-group');
+                    if (group) {
+                        group.classList.remove('error');
+                        if (e.target.value.trim().length > 0) {
+                            group.classList.add('success');
+                        } else {
+                            group.classList.remove('success');
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('next-to-payment').addEventListener('click', () => {
+                const firstName = document.getElementById('shipping-firstName');
+                const lastName = document.getElementById('shipping-lastName');
+                const address = document.getElementById('shipping-address');
+                const city = document.getElementById('shipping-city');
+                const postal = document.getElementById('shipping-postal');
+
+                let valid = true;
+
+                if (!firstName.value.trim()) {
+                    setFieldError('group-firstName', 'First name is required.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-firstName');
+                }
+
+                if (!lastName.value.trim()) {
+                    setFieldError('group-lastName', 'Last name is required.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-lastName');
+                }
+
+                if (!address.value.trim()) {
+                    setFieldError('group-address', 'Street address is required.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-address');
+                }
+
+                if (!city.value.trim()) {
+                    setFieldError('group-city', 'City is required.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-city');
+                }
+
+                const postalRegex = /^\d{5}$/;
+                if (!postal.value.trim()) {
+                    setFieldError('group-postal', 'Postal code is required.');
+                    valid = false;
+                } else if (!postalRegex.test(postal.value.trim())) {
+                    setFieldError('group-postal', 'Please enter a valid 5-digit postal code.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-postal');
+                }
+
+                if (!valid) {
+                    showToast('Please correct the highlighted shipping fields.', 'error');
+                    return;
+                }
+
+                document.getElementById('checkout-step-1').style.display = 'none';
+                document.getElementById('checkout-step-2').style.display = 'block';
+                document.getElementById('step-dot-1').className = 'step-dot completed';
+                document.getElementById('step-dot-2').className = 'step-dot active';
+            });
+
+            document.getElementById('complete-order-btn').addEventListener('click', () => {
+                const cardName = document.getElementById('payment-cardName');
+                const cardNumber = document.getElementById('payment-cardNumber');
+                const expiry = document.getElementById('payment-expiry');
+                const cvv = document.getElementById('payment-cvv');
+
+                let valid = true;
+
+                if (!cardName.value.trim()) {
+                    setFieldError('group-cardName', 'Cardholder name is required.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-cardName');
+                }
+
+                // Simple card number validation: numbers and spaces, roughly 16 digits
+                const cleanCardNum = cardNumber.value.replace(/\s+/g, '');
+                const cardRegex = /^\d{16}$/;
+                if (!cardNumber.value.trim()) {
+                    setFieldError('group-cardNumber', 'Card number is required.');
+                    valid = false;
+                } else if (!cardRegex.test(cleanCardNum)) {
+                    setFieldError('group-cardNumber', 'Enter a valid 16-digit card number.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-cardNumber');
+                }
+
+                // Expiry MM/YY validation
+                const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
+                if (!expiry.value.trim()) {
+                    setFieldError('group-expiry', 'Expiration is required.');
+                    valid = false;
+                } else if (!expiryRegex.test(expiry.value.trim())) {
+                    setFieldError('group-expiry', 'Use format MM/YY.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-expiry');
+                }
+
+                // CVV validation
+                const cvvRegex = /^\d{3,4}$/;
+                if (!cvv.value.trim()) {
+                    setFieldError('group-cvv', 'CVV is required.');
+                    valid = false;
+                } else if (!cvvRegex.test(cvv.value.trim())) {
+                    setFieldError('group-cvv', 'Enter 3 or 4 digits.');
+                    valid = false;
+                } else {
+                    setFieldSuccess('group-cvv');
+                }
+
+                if (!valid) {
+                    showToast('Please correct the highlighted payment details.', 'error');
+                    return;
+                }
+
+                document.getElementById('checkout-step-2').style.display = 'none';
+                document.getElementById('checkout-step-3').style.display = 'block';
+                document.getElementById('step-dot-2').className = 'step-dot completed';
+                document.getElementById('step-dot-3').className = 'step-dot active';
+
+                // Clear cart
+                state.cart = [];
+                renderCart();
+            });
+
+            document.getElementById('close-success-btn').addEventListener('click', () => {
+                checkoutModal.classList.remove('active');
+            });
+
+            // Newsletter submission
+            newsletterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const emailInput = newsletterForm.querySelector('input');
+                if (emailInput.value.trim()) {
+                    showToast('Thank you for joining our Botanical Journal!', 'success');
+                    emailInput.value = '';
+                }
+            });
+
+            // Escape key closes modals and drawers
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (state.isCartOpen) toggleCartDrawer();
+                    closeModal();
+                }
+            });
+        }
+
+        // Run initialization on DOM load
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

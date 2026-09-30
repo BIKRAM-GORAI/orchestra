@@ -16,6 +16,7 @@
 import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js';
 
 export const AGENT_ROSTER = {
+  // 1. Executive Manager
   atlas: {
     id: 'atlas',
     name: 'Atlas',
@@ -23,7 +24,8 @@ export const AGENT_ROSTER = {
     role: 'Lead Architect & Manager',
     tag: 'AT',
     color: '#F59E0B',
-    model: 'Gemini 3.5 Flash (Google AI)',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite (Google AI)',
     room: 'Manager Suite',
     suitColor: '#1E293B',
     hairColor: '#D97706',
@@ -32,58 +34,21 @@ export const AGENT_ROSTER = {
     statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
-    skills: ['System Architecture', 'Decomposition', 'Synthesis', 'Delegation'],
+    skills: ['Intent Understanding', 'Task Decomposition', 'Multi-Agent Synthesis', 'Fallback Routing'],
     home: { x: 110, y: 120, facing: 'up' },
     deskPos: { x: 110, y: 85 }
   },
-  nova: {
-    id: 'nova',
-    name: 'Nova',
-    core: true,
-    role: 'Frontend Architect',
-    tag: 'NV',
-    color: '#38BDF8',
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Main Workspace',
-    suitColor: '#0284C7',
-    hairColor: '#0F172A',
-    skinColor: '#FAD4C0',
-    state: 'idle',
-    statusText: 'Idle — Waiting for a task',
-    task: '',
-    progress: 0,
-    skills: ['HTML5 Semantic DOM', 'Vanilla CSS3', 'Mobile Viewports', 'CSS Tokens'],
-    home: { x: 80, y: 325, facing: 'up' },
-    deskPos: { x: 80, y: 295 }
-  },
-  byte: {
-    id: 'byte',
-    name: 'Byte',
-    core: true,
-    role: 'Backend Architect',
-    tag: 'BY',
-    color: '#10B981',
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Main Workspace',
-    suitColor: '#059669',
-    hairColor: '#334155',
-    skinColor: '#F5C6A5',
-    state: 'idle',
-    statusText: 'Idle — Waiting for a task',
-    task: '',
-    progress: 0,
-    skills: ['Vanilla JavaScript', 'Event Handlers', 'State Machines', 'REST APIs'],
-    home: { x: 80, y: 445, facing: 'up' },
-    deskPos: { x: 80, y: 415 }
-  },
+
+  // 2. Designers (3 Individual Agents)
   pixel: {
     id: 'pixel',
     name: 'Pixel',
     core: true,
-    role: 'UI/UX Designer',
+    role: 'Junior Designer (Free Tier)',
     tag: 'PX',
     color: '#C084FC',
-    model: 'Gemini 3.5 Flash (Google AI)',
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#7E22CE',
     hairColor: '#F472B6',
@@ -92,58 +57,128 @@ export const AGENT_ROSTER = {
     statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
-    skills: ['Design Tokens', 'Color Systems', 'Typography Hierarchy', 'Micro-interactions'],
-    home: { x: 200, y: 325, facing: 'up' },
-    deskPos: { x: 200, y: 295 }
+    skills: ['Harmonious Palettes', 'Typography Hierarchy', 'Spacing Grids', 'Responsive Breakpoints'],
+    home: { x: 72, y: 270, facing: 'up' },
+    deskPos: { x: 72, y: 240 }
   },
-  query: {
-    id: 'query',
-    name: 'Query',
+  chroma: {
+    id: 'chroma',
+    name: 'Chroma',
     core: true,
-    role: 'QA & Compliance Inspector',
-    tag: 'QR',
-    color: '#FB923C',
-    model: 'Gemini 3.5 Flash Lite (Google AI)',
+    role: 'UI/UX Designer (Pro Tier)',
+    tag: 'CR',
+    color: '#A855F7',
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
     room: 'Main Workspace',
-    suitColor: '#C2410C',
-    hairColor: '#78350F',
-    skinColor: '#F5D0A9',
+    suitColor: '#581C87',
+    hairColor: '#E879F9',
+    skinColor: '#FCE7F3',
     state: 'idle',
     statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
-    skills: ['Static Analysis', 'DOM Auditing', 'Error Trapping', 'Auto-Repair Loop'],
-    home: { x: 320, y: 445, facing: 'up' },
-    deskPos: { x: 320, y: 415 }
+    skills: ['Design Tokens', 'Micro-interactions', 'Component Aesthetics', 'Interaction States'],
+    home: { x: 72, y: 365, facing: 'up' },
+    deskPos: { x: 72, y: 335 }
   },
-  forge: {
-    id: 'forge',
-    name: 'Forge',
-    core: false,
-    role: 'DevOps & Server Engineer',
-    tag: 'FG',
-    color: '#F43F5E',
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Server Room',
-    suitColor: '#BE123C',
-    hairColor: '#18181B',
+  canvas: {
+    id: 'canvas',
+    name: 'Canvas',
+    core: true,
+    role: 'Lead Designer (Max Tier)',
+    tag: 'CV',
+    color: '#7E22CE',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    suitColor: '#3B0764',
+    hairColor: '#38BDF8',
+    skinColor: '#FEF3C7',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Complete Design Systems', 'Visual Rhythm', 'Design-to-Code Fidelity', 'Edge-Case Visuals'],
+    home: { x: 72, y: 460, facing: 'up' },
+    deskPos: { x: 72, y: 430 }
+  },
+
+  // 3. Frontend Architects (3 Individual Agents)
+  nova: {
+    id: 'nova',
+    name: 'Nova',
+    core: true,
+    role: 'Junior Frontend (Free Tier)',
+    tag: 'NV',
+    color: '#38BDF8',
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
+    room: 'Main Workspace',
+    suitColor: '#0284C7',
+    hairColor: '#0F172A',
     skinColor: '#FAD4C0',
     state: 'idle',
     statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
-    skills: ['Server Infrastructure', 'Node.js Watchers', 'SSE Streaming'],
-    home: { x: 670, y: 145, facing: 'up' },
-    deskPos: { x: 670, y: 115 }
+    skills: ['Semantic HTML5', 'CSS Variables', 'Flexbox & Grid', 'Single-File Architecture'],
+    home: { x: 162, y: 270, facing: 'up' },
+    deskPos: { x: 162, y: 240 }
   },
+  blueprint: {
+    id: 'blueprint',
+    name: 'Blueprint',
+    core: true,
+    role: 'Frontend Architect (Pro Tier)',
+    tag: 'BP',
+    color: '#0284C7',
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    suitColor: '#0369A1',
+    hairColor: '#475569',
+    skinColor: '#F5D0A9',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['DOM Hierarchy', 'Client State Architecture', 'Event Delegation', 'Accessibility Semantics'],
+    home: { x: 162, y: 365, facing: 'up' },
+    deskPos: { x: 162, y: 335 }
+  },
+  apex: {
+    id: 'apex',
+    name: 'Apex',
+    core: true,
+    role: 'Lead Frontend Architect (Max Tier)',
+    tag: 'AP',
+    color: '#0369A1',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    suitColor: '#075985',
+    hairColor: '#E2E8F0',
+    skinColor: '#FDE047',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['State-Driven Architecture', 'Performance Optimization', 'Progressive Enhancement', 'Contract Validation'],
+    home: { x: 162, y: 460, facing: 'up' },
+    deskPos: { x: 162, y: 430 }
+  },
+
+  // 4. Feature Architects (3 Individual Agents)
   scout: {
     id: 'scout',
     name: 'Scout',
-    core: false,
-    role: 'Research & Feature Analyst',
+    core: true,
+    role: 'Feature Analyst (Free Tier)',
     tag: 'SC',
     color: '#2DD4BF',
-    model: 'Gemini 3.5 Flash (Google AI)',
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#0F766E',
     hairColor: '#475569',
@@ -152,71 +187,182 @@ export const AGENT_ROSTER = {
     statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
-    skills: ['Feature Benchmarking', 'Conversion Funnels', 'Product Analytics'],
-    home: { x: 440, y: 445, facing: 'up' },
-    deskPos: { x: 440, y: 415 }
+    skills: ['Feature Decomposition', 'User Flow Definition', 'Search & Filtering', 'Form Validation'],
+    home: { x: 252, y: 270, facing: 'up' },
+    deskPos: { x: 252, y: 240 }
   },
-  echo: {
-    id: 'echo',
-    name: 'Echo',
-    core: false,
-    role: 'Content & Copy Strategist',
-    tag: 'EC',
-    color: '#FDE047',
-    model: 'Gemini 3.5 Flash (Google AI)',
+  beacon: {
+    id: 'beacon',
+    name: 'Beacon',
+    core: true,
+    role: 'Feature Architect (Pro Tier)',
+    tag: 'BC',
+    color: '#0D9488',
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
     room: 'Main Workspace',
-    suitColor: '#854D0E',
-    hairColor: '#FBBF24',
-    skinColor: '#FAD4C0',
-    state: 'idle',
-    statusText: 'Idle — Waiting for a task',
-    task: '',
-    progress: 0,
-    skills: ['Marketing Copy', 'Brand Voice', 'Value Propositions'],
-    home: { x: 440, y: 325, facing: 'up' },
-    deskPos: { x: 440, y: 295 }
-  },
-  // Retained Demo Agents (reduced to 1/4th)
-  luna: {
-    id: 'luna',
-    name: 'Luna',
-    core: false,
-    role: 'Data Pipelines & Storage',
-    tag: 'LN',
-    color: '#06B6D4',
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Main Workspace',
-    suitColor: '#0891B2',
-    hairColor: '#1E1B4B',
-    skinColor: '#FAD4C0',
-    state: 'idle',
-    statusText: 'Idle — Waiting for a task',
-    task: '',
-    progress: 0,
-    skills: ['Schema Validation', 'Data Transformations', 'ETL Pipelines'],
-    home: { x: 320, y: 325, facing: 'up' },
-    deskPos: { x: 320, y: 295 }
-  },
-  rex: {
-    id: 'rex',
-    name: 'Rex',
-    core: false,
-    role: 'Security & Auth Engineer',
-    tag: 'RX',
-    color: '#EF4444',
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Main Workspace',
-    suitColor: '#991B1B',
-    hairColor: '#374151',
+    suitColor: '#115E59',
+    hairColor: '#D97706',
     skinColor: '#F5C6A5',
     state: 'idle',
     statusText: 'Idle — Waiting for a task',
     task: '',
     progress: 0,
-    skills: ['Penetration Testing', 'CSP & CORS', 'Input Sanitization'],
-    home: { x: 200, y: 445, facing: 'up' },
-    deskPos: { x: 200, y: 415 }
-  }
+    skills: ['State Machine Design', 'User Journey Mapping', 'Cart & Checkout Flows', 'Empty-State Handling'],
+    home: { x: 252, y: 365, facing: 'up' },
+    deskPos: { x: 252, y: 335 }
+  },
+  compass: {
+    id: 'compass',
+    name: 'Compass',
+    core: true,
+    role: 'Lead Feature Architect (Max Tier)',
+    tag: 'CP',
+    color: '#0F766E',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    suitColor: '#134E4A',
+    hairColor: '#1E293B',
+    skinColor: '#FEF3C7',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Full Functional Architecture', 'Interaction Contracts', 'Feature Dependency Graphs', 'Edge-Case Matrix'],
+    home: { x: 252, y: 460, facing: 'up' },
+    deskPos: { x: 252, y: 430 }
+  },
+
+  // 5. Coders (3 Individual Agents)
+  byte: {
+    id: 'byte',
+    name: 'Byte',
+    core: true,
+    role: 'Junior Coder (Free Tier)',
+    tag: 'BY',
+    color: '#34D399',
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
+    room: 'Main Workspace',
+    suitColor: '#059669',
+    hairColor: '#334155',
+    skinColor: '#F5C6A5',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Single-File index.html', 'Vanilla JavaScript', 'Event Handlers', 'Surgical Code Patching'],
+    home: { x: 342, y: 270, facing: 'up' },
+    deskPos: { x: 342, y: 240 }
+  },
+  cipher: {
+    id: 'cipher',
+    name: 'Cipher',
+    core: true,
+    role: 'Fullstack Coder (Pro Tier)',
+    tag: 'CI',
+    color: '#10B981',
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    suitColor: '#047857',
+    hairColor: '#1E1E2E',
+    skinColor: '#FEE2E2',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Dynamic DOM Manipulation', 'Interactive State', 'Form Validation & Feedback', 'Minimal-Change Preservation'],
+    home: { x: 342, y: 365, facing: 'up' },
+    deskPos: { x: 342, y: 335 }
+  },
+  matrix: {
+    id: 'matrix',
+    name: 'Matrix',
+    core: true,
+    role: 'Lead Coder (Max Tier)',
+    tag: 'MX',
+    color: '#059669',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    suitColor: '#064E3B',
+    hairColor: '#10B981',
+    skinColor: '#FDE047',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Single-File Synthesis', 'Modern CSS Systems', 'Full Interactive JS', 'Regression-Free Surgery'],
+    home: { x: 342, y: 460, facing: 'up' },
+    deskPos: { x: 342, y: 430 }
+  },
+
+  // 6. QA Auditors (3 Individual Agents)
+  query: {
+    id: 'query',
+    name: 'Query',
+    core: true,
+    role: 'Junior QA (Free Tier)',
+    tag: 'QR',
+    color: '#FB923C',
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
+    room: 'Main Workspace',
+    suitColor: '#C2410C',
+    hairColor: '#78350F',
+    skinColor: '#F5D0A9',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Static Analysis', 'DOM Structure Inspection', 'JS Error Detection', 'Requirements Verification'],
+    home: { x: 432, y: 270, facing: 'up' },
+    deskPos: { x: 432, y: 240 }
+  },
+  audit: {
+    id: 'audit',
+    name: 'Audit',
+    core: true,
+    role: 'QA Auditor (Pro Tier)',
+    tag: 'AD',
+    color: '#F97316',
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    suitColor: '#9A3412',
+    hairColor: '#334155',
+    skinColor: '#FCE7F3',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['JavaScript Correctness', 'Event-Flow Verification', 'Responsive Layout Audit', 'Defect Severity'],
+    home: { x: 432, y: 365, facing: 'up' },
+    deskPos: { x: 432, y: 335 }
+  },
+  sentinel: {
+    id: 'sentinel',
+    name: 'Sentinel',
+    core: true,
+    role: 'Lead QA Inspector (Max Tier)',
+    tag: 'ST',
+    color: '#EA580C',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    suitColor: '#7C2D12',
+    hairColor: '#0F172A',
+    skinColor: '#FEF3C7',
+    state: 'idle',
+    statusText: 'Idle — Waiting for a task',
+    task: '',
+    progress: 0,
+    skills: ['Comprehensive Code Audit', 'DOM Integrity Trapping', 'Functional Tracing', 'Automated Repair Directives'],
+    home: { x: 432, y: 460, facing: 'up' },
+    deskPos: { x: 432, y: 430 }
+  },
 };
 
 // ============================================================================
@@ -647,18 +793,14 @@ export class PixiOffice {
     nav.setRect(665, 425, 35, 35, 2); // Cafe Table 2
     nav.setRect(560, 465, 60, 35, 2); // Lounge Sofa
 
-    // Main Workspace Desks (8 spacious workstations for 10-agent studio)
-    // Row 1: y: 280..315 (Nova, Pixel, Luna, Echo)
-    nav.setRect(60, 280, 50, 32, 2);
-    nav.setRect(180, 280, 50, 32, 2);
-    nav.setRect(300, 280, 50, 32, 2);
-    nav.setRect(420, 280, 50, 32, 2);
-
-    // Row 2: y: 400..435 (Byte, Rex, Query, Scout)
-    nav.setRect(60, 400, 50, 32, 2);
-    nav.setRect(180, 400, 50, 32, 2);
-    nav.setRect(300, 400, 50, 32, 2);
-    nav.setRect(420, 400, 50, 32, 2);
+    // Main Workspace Desks (15 specialized workstations: 5 roles x 3 tiers)
+    const deskCols = [50, 140, 230, 320, 410];
+    const deskRows = [240, 335, 430];
+    for (const r of deskRows) {
+      for (const c of deskCols) {
+        nav.setRect(c, r, 46, 24, 2);
+      }
+    }
   }
 
   initCanvas() {
@@ -1418,12 +1560,28 @@ export class PixiOffice {
     ctx.fillStyle = '#334155';
     ctx.fillRect(563, 468, 54, 14);
 
-    // 5. Workstation Desks (Main Open-Plan Workspace - 8 spacious workstations)
+    // 5. Workstation Desks (Main Open-Plan Workspace - 15 specialized workstations)
     const desks = [
-      // Row 1 (Nova, Pixel, Luna, Echo)
-      { x: 60, y: 295 }, { x: 180, y: 295 }, { x: 300, y: 295 }, { x: 420, y: 295 },
-      // Row 2 (Byte, Rex, Query, Scout)
-      { x: 60, y: 415 }, { x: 180, y: 415 }, { x: 300, y: 415 }, { x: 420, y: 415 }
+      // Row 1 (Tier 1 Free): Pixel, Nova, Scout, Byte, Query
+      { x: 50, y: 240, glow: '#C084FC', label: 'Pixel' },
+      { x: 140, y: 240, glow: '#38BDF8', label: 'Nova' },
+      { x: 230, y: 240, glow: '#2DD4BF', label: 'Scout' },
+      { x: 320, y: 240, glow: '#34D399', label: 'Byte' },
+      { x: 410, y: 240, glow: '#FB923C', label: 'Query' },
+
+      // Row 2 (Tier 2 Pro): Chroma, Blueprint, Beacon, Cipher, Audit
+      { x: 50, y: 335, glow: '#A855F7', label: 'Chroma' },
+      { x: 140, y: 335, glow: '#0284C7', label: 'Blueprint' },
+      { x: 230, y: 335, glow: '#0D9488', label: 'Beacon' },
+      { x: 320, y: 335, glow: '#10B981', label: 'Cipher' },
+      { x: 410, y: 335, glow: '#F97316', label: 'Audit' },
+
+      // Row 3 (Tier 3 Max): Canvas, Apex, Compass, Matrix, Sentinel
+      { x: 50, y: 430, glow: '#7E22CE', label: 'Canvas' },
+      { x: 140, y: 430, glow: '#0369A1', label: 'Apex' },
+      { x: 230, y: 430, glow: '#0F766E', label: 'Compass' },
+      { x: 320, y: 430, glow: '#059669', label: 'Matrix' },
+      { x: 410, y: 430, glow: '#EA580C', label: 'Sentinel' }
     ];
 
     for (let i = 0; i < desks.length; i++) {
@@ -1443,9 +1601,8 @@ export class PixiOffice {
       ctx.fillRect(d.x + 14, d.y - 7, 18, 12);
       ctx.fillRect(d.x + 21, d.y + 5, 4, 3); // Stand
 
-      // Glowing Code Screen
-      const glowColors = ['#38BDF8', '#10B981', '#F59E0B', '#C084FC', '#FB923C'];
-      ctx.fillStyle = glowColors[i % glowColors.length];
+      // Glowing Code Screen with role/tier theme color
+      ctx.fillStyle = d.glow || '#38BDF8';
       ctx.fillRect(d.x + 16, d.y - 5, 14, 8);
 
       // Keyboard & Mouse

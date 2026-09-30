@@ -58,16 +58,33 @@ export function getLucideIcon(name, { size = 16, className = '', strokeWidth = 2
  * Maps agent IDs to Lucide icon names
  */
 export const AGENT_ICONS = {
+  // Manager
   atlas: 'crown',
-  nova: 'code-2',
-  byte: 'cpu',
+
+  // Designers
   pixel: 'palette',
+  chroma: 'sparkles',
+  canvas: 'palette',
+
+  // Frontend Architects
+  nova: 'code-2',
+  blueprint: 'folder-code',
+  apex: 'monitor',
+
+  // Feature Architects
+  scout: 'zap',
+  beacon: 'compass',
+  compass: 'target',
+
+  // Coders
+  byte: 'cpu',
+  cipher: 'terminal',
+  matrix: 'laptop',
+
+  // QA Auditors
   query: 'shield-check',
-  forge: 'wrench',
-  scout: 'search',
-  echo: 'file-text',
-  luna: 'bar-chart-2',
-  rex: 'lock'
+  audit: 'search',
+  sentinel: 'shield-check',
 };
 
 /**

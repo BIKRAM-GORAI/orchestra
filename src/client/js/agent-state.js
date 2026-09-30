@@ -28,153 +28,299 @@ export const AGENT_STATUS = {
 
 // Initial Roster Blueprint with dedicated identity, colors, roles, and assigned rooms
 export const AGENT_DEFINITIONS = {
+  // 1. Executive Manager
   atlas: {
     id: 'atlas',
-    backendId: 'manager',
+    backendId: 'manager-1',
     name: 'Atlas',
     tag: 'AT',
     role: 'Lead Architect & Manager',
     color: '#F59E0B', // Amber / Gold
-    model: 'Gemini 3.5 Flash (Google AI)',
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite (Google AI)',
     room: 'Manager Suite',
     core: true,
-    skills: ['System Architecture', 'Decomposition', 'Synthesis', 'Delegation'],
+    skills: ['Intent Understanding', 'Task Decomposition', 'Multi-Agent Synthesis', 'Fallback Routing'],
   },
+
+  // 2. Designers (3 Individual Agents)
   pixel: {
     id: 'pixel',
-    backendId: 'designer',
+    backendId: 'designer-1',
     name: 'Pixel',
     tag: 'PX',
-    role: 'UI/UX Designer',
-    color: '#C084FC', // Purple / Lavender
-    model: 'Gemini 3.5 Flash (Google AI)',
+    role: 'Junior Designer (Free Tier)',
+    color: '#C084FC', // Lavender
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
     core: true,
-    skills: ['Design Tokens', 'Color Systems', 'Typography Hierarchy', 'Micro-interactions'],
+    skills: ['Harmonious Palettes', 'Typography Hierarchy', 'Spacing Grids', 'Responsive Breakpoints'],
   },
+  chroma: {
+    id: 'chroma',
+    backendId: 'designer-2',
+    name: 'Chroma',
+    tag: 'CR',
+    role: 'UI/UX Designer (Pro Tier)',
+    color: '#A855F7', // Vibrant Purple
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['Design Tokens', 'Micro-interactions', 'Component Aesthetics', 'Interaction States'],
+  },
+  canvas: {
+    id: 'canvas',
+    backendId: 'designer-3',
+    name: 'Canvas',
+    tag: 'CV',
+    role: 'Lead Designer (Max Tier)',
+    color: '#7E22CE', // Deep Purple
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['Complete Design Systems', 'Visual Rhythm', 'Design-to-Code Fidelity', 'Edge-Case Visuals'],
+  },
+
+  // 3. Frontend Architects (3 Individual Agents)
   nova: {
     id: 'nova',
-    backendId: 'frontend_architect',
+    backendId: 'frontend-1',
     name: 'Nova',
     tag: 'NV',
-    role: 'Frontend Architect',
-    color: '#38BDF8', // Sky Blue / Cyan
-    model: 'Gemini 3.5 Flash (Google AI)',
+    role: 'Junior Frontend (Free Tier)',
+    color: '#38BDF8', // Sky Blue
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
     core: true,
-    skills: ['HTML5 Semantic DOM', 'Vanilla CSS3', 'Mobile Viewports', 'CSS Tokens'],
+    skills: ['Semantic HTML5', 'CSS Variables', 'Flexbox & Grid', 'Single-File Architecture'],
   },
+  blueprint: {
+    id: 'blueprint',
+    backendId: 'frontend-2',
+    name: 'Blueprint',
+    tag: 'BP',
+    role: 'Frontend Architect (Pro Tier)',
+    color: '#0284C7', // Ocean Blue
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['DOM Hierarchy', 'Client State Architecture', 'Event Delegation', 'Accessibility Semantics'],
+  },
+  apex: {
+    id: 'apex',
+    backendId: 'frontend-3',
+    name: 'Apex',
+    tag: 'AP',
+    role: 'Lead Frontend Architect (Max Tier)',
+    color: '#0369A1', // Deep Cyan
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['State-Driven Architecture', 'Performance Optimization', 'Progressive Enhancement', 'Contract Validation'],
+  },
+
+  // 4. Feature Architects (3 Individual Agents)
   scout: {
     id: 'scout',
-    backendId: 'feature_architect',
+    backendId: 'feature-1',
     name: 'Scout',
     tag: 'SC',
-    role: 'Research & Feature Analyst',
+    role: 'Feature Analyst (Free Tier)',
     color: '#2DD4BF', // Teal
-    model: 'Gemini 3.5 Flash (Google AI)',
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
-    core: false,
-    skills: ['Feature Benchmarking', 'Interaction Flows', 'State Models'],
+    core: true,
+    skills: ['Feature Decomposition', 'User Flow Definition', 'Search & Filtering', 'Form Validation'],
   },
+  beacon: {
+    id: 'beacon',
+    backendId: 'feature-2',
+    name: 'Beacon',
+    tag: 'BC',
+    role: 'Feature Architect (Pro Tier)',
+    color: '#0D9488', // Dark Teal
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['State Machine Design', 'User Journey Mapping', 'Cart & Checkout Flows', 'Empty-State Handling'],
+  },
+  compass: {
+    id: 'compass',
+    backendId: 'feature-3',
+    name: 'Compass',
+    tag: 'CP',
+    role: 'Lead Feature Architect (Max Tier)',
+    color: '#0F766E', // Forest Teal
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['Full Functional Architecture', 'Interaction Contracts', 'Feature Dependency Graphs', 'Edge-Case Matrix'],
+  },
+
+  // 5. Coders (3 Individual Agents)
   byte: {
     id: 'byte',
-    backendId: 'coding_agent',
+    backendId: 'coder-1',
     name: 'Byte',
     tag: 'BY',
-    role: 'Fullstack & Coding Agent',
-    color: '#10B981', // Emerald Green
-    model: 'Gemini 3.5 Flash (Google AI)',
+    role: 'Junior Coder (Free Tier)',
+    color: '#34D399', // Mint Green
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
     core: true,
-    skills: ['Vanilla JavaScript', 'Event Handlers', 'DOM Synthesis', 'Single-file index.html'],
+    skills: ['Single-File index.html', 'Vanilla JavaScript', 'Event Handlers', 'Surgical Code Patching'],
   },
+  cipher: {
+    id: 'cipher',
+    backendId: 'coder-2',
+    name: 'Cipher',
+    tag: 'CI',
+    role: 'Fullstack Coder (Pro Tier)',
+    color: '#10B981', // Emerald Green
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['Dynamic DOM Manipulation', 'Interactive State', 'Form Validation & Feedback', 'Minimal-Change Preservation'],
+  },
+  matrix: {
+    id: 'matrix',
+    backendId: 'coder-3',
+    name: 'Matrix',
+    tag: 'MX',
+    role: 'Lead Coder (Max Tier)',
+    color: '#059669', // Deep Emerald
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
+    room: 'Main Workspace',
+    core: true,
+    skills: ['Single-File Synthesis', 'Modern CSS Systems', 'Full Interactive JS', 'Regression-Free Surgery'],
+  },
+
+  // 6. QA Auditors (3 Individual Agents)
   query: {
     id: 'query',
-    backendId: 'qa',
+    backendId: 'qa-1',
     name: 'Query',
     tag: 'QR',
-    role: 'QA & Compliance Inspector',
-    color: '#FB923C', // Coral / Orange
-    model: 'Gemini 3.5 Flash Lite (Google AI)',
+    role: 'Junior QA (Free Tier)',
+    color: '#FB923C', // Coral Orange
+    tier: 'free',
+    model: 'Qwen 3.8 27B (Free $0.00)',
     room: 'Main Workspace',
     core: true,
-    skills: ['Static Analysis', 'DOM Auditing', 'Error Trapping', 'Auto-Repair Loop'],
+    skills: ['Static Analysis', 'DOM Structure Inspection', 'JS Error Detection', 'Requirements Verification'],
   },
-  forge: {
-    id: 'forge',
-    backendId: 'devops',
-    name: 'Forge',
-    tag: 'FG',
-    role: 'DevOps & Server Engineer',
-    color: '#F43F5E', // Rose / Crimson
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Server Room',
-    core: false,
-    skills: ['Server Infrastructure', 'File Watchers', 'SSE Streaming'],
-  },
-  echo: {
-    id: 'echo',
-    backendId: 'copywriter',
-    name: 'Echo',
-    tag: 'EC',
-    role: 'Content & Copy Strategist',
-    color: '#EAB308', // Warm Gold
-    model: 'Gemini 3.5 Flash (Google AI)',
+  audit: {
+    id: 'audit',
+    backendId: 'qa-2',
+    name: 'Audit',
+    tag: 'AD',
+    role: 'QA Auditor (Pro Tier)',
+    color: '#F97316', // Orange
+    tier: 'pro',
+    model: 'Kimi K3 (NVIDIA NIM $0.05)',
     room: 'Main Workspace',
-    core: false,
-    skills: ['Marketing Copy', 'Brand Voice', 'Value Propositions'],
+    core: true,
+    skills: ['JavaScript Correctness', 'Event-Flow Verification', 'Responsive Layout Audit', 'Defect Severity'],
   },
-  luna: {
-    id: 'luna',
-    backendId: 'data_specialist',
-    name: 'Luna',
-    tag: 'LN',
-    role: 'Data Pipelines & Storage',
-    color: '#06B6D4', // Cyan
-    model: 'Gemini 3.5 Flash (Google AI)',
+  sentinel: {
+    id: 'sentinel',
+    backendId: 'qa-3',
+    name: 'Sentinel',
+    tag: 'ST',
+    role: 'Lead QA Inspector (Max Tier)',
+    color: '#EA580C', // Deep Orange
+    tier: 'max',
+    model: 'Gemini 3.5 Flash Lite ($0.10)',
     room: 'Main Workspace',
-    core: false,
-    skills: ['Schema Validation', 'Data Transformations', 'JSON Parsing'],
-  },
-  rex: {
-    id: 'rex',
-    backendId: 'security_specialist',
-    name: 'Rex',
-    tag: 'RX',
-    role: 'Security & Code Integrity',
-    color: '#A855F7', // Violet
-    model: 'Gemini 3.5 Flash (Google AI)',
-    room: 'Server Room',
-    core: false,
-    skills: ['CSP Policies', 'Sanitization', 'Dependency Auditing'],
+    core: true,
+    skills: ['Comprehensive Code Audit', 'DOM Integrity Trapping', 'Functional Tracing', 'Automated Repair Directives'],
   },
 };
 
 // Map backend agent IDs to client agent IDs
 export const BACKEND_TO_CLIENT_MAP = {
+  // Manager
   manager: 'atlas',
   'manager-1': 'atlas',
+  'manager-free-1': 'atlas',
+  'manager-pro-1': 'atlas',
+  'manager-max-1': 'atlas',
+  atlas: 'atlas',
+
+  // Designers
   designer: 'pixel',
   'designer-1': 'pixel',
+  'designer-free-1': 'pixel',
+  pixel: 'pixel',
+  'designer-2': 'chroma',
+  'designer-pro-1': 'chroma',
+  chroma: 'chroma',
+  'designer-3': 'canvas',
+  'designer-max-1': 'canvas',
+  canvas: 'canvas',
+
+  // Frontend Architects
   frontend_architect: 'nova',
   frontend: 'nova',
   'frontend-1': 'nova',
+  'frontend-free-1': 'nova',
+  nova: 'nova',
+  'frontend-2': 'blueprint',
+  'frontend-pro-1': 'blueprint',
+  blueprint: 'blueprint',
+  'frontend-3': 'apex',
+  'frontend-max-1': 'apex',
+  apex: 'apex',
+
+  // Feature Architects
   feature_architect: 'scout',
   feature: 'scout',
   'feature-1': 'scout',
+  'feature-free-1': 'scout',
+  scout: 'scout',
+  'feature-2': 'beacon',
+  'feature-pro-1': 'beacon',
+  beacon: 'beacon',
+  'feature-3': 'compass',
+  'feature-max-1': 'compass',
+  compass: 'compass',
+
+  // Coders
   coding_agent: 'byte',
   coder: 'byte',
   'coder-1': 'byte',
+  'coder-free-1': 'byte',
+  byte: 'byte',
+  'coder-2': 'cipher',
+  'coder-pro-1': 'cipher',
+  cipher: 'cipher',
+  'coder-3': 'matrix',
+  'coder-max-1': 'matrix',
+  matrix: 'matrix',
+
+  // QA Auditors
   qa: 'query',
   'qa-1': 'query',
-  devops: 'forge',
-  'devops-1': 'forge',
-  copywriter: 'echo',
-  'copywriter-1': 'echo',
-  data_specialist: 'luna',
-  'data-1': 'luna',
-  security_specialist: 'rex',
-  'security-1': 'rex',
+  'qa-free-1': 'query',
+  query: 'query',
+  'qa-2': 'audit',
+  'qa-pro-1': 'audit',
+  audit: 'audit',
+  'qa-3': 'sentinel',
+  'qa-max-1': 'sentinel',
+  sentinel: 'sentinel',
 };
 
 /**
@@ -214,6 +360,9 @@ class AgentStateManager {
     this.terminalListeners = new Set();
     this.completionTimers = new Map();
 
+    // Default hired team for standard balanced tier ($0.25)
+    const defaultHired = new Set(['atlas', 'matrix', 'audit', 'chroma', 'blueprint', 'scout']);
+
     // Initialize all agents to IDLE state (zero fake / random states)
     for (const [id, def] of Object.entries(AGENT_DEFINITIONS)) {
       this.agents[id] = {
@@ -223,17 +372,30 @@ class AgentStateManager {
         role: def.role,
         tag: def.tag,
         color: def.color,
+        tier: def.tier || 'pro',
         model: def.model,
         room: def.room,
         core: def.core,
         skills: def.skills,
         status: AGENT_STATUS.IDLE,
+        isHired: defaultHired.has(id),
         currentTask: null,
         lastAction: null,
         progress: 0,
         startedAt: null,
         completedAt: null,
       };
+    }
+  }
+
+  setHiredAgents(hiredIds = []) {
+    const hiredSet = new Set(hiredIds.map(id => BACKEND_TO_CLIENT_MAP[id] || id));
+    for (const agent of Object.values(this.agents)) {
+      const wasHired = agent.isHired;
+      agent.isHired = hiredSet.has(agent.id);
+      if (wasHired !== agent.isHired) {
+        this.notifySubscribers(agent);
+      }
     }
   }
 
@@ -252,6 +414,30 @@ class AgentStateManager {
 
   getIdleAgentsCount() {
     return Object.values(this.agents).filter(a => a.status === AGENT_STATUS.IDLE).length;
+  }
+
+  updateAgentModel(agentId, model) {
+    const id = BACKEND_TO_CLIENT_MAP[agentId] || agentId;
+    const agent = this.agents[id];
+    if (agent) {
+      agent.model = model;
+      this.notifySubscribers(agent);
+    }
+  }
+
+  registerAgent(agentDef) {
+    const id = agentDef.id;
+    this.agents[id] = {
+      ...agentDef,
+      status: AGENT_STATUS.IDLE,
+      currentTask: null,
+      lastAction: 'Standby',
+      progress: 0,
+      startedAt: null,
+      completedAt: null,
+    };
+    BACKEND_TO_CLIENT_MAP[id] = id;
+    this.notifySubscribers(this.agents[id]);
   }
 
   subscribe(callback) {
