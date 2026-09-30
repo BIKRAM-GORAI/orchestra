@@ -1,10 +1,10 @@
 import { BaseAgent } from '../baseAgent.js';
 
 export class FeatureArchitectAgent extends BaseAgent {
-  constructor(model = 'kimi-k3') {
+  constructor(model = 'gemini-3.5-flash-lite', id = 'feature-1') {
     super({
-      id: 'feature_architect',
-      name: 'Feature Architect',
+      id,
+      name: 'Scout (Feature Architect)',
       emoji: '⚡',
       role: 'Functional Behavior & User Interaction Flows',
       description: 'Defines the behavioral specifications of all interactive features: user interactions, state transitions, validation, search/filter algorithms, and empty/edge states.',

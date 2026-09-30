@@ -1,10 +1,10 @@
 import { BaseAgent } from '../baseAgent.js';
 
 export class QAAgent extends BaseAgent {
-  constructor(model = 'kimi-k3') {
+  constructor(model = 'gemini-3.5-flash-lite', id = 'qa-1') {
     super({
-      id: 'qa',
-      name: 'QA Agent',
+      id,
+      name: 'Query (QA Auditor)',
       emoji: '🛡️',
       role: 'Quality Assurance & Code Auditor',
       description: 'Statically and functionally audits generated HTML/CSS/JS for missing DOM elements, broken event handlers, missing state variables, syntax issues, and unfulfilled user requirements.',

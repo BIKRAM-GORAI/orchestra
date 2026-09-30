@@ -1,10 +1,10 @@
 import { BaseAgent } from '../baseAgent.js';
 
 export class CodingAgent extends BaseAgent {
-  constructor(model = 'kimi-k3') {
+  constructor(model = 'gemini-3.5-flash-lite', id = 'coder-1') {
     super({
-      id: 'coding_agent',
-      name: 'Coding Agent',
+      id,
+      name: 'Byte (Lead Coder)',
       emoji: '💻',
       role: 'Implementation Owner & Code Generator',
       description: 'The sole agent authorized to write and edit the application index.html. Synthesizes all design, architecture, and feature specifications into a complete, self-contained single-page website.',

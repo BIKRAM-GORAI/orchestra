@@ -1,10 +1,10 @@
 import { BaseAgent } from '../baseAgent.js';
 
 export class DesignerAgent extends BaseAgent {
-  constructor(model = 'kimi-k3') {
+  constructor(model = 'gemini-3.5-flash-lite', id = 'designer-1') {
     super({
-      id: 'designer',
-      name: 'Designer',
+      id,
+      name: 'Pixel (Designer)',
       emoji: '🎨',
       role: 'UI/UX & Visual Direction',
       description: 'Determines visual aesthetic, harmonious color palettes, typography, spacing systems, layout rules, and responsive design guidelines.',

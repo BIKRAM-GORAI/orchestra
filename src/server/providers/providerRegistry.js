@@ -1,6 +1,7 @@
 import { PROVIDERS } from '../config/models.js';
 import { NvidiaProvider } from './nvidiaProvider.js';
 import { GeminiProvider } from './geminiProvider.js';
+import { OpenRouterProvider } from './openrouterProvider.js';
 
 /**
  * Provider Registry
@@ -13,6 +14,7 @@ class ProviderRegistry {
     // Register default providers
     this.register(PROVIDERS.NVIDIA, new NvidiaProvider());
     this.register(PROVIDERS.GEMINI, new GeminiProvider());
+    this.register(PROVIDERS.OPENROUTER, new OpenRouterProvider());
   }
 
   register(providerName, providerInstance) {

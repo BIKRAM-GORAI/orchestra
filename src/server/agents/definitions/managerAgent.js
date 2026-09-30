@@ -1,10 +1,10 @@
 import { BaseAgent } from '../baseAgent.js';
 
 export class ManagerAgent extends BaseAgent {
-  constructor(model = 'kimi-k3') {
+  constructor(model = 'gemini-3.5-flash-lite', id = 'manager-1') {
     super({
-      id: 'manager',
-      name: 'Manager',
+      id,
+      name: 'Atlas (Manager)',
       emoji: '👑',
       role: 'Orchestration Coordinator & Synthesis',
       description: 'Understands user goals, plans execution graph, selects specialist agents, and synthesizes specialist outputs into a Unified Implementation Specification.',

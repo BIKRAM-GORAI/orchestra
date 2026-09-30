@@ -13,6 +13,7 @@ export const config = {
   host: process.env.HOST || 'localhost',
   nvidiaApiKey: process.env.NVIDIA_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
+  openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
   isProduction: process.env.NODE_ENV === 'production',
   rootDir,
   mongoUri: process.env.MONGO_URI || process.env.MONGODB_URI || '',

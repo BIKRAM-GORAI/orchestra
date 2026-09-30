@@ -153,15 +153,28 @@ export const AGENT_DEFINITIONS = {
 // Map backend agent IDs to client agent IDs
 export const BACKEND_TO_CLIENT_MAP = {
   manager: 'atlas',
+  'manager-1': 'atlas',
   designer: 'pixel',
+  'designer-1': 'pixel',
   frontend_architect: 'nova',
+  frontend: 'nova',
+  'frontend-1': 'nova',
   feature_architect: 'scout',
+  feature: 'scout',
+  'feature-1': 'scout',
   coding_agent: 'byte',
+  coder: 'byte',
+  'coder-1': 'byte',
   qa: 'query',
+  'qa-1': 'query',
   devops: 'forge',
+  'devops-1': 'forge',
   copywriter: 'echo',
+  'copywriter-1': 'echo',
   data_specialist: 'luna',
+  'data-1': 'luna',
   security_specialist: 'rex',
+  'security-1': 'rex',
 };
 
 /**

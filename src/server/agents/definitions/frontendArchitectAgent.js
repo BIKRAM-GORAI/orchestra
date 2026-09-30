@@ -1,10 +1,10 @@
 import { BaseAgent } from '../baseAgent.js';
 
 export class FrontendArchitectAgent extends BaseAgent {
-  constructor(model = 'kimi-k3') {
+  constructor(model = 'gemini-3.5-flash-lite', id = 'frontend-1') {
     super({
-      id: 'frontend_architect',
-      name: 'Frontend Architect',
+      id,
+      name: 'Nova (Frontend Architect)',
       emoji: '📐',
       role: 'Technical Implementation Strategy',
       description: 'Determines the technical architecture for the single index.html file: semantic DOM hierarchy, CSS variable system, and client-side JavaScript state management.',
