@@ -479,34 +479,126 @@ export async function listProjects() {
 }
 
 /**
- * Get all files belonging to a project (index.html + sub-agent response artifacts)
+ * Save any project file (HTML, Markdown, Spec, Report) into MongoDB `project_files` collection
+ * and mirror it to the project directory on disk.
+ * Supports multi-file architecture with versioning and agent attribution.
+ */
+export async function saveProjectFile(projectId, {
+  filePath,
+  filename = null,
+  content = '',
+  agentId = null,
+  agentName = null,
+  type = null,
+  changeNote = 'Agent Output Generated',
+} = {}) {
+  if (!projectId || !filePath) return null;
+
+  const safeFilename = filename || path.basename(filePath);
+  const detectedType = type || (filePath.endsWith('.html') ? 'html' : (filePath.endsWith('.json') ? 'json' : 'markdown'));
+  const now = new Date();
+
+  // 1. Persist to MongoDB `project_files` (Multi-file storage)
+  try {
+    const db = await getDb();
+    if (db) {
+      const filesCol = db.collection('project_files');
+      const existing = await filesCol.findOne({ projectId, filePath });
+      const version = existing ? (existing.version || 1) + 1 : 1;
+
+      const fileDoc = {
+        projectId,
+        filePath,
+        filename: safeFilename,
+        agentId: agentId || existing?.agentId || 'system',
+        agentName: agentName || existing?.agentName || 'Specialist',
+        type: detectedType,
+        content,
+        version,
+        changeNote,
+        updatedAt: now,
+      };
+
+      if (!existing) {
+        fileDoc.createdAt = now;
+        fileDoc.versions = [{ version: 1, content, changeNote, createdAt: now }];
+        await filesCol.insertOne(fileDoc);
+      } else {
+        await filesCol.updateOne(
+          { projectId, filePath },
+          {
+            $set: fileDoc,
+            $push: { versions: { version, content, changeNote, createdAt: now } },
+          }
+        );
+      }
+    }
+  } catch (err) {
+    console.warn(`[PROJECT SERVICE] MongoDB saveProjectFile notice (${filePath}): ${err.message}`);
+  }
+
+  // 2. Mirror locally to project directory on disk
+  try {
+    const projectDir = path.join(config.projectsDir, projectId);
+    await fs.mkdir(projectDir, { recursive: true });
+    await fs.writeFile(path.join(projectDir, safeFilename), content, 'utf-8');
+  } catch (err) {
+    console.warn(`[PROJECT SERVICE] Disk write notice (${safeFilename}): ${err.message}`);
+  }
+
+  // 3. Update project metadata's files list
+  try {
+    const project = await getProject(projectId);
+    if (project) {
+      const currentFiles = project.files || ['index.html'];
+      if (!currentFiles.includes(safeFilename)) {
+        await updateProject(projectId, {
+          files: [...currentFiles, safeFilename],
+          updatedAt: now.toISOString(),
+        });
+      }
+    }
+  } catch (_) {}
+
+  return { projectId, filePath, filename: safeFilename, version: 1 };
+}
+
+/**
+ * Get all files belonging to a project (index.html, design_system.md, architecture, specs, reports)
  */
 export async function getProjectFiles(projectId) {
   if (!projectId) return [];
   const files = [];
   const seenPaths = new Set();
 
-  // 1. Load index.html from MongoDB `project_files`
+  // 1. Load all files from MongoDB `project_files`
   try {
     const db = await getDb();
     if (db) {
-      const htmlFile = await db.collection('project_files').findOne({ projectId, filePath: 'index.html' });
-      if (htmlFile) {
-        seenPaths.add('index.html');
-        files.push({
-          name: 'index.html',
-          path: 'index.html',
-          size: Buffer.byteLength(htmlFile.content || '', 'utf-8'),
-          updatedAt: htmlFile.updatedAt ? new Date(htmlFile.updatedAt).toISOString() : new Date().toISOString(),
-          extension: 'html',
-          version: htmlFile.version || 1,
-        });
+      const projectFiles = await db.collection('project_files').find({ projectId }).toArray();
+      for (const f of projectFiles) {
+        const p = f.filePath || f.filename;
+        if (!seenPaths.has(p)) {
+          seenPaths.add(p);
+          seenPaths.add(f.filename);
+          const ext = f.extension || (f.filename.includes('.') ? f.filename.split('.').pop() : 'txt');
+          files.push({
+            name: f.filename,
+            path: p,
+            size: Buffer.byteLength(f.content || '', 'utf-8'),
+            updatedAt: f.updatedAt ? new Date(f.updatedAt).toISOString() : new Date().toISOString(),
+            extension: ext,
+            version: f.version || 1,
+            agentId: f.agentId,
+            agentName: f.agentName,
+          });
+        }
       }
 
-      // Load sub-agent response markdown artifacts
+      // Also check sub-agent response artifacts for backward compatibility
       const artifacts = await db.collection('agent_artifacts').find({ projectId }).sort({ createdAt: -1 }).toArray();
       for (const art of artifacts) {
-        if (!seenPaths.has(art.path)) {
+        if (!seenPaths.has(art.path) && !seenPaths.has(art.filename)) {
           seenPaths.add(art.path);
           files.push({
             name: art.filename,
@@ -523,26 +615,31 @@ export async function getProjectFiles(projectId) {
     console.warn(`[PROJECT SERVICE] MongoDB getProjectFiles notice: ${err.message}`);
   }
 
-  // 2. Check local disk fallback if index.html wasn't found in DB
-  if (!seenPaths.has('index.html')) {
-    const projectDir = path.join(config.projectsDir, projectId);
-    try {
-      const entries = await fs.readdir(projectDir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isFile() && !seenPaths.has(entry.name)) {
-          seenPaths.add(entry.name);
-          const stats = await fs.stat(path.join(projectDir, entry.name));
-          files.push({
-            name: entry.name,
-            path: entry.name,
-            size: stats.size,
-            updatedAt: stats.mtime.toISOString(),
-            extension: path.extname(entry.name).slice(1) || 'txt',
-          });
-        }
+  // 2. Check local disk files for this project
+  const projectDir = path.join(config.projectsDir, projectId);
+  try {
+    const entries = await fs.readdir(projectDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isFile() && !seenPaths.has(entry.name) && entry.name !== 'project.json') {
+        seenPaths.add(entry.name);
+        const stats = await fs.stat(path.join(projectDir, entry.name));
+        files.push({
+          name: entry.name,
+          path: entry.name,
+          size: stats.size,
+          updatedAt: stats.mtime.toISOString(),
+          extension: path.extname(entry.name).slice(1) || 'txt',
+        });
       }
-    } catch (_) {}
-  }
+    }
+  } catch (_) {}
+
+  // Sort: index.html always first, then markdown files sorted logically
+  files.sort((a, b) => {
+    if (a.name === 'index.html') return -1;
+    if (b.name === 'index.html') return 1;
+    return a.name.localeCompare(b.name);
+  });
 
   return files;
 }
@@ -553,7 +650,9 @@ export async function getProjectFiles(projectId) {
 export async function getProjectFileContent(projectId, filenameOrPath) {
   if (!projectId || !filenameOrPath) return null;
 
-  // 1. Check MongoDB `project_files` (e.g. index.html)
+  const baseName = path.basename(filenameOrPath);
+
+  // 1. Check MongoDB `project_files`
   try {
     const db = await getDb();
     if (db) {
@@ -562,6 +661,8 @@ export async function getProjectFileContent(projectId, filenameOrPath) {
         $or: [
           { filePath: filenameOrPath },
           { filename: filenameOrPath },
+          { filePath: baseName },
+          { filename: baseName },
         ],
       });
       if (fileDoc && fileDoc.content !== undefined) {
@@ -574,6 +675,8 @@ export async function getProjectFileContent(projectId, filenameOrPath) {
         $or: [
           { path: filenameOrPath },
           { filename: filenameOrPath },
+          { path: baseName },
+          { filename: baseName },
         ],
       });
       if (artifactDoc && artifactDoc.content !== undefined) {
@@ -585,8 +688,7 @@ export async function getProjectFileContent(projectId, filenameOrPath) {
   }
 
   // 2. Fallback to local disk
-  const safeFilename = path.basename(filenameOrPath);
-  const filePath = path.join(config.projectsDir, projectId, safeFilename);
+  const filePath = path.join(config.projectsDir, projectId, baseName);
   try {
     return await fs.readFile(filePath, 'utf-8');
   } catch (err) {

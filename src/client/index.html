@@ -361,7 +361,7 @@
           <div class="tab-header-toolbar">
             <div class="toolbar-left">
               <h2 class="tab-heading">Sprint Task Board</h2>
-              <span class="tag-subtext">Kanban workflow across autonomous agent roles</span>
+              <span class="tag-subtext">Live feed of pipeline tasks across autonomous agent roles</span>
             </div>
             <div class="toolbar-right">
               <button class="btn btn-sm btn-primary" id="addTaskBtn">
@@ -371,11 +371,21 @@
             </div>
           </div>
 
+          <!-- Active Task Execution Banner -->
+          <div class="tasks-active-banner" id="tasksActiveBanner">
+            <div class="active-pulse-dot"></div>
+            <div class="active-banner-info">
+              <span class="active-banner-label">LIVE PIPELINE EXECUTION</span>
+              <span class="active-banner-task" id="tasksActiveText">Waiting for next task instruction...</span>
+            </div>
+            <span class="active-banner-agent" id="tasksActiveAgent">Atlas (Manager)</span>
+          </div>
+
           <div class="kanban-grid">
             <div class="kanban-col">
               <div class="kanban-col-header">
                 <div class="col-title-wrap"><span class="col-status-dot backlog"></span><span class="col-title">BACKLOG</span></div>
-                <span class="col-count">0</span>
+                <span class="col-count" id="kanbanBacklogCount">0</span>
               </div>
               <div class="kanban-cards-list" id="kanbanBacklogList">
                 <div class="kanban-empty-state">No backlog tasks</div>
@@ -385,7 +395,7 @@
             <div class="kanban-col">
               <div class="kanban-col-header">
                 <div class="col-title-wrap"><span class="col-status-dot progress"></span><span class="col-title">IN PROGRESS</span></div>
-                <span class="col-count">0</span>
+                <span class="col-count" id="kanbanProgressCount">0</span>
               </div>
               <div class="kanban-cards-list" id="kanbanProgressList">
                 <div class="kanban-empty-state">No active sprint tasks</div>
@@ -395,7 +405,7 @@
             <div class="kanban-col">
               <div class="kanban-col-header">
                 <div class="col-title-wrap"><span class="col-status-dot review"></span><span class="col-title">REVIEW / QA</span></div>
-                <span class="col-count">0</span>
+                <span class="col-count" id="kanbanReviewCount">0</span>
               </div>
               <div class="kanban-cards-list" id="kanbanReviewList">
                 <div class="kanban-empty-state">No pending reviews</div>
@@ -405,7 +415,7 @@
             <div class="kanban-col">
               <div class="kanban-col-header">
                 <div class="col-title-wrap"><span class="col-status-dot done"></span><span class="col-title">COMPLETED</span></div>
-                <span class="col-count">0</span>
+                <span class="col-count" id="kanbanDoneCount">0</span>
               </div>
               <div class="kanban-cards-list" id="kanbanDoneList">
                 <div class="kanban-empty-state">No completed tasks yet</div>
@@ -416,75 +426,115 @@
       </section>
 
       <!-- ===================================================================
-           TAB 3: CHAT (AI OPERATIONS COMMAND CENTER)
+           TAB 3: CHAT (AI OPERATIONS COMMAND CENTER - DUAL PANE)
            =================================================================== -->
       <section class="tab-view" id="viewChat">
         <div class="chat-workspace">
           <div class="tab-header-toolbar">
             <div class="toolbar-left">
               <h2 class="tab-heading">AI Operations Command Center</h2>
-              <span class="tag-subtext">Direct orchestrator communication & task dispatch</span>
+              <span class="tag-subtext">Direct Manager dialogue & live inter-agent coordination wire</span>
             </div>
             <div class="toolbar-right">
               <span class="status-indicator-tag" id="chatStatusTag">Ready for Command</span>
             </div>
           </div>
 
-          <div class="chat-container-card">
-            <div class="chat-messages-stream" id="chatMessagesStream">
-              <div class="chat-msg system">
-                <div class="msg-avatar">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-                </div>
-                <div class="msg-content">
-                  <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
-                  <div class="msg-body">Agent Orchestra online. 10 specialized roles ready in atelier. Model: Gemini 3.5 Flash.</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="chat-quick-chips">
-              <span class="chips-label">Quick Prompts:</span>
-              <button class="chat-chip" data-prompt="Build an artisan flower boutique website with cart">+ Flower Boutique</button>
-              <button class="chat-chip" data-prompt="Add customer review cards with 5-star ratings">+ Reviews Section</button>
-              <button class="chat-chip" data-prompt="Run comprehensive automated test suite and compliance audit">+ Run Tests</button>
-            </div>
-
-            <div class="chat-composer-box">
-              <div class="prompt-budget-bar">
-                <div class="budget-control-compact">
-                  <select class="agent-mention-select" id="chatMentionSelect">
-                    <option value="@Team">@Team (All Specialists)</option>
-                    <option value="@Atlas">@Atlas (Manager)</option>
-                    <option value="@Nova">@Nova (Frontend)</option>
-                    <option value="@Byte">@Byte (Lead Coder)</option>
-                    <option value="@Pixel">@Pixel (Designer)</option>
-                    <option value="@Query">@Query (QA Auditor)</option>
-                  </select>
-                  <div class="budget-number-wrap" style="margin-left: 4px;">
-                    <span class="currency-symbol">$</span>
-                    <input type="number" id="chatBudgetNumberInput" class="budget-number-input" min="0" step="0.05" value="0.35" placeholder="0.35" title="Type any custom budget" />
+          <div class="chat-dual-container">
+            <!-- PART 1: User & Manager Direct Dialogue -->
+            <div class="chat-pane chat-manager-pane">
+              <div class="chat-pane-header">
+                <div class="chat-pane-title-wrap">
+                  <span class="pane-indicator manager-dot"></span>
+                  <div>
+                    <h3 class="chat-pane-title">Manager Dialogue</h3>
+                    <span class="chat-pane-subtitle">Direct channel with Atlas (Engineering Manager)</span>
                   </div>
-                  <span class="budget-tier-tag" id="chatBudgetTierTag">Mid ($0.35)</span>
                 </div>
-                <div class="budget-tiers-pills">
-                  <button type="button" class="budget-pill" data-budget="0.00" title="Free models only ($0.00)">Free</button>
-                  <button type="button" class="budget-pill" data-budget="0.15" title="Lean / Coder Priority ($0.15)">Lean</button>
-                  <button type="button" class="budget-pill active" data-budget="0.35" title="All moderate specialists ($0.35)">Mid</button>
-                  <button type="button" class="budget-pill" data-budget="1.00" title="All highest/lead models ($1.00+)">Max</button>
-                </div>
-                <input type="range" id="chatBudgetSlider" min="0" max="2.00" step="0.05" value="0.35" style="display: none;" />
+                <span class="pane-badge">USER ↔ MANAGER</span>
               </div>
 
-              <div class="prompt-textarea-wrap">
-                <textarea id="chatPromptInput" rows="3" class="chat-prompt-textarea" placeholder="Enter comprehensive objective, feature request, or styling guidelines for the team..."></textarea>
-                <div class="prompt-textarea-footer">
-                  <span class="prompt-hint-kbd">Enter ↵ newline</span>
-                  <button class="btn-prompt-send-inline" id="chatSendInlineBtn" title="Send Directive (Click to send)">
-                    <span>Send Objective</span>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                  </button>
-                  <button id="chatSendBtn" style="display: none;"></button>
+              <div class="chat-messages-stream" id="chatMessagesStream">
+                <div class="chat-msg system">
+                  <div class="msg-avatar">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                  </div>
+                  <div class="msg-content">
+                    <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
+                    <div class="msg-body">Agent Orchestra online. 10 specialized roles ready in atelier. Model: Gemini 3.5 Flash.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chat-quick-chips">
+                <span class="chips-label">Quick Prompts:</span>
+                <button class="chat-chip" data-prompt="Build an artisan flower boutique website with cart">+ Flower Boutique</button>
+                <button class="chat-chip" data-prompt="Add customer review cards with 5-star ratings">+ Reviews Section</button>
+                <button class="chat-chip" data-prompt="Run comprehensive automated test suite and compliance audit">+ Run Tests</button>
+              </div>
+
+              <div class="chat-composer-box">
+                <div class="prompt-budget-bar">
+                  <div class="budget-control-compact">
+                    <select class="agent-mention-select" id="chatMentionSelect">
+                      <option value="@Team">@Team (All Specialists)</option>
+                      <option value="@Atlas">@Atlas (Manager)</option>
+                      <option value="@Nova">@Nova (Frontend)</option>
+                      <option value="@Byte">@Byte (Lead Coder)</option>
+                      <option value="@Pixel">@Pixel (Designer)</option>
+                      <option value="@Query">@Query (QA Auditor)</option>
+                    </select>
+                    <div class="budget-number-wrap" style="margin-left: 4px;">
+                      <span class="currency-symbol">$</span>
+                      <input type="number" id="chatBudgetNumberInput" class="budget-number-input" min="0" step="0.05" value="0.35" placeholder="0.35" title="Type any custom budget" />
+                    </div>
+                    <span class="budget-tier-tag" id="chatBudgetTierTag">Mid ($0.35)</span>
+                  </div>
+                  <div class="budget-tiers-pills">
+                    <button type="button" class="budget-pill" data-budget="0.00" title="Free models only ($0.00)">Free</button>
+                    <button type="button" class="budget-pill" data-budget="0.15" title="Lean / Coder Priority ($0.15)">Lean</button>
+                    <button type="button" class="budget-pill active" data-budget="0.35" title="All moderate specialists ($0.35)">Mid</button>
+                    <button type="button" class="budget-pill" data-budget="1.00" title="All highest/lead models ($1.00+)">Max</button>
+                  </div>
+                  <input type="range" id="chatBudgetSlider" min="0" max="2.00" step="0.05" value="0.35" style="display: none;" />
+                </div>
+
+                <div class="prompt-textarea-wrap">
+                  <textarea id="chatPromptInput" rows="3" class="chat-prompt-textarea" placeholder="Enter comprehensive objective, feature request, or styling guidelines for the team..."></textarea>
+                  <div class="prompt-textarea-footer">
+                    <span class="prompt-hint-kbd">Enter ↵ newline</span>
+                    <button class="btn-prompt-send-inline" id="chatSendInlineBtn" title="Send Directive (Click to send)">
+                      <span>Send Objective</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                    </button>
+                    <button id="chatSendBtn" style="display: none;"></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PART 2: Inter-Agent Coordination Wire (Manager <-> Specialists) -->
+            <div class="chat-pane chat-interagent-pane">
+              <div class="chat-pane-header">
+                <div class="chat-pane-title-wrap">
+                  <span class="pane-indicator interagent-dot"></span>
+                  <div>
+                    <h3 class="chat-pane-title">Inter-Agent Coordination Wire</h3>
+                    <span class="chat-pane-subtitle">Direct instructions from Atlas to specialists & responses</span>
+                  </div>
+                </div>
+                <div class="interagent-header-actions">
+                  <span class="pane-badge wire-badge">MANAGER ↔ SPECIALISTS</span>
+                  <button class="btn btn-xs btn-outline" id="clearInteragentBtn" title="Clear stream view">Clear</button>
+                </div>
+              </div>
+
+              <div class="interagent-stream" id="chatInteragentStream">
+                <div class="interagent-empty-state">
+                  <div class="wire-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </div>
+                  <p>Inter-agent communication channel is open. Dispatched task directives and specialist responses will stream here in real-time.</p>
                 </div>
               </div>
             </div>
@@ -713,7 +763,16 @@
           <div class="tab-header-toolbar">
             <div class="toolbar-left">
               <h2 class="tab-heading">Chronological Activity Timeline</h2>
-              <span class="tag-subtext">Audit trail of all agent actions, deliverables, and build milestones</span>
+              <span class="tag-subtext">Live audit trail of office simulations, agent movements, pipeline stages & executions</span>
+            </div>
+            <div class="toolbar-right">
+              <div class="activity-filters" id="activityFilters">
+                <button class="activity-filter-btn active" data-filter="all">All Activity</button>
+                <button class="activity-filter-btn" data-filter="simulation">Simulations</button>
+                <button class="activity-filter-btn" data-filter="pipeline">Pipeline</button>
+                <button class="activity-filter-btn" data-filter="comms">Inter-Agent</button>
+              </div>
+              <button class="btn btn-sm btn-outline" id="clearActivityBtn" title="Clear activity log">Clear</button>
             </div>
           </div>
 

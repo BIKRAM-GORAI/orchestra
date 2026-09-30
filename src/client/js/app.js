@@ -108,8 +108,312 @@ const applyFeedbackBtn = document.getElementById('applyFeedbackBtn');
 const agentsDirectoryGrid = document.getElementById('agentsDirectoryGrid');
 
 // ==========================================================================
-// 1. Navigation Tab Controller
+// 1. Navigation Tab Controller & Global Stores
 // ==========================================================================
+
+// --- Tasks Kanban Store & Controller ---
+export let tasksStore = [
+  {
+    id: 'task-init',
+    title: 'Autonomous System Environment Online',
+    desc: '10 AI specialist roles loaded with dynamic model routing & atelier floor simulation.',
+    stage: 'done',
+    agentId: 'atlas',
+    agentName: 'Atlas (Manager)',
+    time: 'Ready'
+  },
+  {
+    id: 'task-standby',
+    title: 'Awaiting User Directives',
+    desc: 'Manager standing by to analyze goals, assemble specialists, and generate execution plan.',
+    stage: 'backlog',
+    agentId: 'atlas',
+    agentName: 'Atlas (Manager)',
+    time: 'Standby'
+  }
+];
+
+export function updateTasksBanner(text, agent = 'Atlas (Manager)') {
+  const textEl = document.getElementById('tasksActiveText');
+  const agentEl = document.getElementById('tasksActiveAgent');
+  if (textEl) textEl.textContent = text;
+  if (agentEl) agentEl.textContent = agent;
+}
+
+export function renderTasksBoard() {
+  const backlogEl = document.getElementById('kanbanBacklogList');
+  const progressEl = document.getElementById('kanbanProgressList');
+  const reviewEl = document.getElementById('kanbanReviewList');
+  const doneEl = document.getElementById('kanbanDoneList');
+
+  const backlogCountEl = document.getElementById('kanbanBacklogCount');
+  const progressCountEl = document.getElementById('kanbanProgressCount');
+  const reviewCountEl = document.getElementById('kanbanReviewCount');
+  const doneCountEl = document.getElementById('kanbanDoneCount');
+
+  if (!backlogEl || !progressEl || !reviewEl || !doneEl) return;
+
+  const cols = { backlog: [], progress: [], review: [], done: [] };
+  tasksStore.forEach(t => {
+    if (cols[t.stage]) cols[t.stage].push(t);
+    else cols.backlog.push(t);
+  });
+
+  if (backlogCountEl) backlogCountEl.textContent = cols.backlog.length;
+  if (progressCountEl) progressCountEl.textContent = cols.progress.length;
+  if (reviewCountEl) reviewCountEl.textContent = cols.review.length;
+  if (doneCountEl) doneCountEl.textContent = cols.done.length;
+
+  const renderCard = (task) => {
+    const agent = AGENT_ROSTER[task.agentId] || { name: task.agentName || 'Specialist', color: '#3B82F6' };
+    return `
+      <div class="kanban-task-card" data-task-id="${task.id}">
+        <div class="kanban-card-top">
+          <span class="kanban-stage-tag tag-${task.stage}">${task.stage.toUpperCase()}</span>
+          <span class="kanban-card-time">${task.time || ''}</span>
+        </div>
+        <div class="kanban-card-title">${task.title}</div>
+        <div class="kanban-card-desc">${task.desc || ''}</div>
+        <div class="kanban-card-footer">
+          <span class="kanban-agent-badge">
+            <span class="kanban-agent-dot" style="background:${agent.color || '#3B82F6'};"></span>
+            <span>${agent.name}</span>
+          </span>
+        </div>
+      </div>
+    `;
+  };
+
+  backlogEl.innerHTML = cols.backlog.length ? cols.backlog.map(renderCard).join('') : '<div class="kanban-empty-state">No backlog tasks</div>';
+  progressEl.innerHTML = cols.progress.length ? cols.progress.map(renderCard).join('') : '<div class="kanban-empty-state">No active sprint tasks</div>';
+  reviewEl.innerHTML = cols.review.length ? cols.review.map(renderCard).join('') : '<div class="kanban-empty-state">No pending reviews</div>';
+  doneEl.innerHTML = cols.done.length ? cols.done.map(renderCard).join('') : '<div class="kanban-empty-state">No completed tasks yet</div>';
+}
+
+export function startPipelineTasks(promptText) {
+  const time = new Date().toLocaleTimeString();
+  tasksStore = [
+    {
+      id: 'task-plan',
+      title: 'Analyze Goal & Architecture Plan',
+      desc: `Deconstruct user objective: "${(promptText || '').slice(0, 55)}..."`,
+      stage: 'progress',
+      agentId: 'atlas',
+      agentName: 'Atlas (Manager)',
+      time
+    },
+    {
+      id: 'task-design',
+      title: 'Visual Direction & UI/UX Design System',
+      desc: 'Formulate color palette, typography tokens, animations, and micro-interactions',
+      stage: 'backlog',
+      agentId: 'pixel',
+      agentName: 'Pixel (UI/UX Designer)',
+      time: 'Queued'
+    },
+    {
+      id: 'task-arch',
+      title: 'DOM Architecture & Component Structure',
+      desc: 'Engineered single-file DOM hierarchy, state management schema & execution flow',
+      stage: 'backlog',
+      agentId: 'nova',
+      agentName: 'Nova (Frontend Architect)',
+      time: 'Queued'
+    },
+    {
+      id: 'task-feat',
+      title: 'Behavioral Specifications & Interaction Flows',
+      desc: 'Define reactive state, event triggers, validation constraints, and user action states',
+      stage: 'backlog',
+      agentId: 'scout',
+      agentName: 'Scout (Feature Architect)',
+      time: 'Queued'
+    },
+    {
+      id: 'task-synth',
+      title: 'Synthesize Master Implementation Blueprint',
+      desc: 'Synthesize specialist specifications into unified specification for Coding Agent',
+      stage: 'backlog',
+      agentId: 'atlas',
+      agentName: 'Atlas (Manager)',
+      time: 'Queued'
+    },
+    {
+      id: 'task-code',
+      title: 'Full-Stack Single-File Coding (index.html)',
+      desc: 'Generate complete, self-contained HTML/CSS/JS application matching design tokens',
+      stage: 'backlog',
+      agentId: 'byte',
+      agentName: 'Byte (Lead Coder)',
+      time: 'Queued'
+    },
+    {
+      id: 'task-qa',
+      title: 'QA DOM & JavaScript Compliance Audit',
+      desc: 'Inspect semantic markup, responsive layout, JavaScript handlers & quality standards',
+      stage: 'backlog',
+      agentId: 'query',
+      agentName: 'Query (QA Auditor)',
+      time: 'Queued'
+    }
+  ];
+  updateTasksBanner(`Executing sprint for: "${(promptText || '').slice(0, 40)}..."`, 'Atlas (Manager)');
+  renderTasksBoard();
+}
+
+export function setTaskStage(taskId, newStage, note = null) {
+  const task = tasksStore.find(t => t.id === taskId);
+  if (task) {
+    task.stage = newStage;
+    task.time = new Date().toLocaleTimeString();
+    if (note) task.desc = note;
+    renderTasksBoard();
+  }
+}
+
+// --- Inter-Agent Coordination Wire Store & Controller (Part 2 of Chat) ---
+export let interagentMessages = [
+  {
+    id: 'wire-init',
+    fromAgent: 'atlas',
+    fromName: 'Atlas (Manager)',
+    toAgent: 'specialists',
+    toName: 'Specialist Ensemble',
+    subject: 'System Standby & Channel Verification',
+    message: 'Orchestrator ready. Standing by for project goals and user requirements.',
+    timestamp: 'Initial'
+  }
+];
+
+export function addInteragentMessage({ fromAgent, fromName, toAgent, toName, subject, message, timestamp } = {}) {
+  const msgObj = {
+    id: 'wire-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+    fromAgent: fromAgent || 'atlas',
+    fromName: fromName || 'Atlas (Manager)',
+    toAgent: toAgent || 'specialist',
+    toName: toName || 'Specialist',
+    subject: subject || 'Directives Hand-off',
+    message: message || '',
+    timestamp: timestamp || new Date().toLocaleTimeString()
+  };
+  interagentMessages.push(msgObj);
+  renderInteragentStream();
+
+  addActivityItem({
+    type: 'comms',
+    agentId: fromAgent || 'atlas',
+    agentName: fromName || 'Atlas',
+    title: `${fromName} ➔ ${toName}: ${subject}`,
+    desc: message,
+    timestamp: msgObj.timestamp
+  });
+}
+
+export function renderInteragentStream() {
+  const streamEl = document.getElementById('chatInteragentStream');
+  if (!streamEl) return;
+
+  if (interagentMessages.length === 0) {
+    streamEl.innerHTML = `
+      <div class="interagent-empty-state">
+        <div class="wire-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <p>Inter-agent communication channel is open. Dispatched task directives and specialist responses will stream here in real-time.</p>
+      </div>
+    `;
+    return;
+  }
+
+  streamEl.innerHTML = interagentMessages.map(m => `
+    <div class="interagent-card">
+      <div class="interagent-route-row">
+        <div class="wire-route-wrap">
+          <span class="wire-sender-tag">${m.fromName}</span>
+          <span class="wire-arrow">➔</span>
+          <span class="wire-receiver-tag">${m.toName}</span>
+        </div>
+        <span class="wire-time">${m.timestamp}</span>
+      </div>
+      <div class="wire-subject">${m.subject}</div>
+      <div class="wire-body">${m.message}</div>
+    </div>
+  `).join('');
+
+  streamEl.scrollTop = streamEl.scrollHeight;
+}
+
+// --- Chronological Activity Timeline Store & Controller ---
+export let activityStore = [
+  {
+    id: 'act-init',
+    type: 'simulation',
+    agentId: 'atlas',
+    agentName: 'Atlas (Manager)',
+    title: 'Workspace Initialized',
+    desc: '10 AI specialist agents ready on duty in fixed 2.5D atelier simulation.',
+    timestamp: 'Initial'
+  }
+];
+export let currentActivityFilter = 'all';
+
+export function addActivityItem({ type = 'simulation', agentId = 'sys', agentName = 'System', title = '', desc = '', timestamp = null } = {}) {
+  const item = {
+    id: 'act-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+    type,
+    agentId,
+    agentName,
+    title,
+    desc,
+    timestamp: timestamp || new Date().toLocaleTimeString()
+  };
+  activityStore.unshift(item);
+  if (activityStore.length > 250) activityStore.pop();
+  renderActivityTimeline();
+}
+
+export function renderActivityTimeline() {
+  const listEl = document.getElementById('activityTimelineList');
+  if (!listEl) return;
+
+  const filtered = currentActivityFilter === 'all'
+    ? activityStore
+    : activityStore.filter(a => a.type === currentActivityFilter);
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `
+      <div class="timeline-empty-state">
+        <span class="empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </span>
+        <p>No activity recorded in this category yet.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(item => {
+    const emoji = AGENT_EMOJIS[item.agentId] || '⚡';
+    return `
+      <div class="activity-timeline-item">
+        <div class="timeline-avatar">${emoji}</div>
+        <div class="timeline-item-body">
+          <div class="timeline-header-row">
+            <div class="timeline-title-wrap">
+              <span class="timeline-agent-name">${item.agentName}</span>
+              <span class="timeline-type-badge type-${item.type}">${item.type}</span>
+            </div>
+            <span class="timeline-time">${item.timestamp}</span>
+          </div>
+          <div style="font-size:0.76rem;font-weight:700;color:var(--text-primary);margin-top:2px;">${item.title}</div>
+          <div class="timeline-text">${item.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// --- Main Tab Switcher ---
 export function switchTab(tabId) {
   activeTab = tabId;
 
@@ -128,15 +432,71 @@ export function switchTab(tabId) {
     }
   });
 
-  if (tabId === 'preview') {
+  if (tabId === 'tasks') {
+    renderTasksBoard();
+  } else if (tabId === 'chat') {
+    if (chatMessagesStream) chatMessagesStream.scrollTop = chatMessagesStream.scrollHeight;
+    renderInteragentStream();
+  } else if (tabId === 'activity') {
+    renderActivityTimeline();
+  } else if (tabId === 'preview') {
     updatePreview(activeProjectId);
   } else if (tabId === 'ide') {
     loadProjectFiles(activeProjectId);
+  } else if (tabId === 'agents') {
+    renderAgentRosters();
   }
 }
 
 navButtons.forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// Setup listeners for Tasks, Chat wire, and Activity timeline actions
+const addTaskBtn = document.getElementById('addTaskBtn');
+if (addTaskBtn) {
+  addTaskBtn.addEventListener('click', () => {
+    const title = prompt('Enter new sprint task title:');
+    if (title && title.trim()) {
+      tasksStore.push({
+        id: 'task-' + Date.now(),
+        title: title.trim(),
+        desc: 'Custom task created by user',
+        stage: 'backlog',
+        agentId: 'atlas',
+        agentName: 'Atlas (Manager)',
+        time: new Date().toLocaleTimeString()
+      });
+      renderTasksBoard();
+      addLog(`Created new sprint task: "${title.trim()}"`, 'info', 'USER', 'TASK');
+    }
+  });
+}
+
+const clearActivityBtn = document.getElementById('clearActivityBtn');
+if (clearActivityBtn) {
+  clearActivityBtn.addEventListener('click', () => {
+    activityStore = [];
+    renderActivityTimeline();
+    addLog('Activity timeline cleared.', 'info', 'SYS', 'CLEAR');
+  });
+}
+
+const clearInteragentBtn = document.getElementById('clearInteragentBtn');
+if (clearInteragentBtn) {
+  clearInteragentBtn.addEventListener('click', () => {
+    interagentMessages = [];
+    renderInteragentStream();
+  });
+}
+
+document.querySelectorAll('.activity-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.activity-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentActivityFilter = btn.dataset.filter || 'all';
+    renderActivityTimeline();
+  });
 });
 
 // ==========================================================================
@@ -672,6 +1032,30 @@ export function addLog(message, type = 'info', agentTag = 'SYS', status = 'INFO'
     LN: '#06B6D4', RX: '#A855F7', SYS: '#94A3B8', USER: '#3B82F6'
   };
   addTerminalEntry(timestamp, agentTag, status, message, type, colorMap[agentTag] || '#94A3B8');
+
+  // Mirror into activity timeline
+  const agentKeyMap = {
+    AT: 'atlas', NV: 'nova', BY: 'byte', PX: 'pixel', QR: 'query',
+    SC: 'scout', SYS: 'sys', USER: 'user'
+  };
+  const agentId = agentKeyMap[agentTag] || 'atlas';
+  const agentName = AGENT_ROSTER[agentId]?.name || (agentTag === 'USER' ? 'User' : 'System');
+  const actType = (status === 'PAUSE' || status === 'SYNC' || status === 'DESK' || status === 'PRESET' || status === 'BRIEF' || message.includes('stepped away') || message.includes('joined') || message.includes('returned') || message.includes('Coffee') || message.includes('Meeting') || message.includes('Desk'))
+    ? 'simulation'
+    : (status === 'TASK' || status === 'READY' || status === 'SPAWN' || status === 'CLEAR')
+      ? 'pipeline'
+      : (status === 'SPEND' || status === 'BUDGET')
+        ? 'budget'
+        : 'simulation';
+
+  addActivityItem({
+    type: actType,
+    agentId,
+    agentName,
+    title: `[${status}] ${message.slice(0, 50)}${message.length > 50 ? '...' : ''}`,
+    desc: message,
+    timestamp
+  });
 }
 
 if (sidebarClearLogsBtn) {
@@ -1229,6 +1613,7 @@ async function handleSendPrompt(promptText) {
   }, 350);
 
   addLog(`Task received: "${prompt}"`, 'info', 'USER', 'TASK');
+  startPipelineTasks(prompt);
   agentStateManager.setAgentState('atlas', {
     status: AGENT_STATUS.QUEUED,
     currentTask: prompt,
@@ -1365,7 +1750,103 @@ function initEventSource() {
       const data = JSON.parse(e.data);
       agentStateManager.handlePipelineEvent(data);
 
-      if (data.stage === 'AGENT_COST_INCURRED') {
+      if (data.stage === 'INTERAGENT_COMMUNICATION') {
+        addInteragentMessage(data);
+      } else if (data.stage === 'PIPELINE_STARTED') {
+        startPipelineTasks(data.prompt);
+        addActivityItem({
+          type: 'pipeline',
+          agentId: 'atlas',
+          agentName: 'Atlas (Manager)',
+          title: 'Pipeline Dispatched',
+          desc: `Assembling ensemble for: "${data.prompt}"`,
+          timestamp: new Date().toLocaleTimeString(),
+        });
+      } else if (data.stage === 'MANAGER_PLAN_STARTED') {
+        updateTasksBanner('Atlas analyzing requirements & structuring orchestration plan...', 'Atlas (Manager)');
+      } else if (data.stage === 'MANAGER_PLAN_COMPLETED') {
+        setTaskStage('task-plan', 'done');
+        updateTasksBanner('Manager plan finalized. Specialist ensemble dispatched.', 'Atlas (Manager)');
+        addActivityItem({
+          type: 'pipeline',
+          agentId: 'atlas',
+          agentName: 'Atlas (Manager)',
+          title: 'Plan & Agent Directives Finalized',
+          desc: `Produced plan with ${data.plan?.explicit_requirements?.length || 0} requirements for selected specialists [${(data.plan?.selected_agents || []).join(', ')}]`,
+          timestamp: new Date().toLocaleTimeString(),
+        });
+        const pid = data.projectId || activeProjectId;
+        if (pid) loadProjectFiles(pid);
+      } else if (data.stage === 'SPECIALISTS_STARTED') {
+        setTaskStage('task-design', 'progress');
+        setTaskStage('task-arch', 'progress');
+        setTaskStage('task-feat', 'progress');
+        updateTasksBanner('Design, Frontend, and Feature specialists executing in parallel...', 'Specialists');
+      } else if (data.stage === 'SPECIALISTS_COMPLETED') {
+        setTaskStage('task-design', 'done');
+        setTaskStage('task-arch', 'done');
+        setTaskStage('task-feat', 'done');
+        updateTasksBanner('Specialist specifications delivered to Manager Atlas.', 'Specialists');
+        addActivityItem({
+          type: 'pipeline',
+          agentId: 'nova',
+          agentName: 'Specialist Ensemble',
+          title: 'Specialist Specifications Delivered',
+          desc: 'Design tokens, DOM architecture, and feature specifications completed.',
+          timestamp: new Date().toLocaleTimeString(),
+        });
+        const pid = data.projectId || activeProjectId;
+        if (pid) loadProjectFiles(pid);
+      } else if (data.stage === 'MANAGER_SYNTHESIS_STARTED') {
+        setTaskStage('task-synth', 'progress');
+        updateTasksBanner('Synthesizing unified implementation specification for Coder...', 'Atlas (Manager)');
+      } else if (data.stage === 'MANAGER_SYNTHESIS_COMPLETED') {
+        setTaskStage('task-synth', 'done');
+        updateTasksBanner('Unified master blueprint dispatched to Lead Coder Byte.', 'Atlas (Manager)');
+        addActivityItem({
+          type: 'pipeline',
+          agentId: 'atlas',
+          agentName: 'Atlas (Manager)',
+          title: 'Master Blueprint Synthesized',
+          desc: 'Unified Implementation Specification compiled and dispatched to Lead Coder.',
+          timestamp: new Date().toLocaleTimeString(),
+        });
+        const pid = data.projectId || activeProjectId;
+        if (pid) loadProjectFiles(pid);
+      } else if (data.stage === 'CODING_AGENT_STARTED') {
+        setTaskStage('task-code', 'progress');
+        updateTasksBanner('Byte generating production index.html web application...', 'Byte (Lead Coder)');
+      } else if (data.stage === 'CODING_AGENT_COMPLETED') {
+        setTaskStage('task-code', 'review');
+        updateTasksBanner('Code delivery ready. Submitting to Query for QA audit...', 'Byte (Lead Coder)');
+        addActivityItem({
+          type: 'pipeline',
+          agentId: 'byte',
+          agentName: 'Byte (Lead Coder)',
+          title: 'Code Delivery Finalized',
+          desc: `Generated index.html (${data.contentLength} bytes) and build summary.`,
+          timestamp: new Date().toLocaleTimeString(),
+        });
+        const pid = data.projectId || activeProjectId;
+        if (pid) loadProjectFiles(pid);
+      } else if (data.stage === 'QA_STARTED') {
+        setTaskStage('task-qa', 'progress');
+        updateTasksBanner('Query auditing DOM integrity and JavaScript interactions...', 'Query (QA Auditor)');
+      } else if (data.stage === 'QA_COMPLETED') {
+        setTaskStage('task-code', 'done');
+        setTaskStage('task-qa', 'done');
+        updateTasksBanner(`QA Audit completed: ${(data.result || 'PASSED').toUpperCase()}`, 'Query (QA Auditor)');
+        addActivityItem({
+          type: 'pipeline',
+          agentId: 'query',
+          agentName: 'Query (QA Auditor)',
+          title: `QA Audit Verdict: ${(data.result || 'PASSED').toUpperCase()}`,
+          desc: `Audit finished with status: ${data.result || 'passed'} (${(data.issues || []).length} issues found).`,
+          timestamp: new Date().toLocaleTimeString(),
+        });
+        const pid = data.projectId || activeProjectId;
+        if (pid) loadProjectFiles(pid);
+      } else if (data.stage === 'AGENT_COST_INCURRED') {
         const spentEl = document.getElementById('spentCostDisplay');
         if (spentEl && data.totalProjectSpend !== undefined) {
           spentEl.textContent = `$${data.totalProjectSpend.toFixed(2)}`;
@@ -1378,6 +1859,14 @@ function initEventSource() {
           'info',
           '#10B981'
         );
+        addActivityItem({
+          type: 'budget',
+          agentId: 'atlas',
+          agentName: 'Budget Service',
+          title: `Cost Incurred: +$${data.cost.toFixed(2)}`,
+          desc: `${data.agentName} via ${data.modelUsed}. Spend: $${data.totalProjectSpend.toFixed(2)} of $${data.budget.toFixed(2)}`,
+          timestamp: new Date().toLocaleTimeString(),
+        });
       } else if (data.stage === 'AGENT_FALLBACK') {
         addTerminalEntry(
           new Date().toLocaleTimeString(),
@@ -1404,15 +1893,20 @@ function initEventSource() {
 
       if (data.stage === 'PIPELINE_COMPLETED') {
         setControlsLocked(false);
+        updateTasksBanner('Sprint completed successfully. Ready for inspection.', 'Atlas (Manager)');
+        tasksStore.forEach(t => { t.stage = 'done'; });
+        renderTasksBoard();
         const pid = data.projectId || activeProjectId;
         if (pid) {
           activeProjectId = pid;
           loadProjects();
           selectProject(pid, true);
           loadProjectFiles(pid);
+          updatePreview(pid);
         }
       } else if (data.stage === 'PIPELINE_FAILED' || data.stage === 'FEEDBACK_FAILED') {
         setControlsLocked(false);
+        updateTasksBanner(`Pipeline halted: ${data.error || 'Check logs'}`, 'System');
       }
     } catch (_) {}
   });
@@ -1437,6 +1931,9 @@ function bootstrap() {
   loadProjects();
   initEventSource();
   initSystemHealth();
+  renderTasksBoard();
+  renderInteragentStream();
+  renderActivityTimeline();
 
   // Single Source of Truth Subscription (Section 1 & 8)
   agentStateManager.subscribe((agentState) => {
