@@ -600,17 +600,17 @@ export function updateInspectorDetails(agentState) {
 /**
  * Prebuilt automated model routing & fallback chain metadata helper:
  * - Free Tier (Pixel, Nova, Scout, Byte, Query):
- *     Primary: Qwen 3.8 27B ($0.00 Free)
+ *     Primary: Codestral Latest ($0.00 Free)
  *     Fallback 1: Kimi K3 ($0.05)
  *     Fallback 2: Gemini 3.5 Flash Lite ($0.10)
  * - Pro Tier (Chroma, Blueprint, Beacon, Cipher, Audit):
  *     Primary: Kimi K3 ($0.05)
  *     Fallback 1: Gemini 3.5 Flash Lite ($0.10)
- *     Fallback 2: Qwen 3.8 27B ($0.00 Free)
+ *     Fallback 2: Codestral Latest ($0.00 Free)
  * - Max Tier (Canvas, Apex, Compass, Matrix, Sentinel) & Manager (Atlas):
  *     Primary: Gemini 3.5 Flash Lite ($0.10)
  *     Fallback 1: Kimi K3 ($0.05)
- *     Fallback 2: Qwen 3.8 27B ($0.00 Free)
+ *     Fallback 2: Codestral Latest ($0.00 Free)
  */
 export function getAgentRoutingInfo(agent) {
   if (!agent) {
@@ -624,7 +624,7 @@ export function getAgentRoutingInfo(agent) {
       primaryDesc: 'Deep Reasoning',
       fallbackChain: [
         { name: 'Gemini 3.5 Flash Lite', cost: '$0.10' },
-        { name: 'Qwen 3.8 27B', cost: '$0.00 Free' },
+        { name: 'Codestral Latest', cost: '$0.00 Free' },
       ],
     };
   }
@@ -634,7 +634,7 @@ export function getAgentRoutingInfo(agent) {
   const name = (agent.name || '').toLowerCase();
 
   // Tier classification: Free, Pro, or Max
-  const isFree = m.includes('qwen') || id.includes('free') || id.endsWith('-1') || name.includes('junior') || name.includes('(free');
+  const isFree = m.includes('codestral') || m.includes('qwen') || id.includes('free') || id.endsWith('-1') || name.includes('junior') || name.includes('(free');
   const isPro = !isFree && (m.includes('kimi') || id.includes('pro') || id.endsWith('-2') || name.includes('(pro'));
 
   if (isFree) {
@@ -643,9 +643,9 @@ export function getAgentRoutingInfo(agent) {
       tierLabel: 'Free Tier',
       tierBadgeClass: 'badge-tier-free',
       costTag: '$0.00 Free',
-      primaryModel: 'Qwen 3.8 27B',
+      primaryModel: 'Codestral Latest',
       primaryCost: '$0.00 Free',
-      primaryDesc: 'Fast & Free',
+      primaryDesc: 'Fast & Free (16k)',
       fallbackChain: [
         { name: 'Kimi K3', cost: '$0.05' },
         { name: 'Gemini 3.5 Flash Lite', cost: '$0.10' },
@@ -662,7 +662,7 @@ export function getAgentRoutingInfo(agent) {
       primaryDesc: 'Deep Reasoning',
       fallbackChain: [
         { name: 'Gemini 3.5 Flash Lite', cost: '$0.10' },
-        { name: 'Qwen 3.8 27B', cost: '$0.00 Free' },
+        { name: 'Codestral Latest', cost: '$0.00 Free' },
       ],
     };
   } else {
@@ -677,7 +677,7 @@ export function getAgentRoutingInfo(agent) {
       primaryDesc: 'Highest Fidelity',
       fallbackChain: [
         { name: 'Kimi K3', cost: '$0.05' },
-        { name: 'Qwen 3.8 27B', cost: '$0.00 Free' },
+        { name: 'Codestral Latest', cost: '$0.00 Free' },
       ],
     };
   }
@@ -1235,6 +1235,8 @@ export function setControlsLocked(locked) {
       : 'e.g. Change primary button color to emerald and add customer review cards...';
   }
   if (applyFeedbackBtn) applyFeedbackBtn.disabled = locked;
+  const feedbackBudgetNumberInput = document.getElementById('feedbackBudgetNumberInput');
+  if (feedbackBudgetNumberInput) feedbackBudgetNumberInput.disabled = locked;
 }
 
 // ==========================================================================
@@ -1389,11 +1391,16 @@ async function handleApplyFeedback() {
   const feedback = feedbackInput.value.trim();
   if (!feedback || isOrchestrating) return;
 
-  addLog(`Feedback received: "${feedback}"`, 'info', 'USER', 'FEEDBACK');
-  agentStateManager.setAgentState('byte', {
+  const isFree = currentBudgetAmount <= 0.001;
+  const coderName = isFree ? 'Byte (Junior Coder - Mistral Codestral Free)' : 'Matrix (Lead Coder - Google Gemini Flash Lite)';
+  const coderTarget = isFree ? 'byte' : 'matrix';
+  const coderTag = isFree ? 'BY' : 'MX';
+
+  addLog(`Feedback received: "${feedback}" (Routing to ${coderName} at $${currentBudgetAmount.toFixed(2)})`, 'info', 'USER', 'FEEDBACK');
+  agentStateManager.setAgentState(coderTarget, {
     status: AGENT_STATUS.QUEUED,
     currentTask: `Modify application: "${feedback}"`,
-    lastAction: 'Human feedback received. Queued for patch',
+    lastAction: `Assigned to ${coderName}`,
     progress: 10,
   });
 
@@ -1403,7 +1410,11 @@ async function handleApplyFeedback() {
     const res = await fetch('/api/orchestrate/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId: activeProjectId, feedback })
+      body: JSON.stringify({
+        projectId: activeProjectId,
+        feedback,
+        budget: currentBudgetAmount,
+      })
     });
     const data = await res.json();
     if (!res.ok || data.status !== 'success') {
@@ -1417,7 +1428,7 @@ async function handleApplyFeedback() {
     feedbackInput.value = '';
     updatePreview(activeProjectId || data.projectId);
     loadProjectFiles(activeProjectId || data.projectId);
-    addLog(`Minimal-change edit applied. Preview reloaded.`, 'success', 'BY', 'COMPLETE');
+    addLog(`Minimal-change edit applied via ${isFree ? 'Byte' : 'Matrix'}. Preview reloaded.`, 'success', coderTag, 'COMPLETE');
   } catch (err) {
     addLog(`Feedback failed: ${err.message}`, 'error', 'QR', 'FAILED');
   } finally {
@@ -1464,6 +1475,8 @@ function updateBudgetControls(val) {
   const chatTag = document.getElementById('chatBudgetTierTag');
   const sideNumInput = document.getElementById('sidebarBudgetNumberInput');
   const chatNumInput = document.getElementById('chatBudgetNumberInput');
+  const feedbackNumInput = document.getElementById('feedbackBudgetNumberInput');
+  const feedbackCoderTag = document.getElementById('feedbackCoderModelTag');
   const sideSlider = document.getElementById('sidebarBudgetSlider');
   const chatSlider = document.getElementById('chatBudgetSlider');
 
@@ -1471,8 +1484,19 @@ function updateBudgetControls(val) {
   if (chatTag) chatTag.textContent = label;
   if (sideNumInput && parseFloat(sideNumInput.value) !== rounded) sideNumInput.value = rounded.toFixed(2);
   if (chatNumInput && parseFloat(chatNumInput.value) !== rounded) chatNumInput.value = rounded.toFixed(2);
+  if (feedbackNumInput && parseFloat(feedbackNumInput.value) !== rounded) feedbackNumInput.value = rounded.toFixed(2);
   if (sideSlider && parseFloat(sideSlider.value) !== rounded) sideSlider.value = rounded;
   if (chatSlider && parseFloat(chatSlider.value) !== rounded) chatSlider.value = rounded;
+
+  if (feedbackCoderTag) {
+    if (activeTier === 'free') {
+      feedbackCoderTag.textContent = 'Coder: Byte (Mistral $0.00)';
+      feedbackCoderTag.className = 'feedback-coder-tag tier-free';
+    } else {
+      feedbackCoderTag.textContent = 'Coder: Matrix (Gemini $0.10)';
+      feedbackCoderTag.className = 'feedback-coder-tag tier-pro';
+    }
+  }
 
   // Sync active pill state
   document.querySelectorAll('.budget-pill').forEach(pill => {
@@ -1810,6 +1834,13 @@ export async function executeChoreographedMeetingWorkflow(promptText, { runBacke
   setTaskStage('task-feat', 'done', 'Interactive component schema delivered');
   setTaskStage('task-code', 'review', 'Code generated. Pending mandatory 1-on-1 QA audit in Meeting Room.');
 
+  if (pixiOffice) {
+    pixiOffice.markAgentDone('pixel', 'Tokens Ready ✓');
+    pixiOffice.markAgentDone('nova', 'DOM Ready ✓');
+    pixiOffice.markAgentDone('scout', 'State Ready ✓');
+    pixiOffice.markAgentDone('byte', 'Code Ready ✓');
+  }
+
   // --------------------------------------------------------------------------
   // PHASE 5: Reviewer Protocol (1-on-1 Meeting between Query and Byte)
   // --------------------------------------------------------------------------
@@ -1890,6 +1921,10 @@ export async function executeChoreographedMeetingWorkflow(promptText, { runBacke
   if (pixiOffice) {
     pixiOffice.showSpeechBubble('query', 'Approved by Boss! ✓', 260);
     pixiOffice.showSpeechBubble('byte', 'Deploying to live preview! 🚀', 300);
+
+    pixiOffice.markAgentDone('query', 'Audit Pass ✓');
+    pixiOffice.markAgentDone('byte', 'Published ✓');
+    pixiOffice.markAgentDone('atlas', 'Certified ✓');
 
     // Return Query and Byte to their desks
     const deskFn = typeof pixiOffice.sendAgentToDesk === 'function'
@@ -2166,6 +2201,11 @@ function initEventSource() {
         setTaskStage('task-design', 'done');
         setTaskStage('task-arch', 'done');
         setTaskStage('task-feat', 'done');
+        if (pixiOffice) {
+          pixiOffice.markAgentDone('pixel', 'Tokens Ready ✓');
+          pixiOffice.markAgentDone('nova', 'DOM Ready ✓');
+          pixiOffice.markAgentDone('scout', 'State Ready ✓');
+        }
         updateTasksBanner('Specialist specifications delivered to Manager Atlas.', 'Specialists');
         addActivityItem({
           type: 'pipeline',
@@ -2198,6 +2238,9 @@ function initEventSource() {
         updateTasksBanner('Byte generating production index.html web application...', 'Byte (Lead Coder)');
       } else if (data.stage === 'CODING_AGENT_COMPLETED') {
         setTaskStage('task-code', 'review');
+        if (pixiOffice) {
+          pixiOffice.markAgentDone('byte', 'Code Ready ✓');
+        }
         updateTasksBanner('Code delivery ready. Submitting to Query for QA audit...', 'Byte (Lead Coder)');
         addActivityItem({
           type: 'pipeline',
@@ -2215,6 +2258,10 @@ function initEventSource() {
       } else if (data.stage === 'QA_COMPLETED') {
         setTaskStage('task-code', 'done');
         setTaskStage('task-qa', 'done');
+        if (pixiOffice) {
+          pixiOffice.markAgentDone('query', 'QA Certified ✓');
+          pixiOffice.markAgentDone('atlas', 'Sprint Complete ✓');
+        }
         updateTasksBanner(`QA Audit completed: ${(data.result || 'PASSED').toUpperCase()}`, 'Query (QA Auditor)');
         addActivityItem({
           type: 'pipeline',
@@ -2366,6 +2413,12 @@ function bootstrap() {
   if (chatBudgetNumberInput) {
     chatBudgetNumberInput.addEventListener('input', handleNumberInput);
     chatBudgetNumberInput.addEventListener('change', handleNumberInput);
+  }
+
+  const feedbackBudgetNumberInput = document.getElementById('feedbackBudgetNumberInput');
+  if (feedbackBudgetNumberInput) {
+    feedbackBudgetNumberInput.addEventListener('input', handleNumberInput);
+    feedbackBudgetNumberInput.addEventListener('change', handleNumberInput);
   }
 
   // 3. Quick Budget Tier Pills (Free, Lean, Moderate, Max)

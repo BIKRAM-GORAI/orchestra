@@ -19,7 +19,7 @@ export class ManagerAgent extends BaseAgent {
         'Quality gating & regression supervision',
       ],
       model,
-      fallbackModels: ['kimi-k3', 'qwen-3.8-27b'],
+      fallbackModels: ['kimi-k3', 'codestral-latest'],
       systemPrompt: `You are the Manager Agent in the Agent Orchestra multi-agent AI system.
 
 You are the executive orchestrator, task planner, and synthesis authority.

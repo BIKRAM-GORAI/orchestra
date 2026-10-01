@@ -4,7 +4,7 @@ import { BaseAgent } from '../baseAgent.js';
  * 🟢 Frontend Architect — Free / Basic
  */
 export class FrontendArchitectAgentFree extends BaseAgent {
-  constructor(model = 'qwen-3.8-27b', id = 'frontend-1') {
+  constructor(model = 'codestral-latest', id = 'frontend-1') {
     super({
       id,
       name: 'Nova (Junior Frontend)',

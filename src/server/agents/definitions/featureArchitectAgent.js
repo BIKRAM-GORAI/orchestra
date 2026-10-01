@@ -4,7 +4,7 @@ import { BaseAgent } from '../baseAgent.js';
  * 🟢 Feature Architect — Free / Basic
  */
 export class FeatureArchitectAgentFree extends BaseAgent {
-  constructor(model = 'qwen-3.8-27b', id = 'feature-1') {
+  constructor(model = 'codestral-latest', id = 'feature-1') {
     super({
       id,
       name: 'Scout (Feature Analyst)',

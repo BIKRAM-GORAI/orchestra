@@ -13,29 +13,29 @@ export const AGENT_STATES = {
 
 /**
  * Prebuilt automated fallback chains based on agent model / tier hierarchy:
- * - Free Model (qwen-3.8-27b):
- *     Primary: Free model (qwen-3.8-27b)
+ * - Free Model (codestral-latest):
+ *     Primary: Free/Eval model (codestral-latest)
  *     Fallback 1: Next best model (kimi-k3)
  *     Fallback 2: Top best model (gemini-3.5-flash-lite)
  * - Pro Model (kimi-k3):
  *     Primary: Moderate model (kimi-k3)
  *     Fallback 1: Top best model (gemini-3.5-flash-lite)
- *     Fallback 2: Free model backup (qwen-3.8-27b)
+ *     Fallback 2: Free model backup (codestral-latest)
  * - Premium Model (gemini-3.5-flash-lite / Manager):
  *     Primary: Top best model (gemini-3.5-flash-lite)
  *     Fallback 1: Second best model (kimi-k3)
- *     Fallback 2: Third model (qwen-3.8-27b)
+ *     Fallback 2: Third model (codestral-latest)
  */
 export function getPrebuiltFallbackChain(modelId = '') {
   const m = String(modelId).toLowerCase();
-  if (m.includes('qwen')) {
+  if (m.includes('codestral') || m.includes('qwen')) {
     return ['kimi-k3', 'gemini-3.5-flash-lite'];
   }
   if (m.includes('kimi')) {
-    return ['gemini-3.5-flash-lite', 'qwen-3.8-27b'];
+    return ['gemini-3.5-flash-lite', 'codestral-latest'];
   }
   // Gemini or default premium
-  return ['kimi-k3', 'qwen-3.8-27b'];
+  return ['kimi-k3', 'codestral-latest'];
 }
 
 /**

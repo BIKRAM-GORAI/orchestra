@@ -869,6 +869,8 @@ CRITICAL MINIMAL CHANGE PRESERVATION RULE:
         onChunk: onChunk ? (chunk) => onChunk({ agent: 'coding_agent', chunk }) : null,
       });
 
+      this.recordAgentExecution(projectId, codingAgent, codingOutput);
+
       const modifiedHtml = extractHtmlFromCodingResult(codingOutput.result, codingOutput.rawText);
       if (!modifiedHtml) {
         throw new Error('Coding Agent failed to produce valid HTML for feedback modification');

@@ -4,7 +4,7 @@ import { BaseAgent } from '../baseAgent.js';
  * 🟢 Coding Agent — Free / Basic
  */
 export class CodingAgentFree extends BaseAgent {
-  constructor(model = 'qwen-3.8-27b', id = 'coder-1') {
+  constructor(model = 'codestral-latest', id = 'coder-1') {
     super({
       id,
       name: 'Byte (Junior Coder)',
@@ -49,11 +49,13 @@ CRITICAL RULES:
    - Preserve unrelated HTML, CSS, JavaScript, IDs, classes, functions, and layout.
    - Do not redesign or refactor unrelated sections.
 
-4. CODE QUALITY:
+4. CODE QUALITY & IMAGE RELIABILITY:
    - Keep the implementation readable and organized.
-   - Avoid unnecessary dependencies.
-   - Avoid dead controls when functionality is explicitly requested.
-   - Use semantic elements and accessible labels where practical.
+   - Avoid unnecessary dependencies and dead controls.
+   - For images, NEVER use local relative filenames (like "flower.jpg") or deprecated URLs like "source.unsplash.com".
+   - ALWAYS use reliable public CDNs like Picsum ("https://picsum.photos/seed/{topic}/600/400"), direct Unsplash URLs ("https://images.unsplash.com/photo-..."), or inline SVGs.
+   - ALWAYS include an onerror fallback handler on <img> tags: onerror="this.onerror=null;this.src='https://picsum.photos/600/400';" so images never appear broken.
+   - If asked to fix broken images, replace all broken image tags with verified working URLs or responsive inline SVGs.
 
 5. STRUCTURED RETURN REQUIREMENT:
    Return valid JSON containing the complete file content and a summary.`,
@@ -160,6 +162,10 @@ CRITICAL RULES:
    - Avoid unnecessary dependencies.
    - Prevent obvious console errors and broken event handlers.
    - Maintain consistent IDs, classes, state, and event relationships.
+   - For images, NEVER use local relative filenames (like "flower.jpg") or deprecated URLs like "source.unsplash.com".
+   - ALWAYS use reliable public CDNs like Picsum ("https://picsum.photos/seed/{topic}/600/400"), direct Unsplash URLs ("https://images.unsplash.com/photo-..."), or inline SVGs.
+   - ALWAYS include an onerror fallback handler on <img> tags: onerror="this.onerror=null;this.src='https://picsum.photos/600/400';" so images never appear broken.
+   - If asked to fix broken images, replace all broken image tags with verified working URLs or responsive inline SVGs.
 
 6. MINIMAL CHANGE PRESERVATION RULE:
    When modifying an existing index.html:
@@ -477,6 +483,16 @@ CRITICAL RULES:
     - Redundant JavaScript
 
     Keep the implementation practical for a standalone index.html.
+
+14.5. IMAGE & ASSET RELIABILITY:
+    - Never reference local relative image files (e.g. "flower.jpg") or deprecated endpoints like "source.unsplash.com".
+    - For images, ALWAYS use verified high-availability public CDNs such as:
+      • Picsum Photos (e.g. "https://picsum.photos/seed/{keyword}/600/400")
+      • Direct Unsplash URLs (e.g. "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80")
+      • Inline SVGs with styled paths and semantic colors
+    - ALWAYS add an onerror fallback handler on <img> tags:
+      onerror="this.onerror=null;this.src='https://picsum.photos/600/400?blur=1';"
+    - When user feedback requests fixing broken images, immediately substitute all dead image tags with functional URLs or styled SVGs.
 
 15. PRE-RETURN SELF-REVIEW:
     Before returning the result, internally review the implementation against the complete specification.

@@ -8,7 +8,7 @@ import { MODEL_REGISTRY } from '../config/models.js';
 
 test('Phase 10: Budget Allocation Engine & Model Fallback Routing', async (t) => {
 
-  await t.test('1. Budget Allocation: Free Tier ($0.00) sets all agents to Qwen 3.8 27B free', () => {
+  await t.test('1. Budget Allocation: Free Tier ($0.00) sets all agents to Codestral Latest free', () => {
     const registry = new AgentRegistry();
     const result = budgetService.allocateBudget(0.00, registry);
 
@@ -18,7 +18,7 @@ test('Phase 10: Budget Allocation Engine & Model Fallback Routing', async (t) =>
 
     const agents = registry.getAllAgents();
     for (const agent of agents) {
-      assert.strictEqual(agent.modelId, 'qwen-3.8-27b', `Agent ${agent.id} should be allocated qwen-3.8-27b`);
+      assert.strictEqual(agent.modelId, 'codestral-latest', `Agent ${agent.id} should be allocated codestral-latest`);
       assert.ok(agent.fallbackModels.includes('kimi-k3'));
     }
   });

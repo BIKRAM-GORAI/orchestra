@@ -4,7 +4,7 @@ import { BaseAgent } from '../baseAgent.js';
  * 🟢 QA Agent — Free / Basic
  */
 export class QAAgentFree extends BaseAgent {
-  constructor(model = 'qwen-3.8-27b', id = 'qa-1') {
+  constructor(model = 'codestral-latest', id = 'qa-1') {
     super({
       id,
       name: 'Query (Junior QA)',

@@ -4,7 +4,7 @@ import { BaseAgent } from '../baseAgent.js';
  * 🟢 Designer Agent — Free / Basic
  */
 export class DesignerAgentFree extends BaseAgent {
-  constructor(model = 'qwen-3.8-27b', id = 'designer-1') {
+  constructor(model = 'codestral-latest', id = 'designer-1') {
     super({
       id,
       name: 'Pixel (Junior Designer)',
