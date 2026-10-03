@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import { modelGateway } from '../gateway/modelGateway.js';
+import { getProjectContract, PROJECT_RULES } from './projectContracts.js';
 
 export const AGENT_STATES = {
   IDLE: 'idle',
@@ -60,6 +61,7 @@ export class BaseAgent extends EventEmitter {
     fallbackModels = null,
     systemPrompt = '',
     outputSchema = null,
+    contractRole = null,
   }) {
     super();
     if (!id || !name) {
@@ -75,8 +77,10 @@ export class BaseAgent extends EventEmitter {
     this.fallbackModels = Array.isArray(fallbackModels) && fallbackModels.length > 0
       ? [...fallbackModels]
       : getPrebuiltFallbackChain(model);
-    this.systemPrompt = systemPrompt;
-    this.outputSchema = outputSchema;
+    this.contractRole = contractRole;
+    const contract = contractRole ? getProjectContract(contractRole) : null;
+    this.systemPrompt = contract ? `${PROJECT_RULES}\n\n${contract.prompt}` : systemPrompt;
+    this.outputSchema = contract?.schema || outputSchema;
 
     this.state = AGENT_STATES.IDLE;
     this.lastOutput = null;
@@ -126,12 +130,12 @@ export class BaseAgent extends EventEmitter {
   /**
    * Format messages for the model gateway
    */
-  buildMessages(userInput, context = {}) {
+  buildMessages(userInput, context = {}, outputSchema = this.outputSchema, systemPrompt = this.systemPrompt) {
     const messages = [];
 
-    let sys = this.systemPrompt;
-    if (this.outputSchema) {
-      sys += `\n\nCRITICAL OUTPUT REQUIREMENT:\nYou MUST respond ONLY with valid JSON conforming to the following structure. Do not wrap with conversational filler or markdown explanations outside the JSON object.\nExpected Schema:\n${JSON.stringify(this.outputSchema, null, 2)}`;
+    let sys = systemPrompt;
+    if (outputSchema) {
+      sys += `\n\nCRITICAL OUTPUT REQUIREMENT:\nYou MUST respond ONLY with valid JSON conforming to the following structure. Do not wrap with conversational filler or markdown explanations outside the JSON object.\nExpected Schema:\n${JSON.stringify(outputSchema, null, 2)}`;
     }
 
     if (sys) {
@@ -150,8 +154,8 @@ export class BaseAgent extends EventEmitter {
   /**
    * Parse structured JSON from model text
    */
-  parseStructuredOutput(rawText) {
-    if (!this.outputSchema) return rawText;
+  parseStructuredOutput(rawText, outputSchema = this.outputSchema) {
+    if (!outputSchema) return rawText;
 
     let cleaned = rawText.trim();
     // Strip markdown code fences if model returned ```json ... ```
@@ -186,11 +190,13 @@ export class BaseAgent extends EventEmitter {
     onChunk = null,
     onStateChange = null,
     gateway = modelGateway,
+    outputSchema = this.outputSchema,
+    systemPrompt = this.systemPrompt,
   } = {}) {
     this.setState(AGENT_STATES.WORKING, { model: this.modelId });
     this.lastError = null;
 
-    const messages = this.buildMessages(input, context);
+    const messages = this.buildMessages(input, context, outputSchema, systemPrompt);
 
     try {
       const result = await gateway.generate({
@@ -215,7 +221,7 @@ export class BaseAgent extends EventEmitter {
         },
       });
 
-      const parsed = this.parseStructuredOutput(result.text);
+      const parsed = this.parseStructuredOutput(result.text, outputSchema);
       this.lastOutput = {
         result: parsed,
         rawText: result.text,

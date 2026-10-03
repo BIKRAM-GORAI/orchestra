@@ -1,0 +1,1207 @@
+/* ==========================================================================
+   AGENT ORCHESTRA — ULTRA-MINIMAL PAPERCLIP-INSPIRED DESIGN SYSTEM
+   - Vast, airy negative space (no congested text or walls of copy)
+   - Balanced typography with zero awkward line breaks (text-wrap: balance)
+   - Strict monochrome palette with precise high-contrast accents
+   - Rock-solid connected hierarchy tree and clean card components
+   ========================================================================== */
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Surfaces */
+  --bg-page: #000000;
+  --bg-panel: #0a0b0e;
+  --bg-card: #0f1014;
+  --bg-card-hover: #14151a;
+  --bg-card-subtle: #08090b;
+
+  /* Hairline Borders */
+  --border-subtle: #16171d;
+  --border-card: #20222a;
+  --border-hover: #2f323e;
+
+  /* Typography */
+  --text-white: #ffffff;
+  --text-primary: #ededed;
+  --text-secondary: #9496a1;
+  --text-muted: #585a66;
+
+  /* Refined Accents */
+  --accent-green: #22c55e;
+  --accent-green-glow: rgba(34, 197, 94, 0.35);
+  --accent-blue: #3b82f6;
+  --accent-amber: #f59e0b;
+  --accent-coral: #ff5555;
+
+  /* Geometry */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+/* ==========================================================================
+   RESET & BASE
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  background-color: var(--bg-page);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  background: none;
+}
+
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ==========================================================================
+   TYPOGRAPHY CONTROLS (Zero awkward breaks & orphan words)
+   ========================================================================== */
+h1, h2, h3, h4,
+.hero-headline,
+.section-title,
+.callout-heading {
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  letter-spacing: -0.03em;
+}
+
+p,
+.hero-lede,
+.section-desc,
+.pillar-text,
+.cap-desc,
+.step-body {
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  line-height: 1.65;
+}
+
+/* ==========================================================================
+   SITE HEADER & NAV
+   ========================================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.site-nav {
+  height: 64px;
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-white);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  transition: opacity 0.15s ease;
+}
+
+.nav-brand:hover {
+  opacity: 0.9;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.nav-link {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+  color: var(--text-white);
+}
+
+.btn-pill-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-pill-white:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   HERO SECTION: High Impact, Generous Negative Space
+   ========================================================================== */
+.hero-section {
+  padding: 80px 0 100px;
+  text-align: center;
+  position: relative;
+}
+
+/* Signature Paperclip Pill Pillars */
+.hero-capsules {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  height: 220px;
+  margin-bottom: 48px;
+}
+
+.capsule {
+  width: 58px;
+  border-radius: 29px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.capsule:hover {
+  transform: translateY(-12px);
+}
+
+.cap-1 { height: 150px; background: linear-gradient(180deg, #3c23fb 0%, #fb8b24 100%); }
+.cap-2 { height: 195px; background: linear-gradient(180deg, #921ff8 0%, #f53215 100%); }
+.cap-3 { height: 220px; background: linear-gradient(180deg, #e81bf5 0%, #e4103e 100%); }
+.cap-4 { height: 205px; background: linear-gradient(180deg, #f217a4 0%, #ca147b 100%); }
+.cap-5 { height: 175px; background: linear-gradient(180deg, #ef1346 0%, #b217a4 100%); }
+.cap-6 { height: 135px; background: linear-gradient(180deg, #e36414 0%, #5c1a8f 100%); }
+
+.hero-content {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.hero-badge-wrap {
+  margin-bottom: 22px;
+}
+
+.hero-version-badge {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+}
+
+.hero-headline {
+  font-size: clamp(2.8rem, 5.2vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-white);
+  margin-bottom: 24px;
+}
+
+.hero-lede {
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  color: var(--text-secondary);
+  max-width: 660px;
+  margin: 0 auto 38px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.btn-hero {
+  padding: 13px 34px;
+  font-size: 0.96rem;
+  box-shadow: 0 4px 24px rgba(255, 255, 255, 0.1);
+}
+
+.hero-secondary-link {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.hero-secondary-link:hover {
+  color: var(--text-secondary);
+}
+
+/* Minimal Single-Line Telemetry Ticker */
+.hero-telemetry {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 24px;
+  border-radius: var(--radius-full);
+}
+
+.telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.telemetry-separator {
+  color: var(--border-hover);
+  font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   SECTIONS GENERAL
+   ========================================================================== */
+.section {
+  padding: 120px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 18px;
+}
+
+.tag-coral { color: var(--accent-coral); background: rgba(255, 85, 85, 0.12); }
+.tag-amber { color: var(--accent-amber); background: rgba(245, 158, 11, 0.12); }
+.tag-blue  { color: var(--accent-blue);  background: rgba(59, 130, 246, 0.12); }
+.tag-green { color: var(--accent-green); background: rgba(34, 197, 94, 0.12); }
+
+.section-title {
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-white);
+  margin-bottom: 18px;
+}
+
+.section-desc {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin-bottom: 36px;
+}
+
+.section-header-block {
+  margin-bottom: 56px;
+}
+
+.center-text {
+  text-align: center;
+}
+
+.center-desc {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Split 2-Column Layout */
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 72px;
+  align-items: center;
+}
+
+/* ==========================================================================
+   SECTION 1: BRING YOUR OWN AGENT & ECOSYSTEM
+   ========================================================================== */
+.model-ecosystem {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ecosystem-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.model-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.model-badge:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+  color: var(--text-white);
+  transform: translateY(-2px);
+}
+
+.model-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   HIERARCHY ORG TREE (Physically linked, clean stems, no pixel drift)
+   ========================================================================== */
+.tree-display-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 44px 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.tree-display-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.tree-tier {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Agent Pill Card */
+.agent-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #000000;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-full);
+  padding: 8px 18px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.pill-lead {
+  border-color: #272c3d;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08);
+}
+
+.agent-avatar-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.avatar-blue { color: var(--accent-blue); }
+.avatar-green { color: var(--accent-green); }
+
+.agent-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.agent-role {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.agent-name {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.status-indicator {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
+  margin-left: 2px;
+}
+
+/* Dynamic Active States with subtle green pulse */
+.pill-active {
+  animation: borderGlow 4s infinite ease-in-out;
+}
+
+.pill-active-sub {
+  animation: borderGlowSub 4s infinite ease-in-out;
+}
+
+.active-badge {
+  position: absolute;
+  top: -8px;
+  right: 14px;
+  background: #000000;
+  color: var(--accent-green);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: var(--radius-full);
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  letter-spacing: 0.04em;
+}
+
+@keyframes borderGlow {
+  0%, 15% { border-color: var(--border-card); box-shadow: none; }
+  25%, 85% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 16px rgba(34, 197, 94, 0.15); }
+  95%, 100% { border-color: var(--border-card); box-shadow: none; }
+}
+
+@keyframes borderGlowSub {
+  0%, 40% { border-color: var(--border-card); box-shadow: none; }
+  50%, 85% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 16px rgba(34, 197, 94, 0.15); }
+  95%, 100% { border-color: var(--border-card); box-shadow: none; }
+}
+
+/* Clean, Rock-Solid Connecting Branches (Zero Drift) */
+.tree-stem-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 38px;
+  position: relative;
+}
+
+.stem-vertical {
+  width: 1.5px;
+  height: 19px;
+  background: var(--border-card);
+}
+
+.stem-horizontal {
+  height: 19px;
+  border-top: 1.5px solid var(--border-card);
+  border-left: 1.5px solid var(--border-card);
+  border-right: 1.5px solid var(--border-card);
+}
+
+.stem-h3 {
+  width: 72%;
+}
+
+.stem-wrap-sub {
+  height: 38px;
+}
+
+.stem-v-sub {
+  height: 19px;
+}
+
+.stem-h2 {
+  width: 48%;
+}
+
+/* ==========================================================================
+   SECTION 2: GOAL ALIGNMENT CASCADE
+   ========================================================================== */
+.goal-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.goal-node {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+}
+
+.goal-node:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
+.node-marker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.marker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.active-dot {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.node-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.node-level {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.node-text {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-white);
+}
+
+.goal-line {
+  width: 1.5px;
+  height: 16px;
+  background: var(--border-card);
+  margin-left: 28px;
+}
+
+/* Pillars Column */
+.pillars-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pillar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: border-color 0.2s ease;
+}
+
+.pillar-card:hover {
+  border-color: var(--border-hover);
+}
+
+.pillar-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 8px;
+}
+
+.pillar-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   SECTION 3: TICKETS & TRACE
+   ========================================================================== */
+.value-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.value-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.value-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.value-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 4px;
+}
+
+.value-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* Mock Ticket Card */
+.ticket-container {
+  display: flex;
+  justify-content: center;
+}
+
+.ticket-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: 100%;
+  max-width: 520px;
+}
+
+.ticket-top {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ticket-id-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ticket-code {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.ticket-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.ticket-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-assignee {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-card);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ticket-chat {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.chat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-sender {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.agent-sender {
+  color: var(--accent-blue);
+}
+
+.chat-bubble {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.user-bubble {
+  background: #14161f;
+  border-color: #222638;
+}
+
+.ticket-trace-box {
+  padding: 18px 24px;
+  background: var(--bg-card-subtle);
+}
+
+.trace-header {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.trace-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trace-entry {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.entry-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.pulse-entry {
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.entry-cmd {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.entry-tag {
+  font-size: 0.72rem;
+}
+
+.status-done { color: var(--accent-green); }
+.status-active { color: #4ade80; }
+
+/* ==========================================================================
+   SECTION 4: CAPABILITIES (6-Grid, Spacious & Airy)
+   ========================================================================== */
+.capabilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.cap-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  transition: all 0.2s ease;
+}
+
+.cap-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.cap-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-white);
+  margin-bottom: 18px;
+}
+
+.cap-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 8px;
+}
+
+.cap-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   SECTION 5: WORKFLOW (3-Step Loop)
+   ========================================================================== */
+.workflow-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.workflow-step {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 36px 30px;
+  transition: border-color 0.2s ease;
+}
+
+.workflow-step:hover {
+  border-color: var(--border-hover);
+}
+
+.step-num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.step-heading {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 10px;
+}
+
+.step-body {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   SECTION 6: TERMINAL CALLOUT
+   ========================================================================== */
+.callout-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 64px 40px;
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.callout-heading {
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 12px;
+}
+
+.callout-sub {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto 32px;
+}
+
+.terminal-pill {
+  background: #000000;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-full);
+  padding: 12px 28px;
+  max-width: 420px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+}
+
+.terminal-text {
+  color: var(--text-primary);
+}
+
+.terminal-text span {
+  color: var(--text-muted);
+  margin-right: 8px;
+}
+
+.terminal-ver {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.btn-callout {
+  padding: 13px 36px;
+  font-size: 0.96rem;
+}
+
+/* ==========================================================================
+   FOOTER: Clean, Multi-Column, Generous Spacing
+   ========================================================================== */
+.site-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 80px 0 44px;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(4, 1fr);
+  gap: 48px;
+  margin-bottom: 56px;
+}
+
+.footer-brand-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-brand {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-blurb {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 270px;
+}
+
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.social-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.social-circle:hover {
+  color: var(--text-white);
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.col-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-white);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.col-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.col-list a {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  transition: color 0.15s ease;
+}
+
+.col-list a:hover {
+  color: var(--text-white);
+}
+
+.footer-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.footer-bottom-actions {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-bottom-actions a {
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.footer-bottom-actions a:hover {
+  color: var(--text-white);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 960px) {
+  .split-layout {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .capabilities-grid,
+  .workflow-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .section {
+    padding: 80px 0;
+  }
+}

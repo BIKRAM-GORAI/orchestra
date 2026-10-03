@@ -445,6 +445,13 @@ class AgentStateManager {
     return () => this.subscribers.delete(callback);
   }
 
+  notifySubscribers(agent, previousStatus = agent.status) {
+    for (const subscriber of this.subscribers) {
+      try { subscriber(agent, previousStatus); }
+      catch (err) { console.error('[AgentStateManager] Subscriber error:', err); }
+    }
+  }
+
   onTerminalLog(callback) {
     this.terminalListeners.add(callback);
     return () => this.terminalListeners.delete(callback);
@@ -592,6 +599,15 @@ class AgentStateManager {
     const stage = data.stage;
 
     switch (stage) {
+      case 'TASK_ROUTING_STARTED':
+        this.setAgentState('atlas', { status: AGENT_STATUS.THINKING, currentTask: data.prompt, lastAction: 'Choosing a document or website workflow' });
+        break;
+      case 'DOCUMENT_STARTED':
+        this.setAgentState('atlas', { status: AGENT_STATUS.WAITING, lastAction: 'Document Analyst is inspecting source material and writing Markdown' });
+        break;
+      case 'DOCUMENT_COMPLETED':
+        this.setAgentState('atlas', { status: AGENT_STATUS.COMPLETED, lastAction: `Markdown delivered: ${data.document?.path}`, progress: 100 });
+        break;
       case 'PIPELINE_STARTED': {
         const prompt = data.prompt || 'Project Build';
         this.emitTerminalLog(null, 'SYSTEM', `Task received: "${prompt.slice(0, 60)}..."`, 'info');
@@ -658,7 +674,7 @@ class AgentStateManager {
           this.setAgentState('nova', {
             status: AGENT_STATUS.WORKING,
             currentTask: 'Semantic HTML5 Architecture',
-            lastAction: 'Structuring single-file DOM & CSS tokens',
+            lastAction: 'Structuring pages, shared styles and JavaScript modules',
             progress: 40,
           });
         }
@@ -712,7 +728,7 @@ class AgentStateManager {
         // Queue coding agent
         this.setAgentState('byte', {
           status: AGENT_STATUS.QUEUED,
-          currentTask: 'Implement single-file index.html',
+          currentTask: 'Implement the multi-file website',
           lastAction: 'Unified spec received. Queued for build',
           progress: 0,
         });
@@ -727,7 +743,7 @@ class AgentStateManager {
         });
         this.setAgentState('byte', {
           status: AGENT_STATUS.CODING,
-          currentTask: 'Implement standalone index.html',
+          currentTask: 'Implement requested project files',
           lastAction: 'Writing semantic HTML5, CSS tokens & vanilla JS handlers',
           progress: 65,
         });
@@ -735,10 +751,9 @@ class AgentStateManager {
       }
 
       case 'CODING_AGENT_COMPLETED': {
-        const length = data.contentLength || 0;
         this.setAgentState('byte', {
           status: AGENT_STATUS.COMPLETED,
-          lastAction: `Generated index.html (${length.toLocaleString()} bytes)`,
+          lastAction: `Saved revision ${data.revision}: ${data.changes?.length || 0} file change(s)`,
           progress: 100,
         });
 
@@ -781,17 +796,17 @@ class AgentStateManager {
       case 'QA_REPAIR_COMPLETED': {
         this.setAgentState('byte', {
           status: AGENT_STATUS.COMPLETED,
-          lastAction: 'Defects repaired and patched into index.html',
+          lastAction: 'Repair pass finished; inspect the QA findings',
           progress: 100,
         });
         break;
       }
 
       case 'QA_COMPLETED': {
-        const result = data.result || 'passed';
+        const result = data.result || 'not audited';
         this.setAgentState('query', {
-          status: AGENT_STATUS.COMPLETED,
-          lastAction: `Audit completed successfully (${result.toUpperCase()})`,
+          status: data.status === 'failed' ? AGENT_STATUS.FAILED : AGENT_STATUS.COMPLETED,
+          lastAction: `Audit result: ${result.toUpperCase()} (${data.issues?.length || 0} findings)`,
           progress: 100,
         });
         break;
@@ -803,7 +818,7 @@ class AgentStateManager {
         this.setAgentState('byte', {
           status: AGENT_STATUS.CODING,
           currentTask: `Apply targeted change: "${feedback.slice(0, 40)}"`,
-          lastAction: 'Patching index.html preserving existing code',
+          lastAction: 'Editing relevant files while preserving unrelated code',
           progress: 50,
         });
         break;
@@ -820,11 +835,12 @@ class AgentStateManager {
       }
 
       case 'PIPELINE_COMPLETED': {
-        this.emitTerminalLog(null, 'SYSTEM', 'Build sprint completed successfully. Live preview synchronized.', 'success');
+        this.emitTerminalLog(null, 'SYSTEM', data.specificationOnly ? 'Specification ready.' : `Project saved. QA: ${data.qaReport?.result || 'not audited'}.`, data.qaReport?.result === 'passed' ? 'success' : 'info');
         break;
       }
 
       case 'PIPELINE_FAILED':
+      case 'TASK_FAILED':
       case 'FEEDBACK_FAILED': {
         const errorMsg = data.error || 'Execution failed';
         this.emitTerminalLog(null, 'SYSTEM', `Pipeline halted: ${errorMsg}`, 'error');

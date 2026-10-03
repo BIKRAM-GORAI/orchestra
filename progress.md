@@ -1,9 +1,33 @@
 # Agent Orchestra — Progress Log
 
 ## Current Status
-- **Phase**: Phase 9 — Gemini 3.5 Flash Provider & Model Switch
-- **Status**: COMPLETED
-- **Next Phase**: Production deployment & custom model parameters
+- **Phase**: General agent tasks and Markdown deliverables
+- **Status**: Implemented and verified (2026-10-02)
+- **Next work**: Live-provider acceptance checks; additional readers/OCR or framework runtimes if required
+
+## Latest Delivery — Document Analysis and Written Tasks
+
+- Added automatic Manager routing and explicit Markdown/website modes through `/api/orchestrate/task`.
+- Added a dedicated Document Analyst with source-grounded writing instructions, bounded reads, evidence notes, and source coverage.
+- Added UTF-8/code/data-file reading and real PDF/DOCX extraction in bounded workers; originals stay unchanged.
+- Summaries, explanations, comparisons, requirements, guides and general questions produce versioned `.md` deliverables, including tasks without uploads.
+- Added Chat upload controls, result open/download cards, automatic IDE selection, document-specific progress, and visible error messages.
+- Document-only projects no longer require an HTML entry or receive website-validation failures. Source edits, output collisions, unread citations, and revision conflicts are guarded.
+- Verification: **54 default tests passed, 1 opt-in MongoDB check skipped; 26 MongoDB checks passed; Chromium website/document workflows passed; JavaScript syntax checks passed.** Model responses were mocked; text extraction and HTTP/SSE/storage paths were exercised directly.
+- Current readers do not provide OCR, image/audio interpretation, or legacy binary Office support. Incomplete coverage is reported in the output.
+
+## Previous Delivery — Multi-file Workspace
+
+- Project-relative manifests, text/binary blobs, atomic source revisions, diffs and restore in filesystem and MongoDB/GridFS modes.
+- Bounded ZIP/folder/multiple-file import, entry-page detection, source-only framework classification, and legacy-project migration on first edit.
+- Shared multi-file agent contracts, bounded file reads, staged batches, explicit renames/deletions, minimal-change editing of uploads, and honest deterministic/model QA findings.
+- Project/run-scoped SSE, per-run agent instances, awaited artifact persistence, and full-build completion after QA.
+- Separate sandboxed preview listener with page/asset/module support; local per-project hostnames preserve localStorage while isolating it from the studio and other projects.
+- Nested IDE explorer, manual edits, create/rename/delete, binary downloads, import UI, entry-page selection, revision diffs and rollback.
+- Verification: `npm test` — **46 passed, 1 opt-in MongoDB check skipped**; `npm run test:mongo` — **18 reported passing checks**; Chromium workflow passed, including mocked generation/editing over real HTTP/SSE and visible QA findings; syntax checks passed for server/client/scripts JavaScript.
+- Tests use disposable data and mocked providers. No live paid generation was performed for this delivery. Browser-ready static websites are executable; imported framework source requires an external build/runtime.
+
+Earlier milestone notes below are historical. Current contracts and deployment/storage behavior are described in [architecture.md](architecture.md) and [README.md](README.md).
 
 ---
 
@@ -154,18 +178,19 @@
 
 ## Important Architectural Decisions
 - **Separation of Concerns**: Agents are logical roles; models are inference engines. Agents never make direct HTTP calls to providers.
-- **Single Generated Artifact for MVP**: Only `workspace/index.html` is produced or modified.
-- **Coding Agent Exclusive Code Ownership**: Only the Coding Agent may generate or edit `workspace/index.html`.
-- **Minimal Change Rule**: During human feedback in V1, modifications are sent directly to the Coding Agent with the existing file as the source of truth, preserving all unrelated code.
+- **Multi-file Source of Truth**: Committed project manifests reference immutable blobs; the workspace HTML is only a legacy compatibility mirror.
+- **Coding Agent Exclusive Agent Ownership**: The Coding Agent stages application source; specialists produce specifications and reports. Users may edit files in the IDE.
+- **Minimal Change Rule**: Contextual edits include a file tree and bounded read protocol; omitted files remain unchanged.
 
 ---
 
 ## Known Issues / Gaps
-- `NVIDIA_API_KEY` in `.env` is currently unpopulated until provided by the user. The system gracefully warns in logs and displays an amber status pill in the UI.
+- Provider availability and real model output quality require live acceptance checks with the configured routing/keys.
+- Framework build processes, backend execution, automatic blob/history cleanup, and multi-user authentication are not implemented.
+- Budget tracking is in-memory with estimated per-call pricing and a pre-run check, not a hard in-run cap.
 
 ---
 
-## Next Steps (Phase 1)
-- Build the `NvidiaProvider` adapter for `https://integrate.api.nvidia.com/v1/chat/completions`.
-- Implement `ModelGateway` with streaming chunk callback, exponential retry backoff, and error reporting.
-- Implement `/api/gateway/test` endpoint to test Kimi K3 inference.
+## Follow-up Work
+- Run live-provider acceptance checks for a new multi-page site and a targeted edit to an imported site.
+- Design framework/runtime support separately if needed; current preview expects browser-ready static output.

@@ -8,6 +8,15 @@
 import { PixiOffice, AGENT_ROSTER } from './pixi-office.js?v=4';
 import { getLucideIcon, AGENT_ICONS, FILE_EXT_ICONS } from './icons.js';
 import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=4';
+import { ProjectWorkspace } from './project-workspace.js';
+
+const escapeHtml = text => String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const projectWorkspace = new ProjectWorkspace({
+  isLocked: () => isOrchestrating,
+  onMessage: (message, error) => addLog(message, error ? 'error' : 'info', 'SYS', 'FILES'),
+  onChanged: async id => { await loadProjects(); updatePreview(id); },
+  onImported: async id => { await loadProjects(); selectProject(id); switchTab(projectsList.find(p => p.id === id)?.projectType === 'documents' ? 'chat' : 'ide'); await loadProjectFiles(id); },
+});
 
 // Global State
 let pixiOffice = null;
@@ -17,6 +26,15 @@ let currentPreviewUrl = '/api/preview';
 let eventSource = null;
 let selectedAgentId = 'nova';
 let isChoreographyActive = false;
+let activeRunId = null;
+let previewRequest = 0;
+let selectedTaskType = 'auto';
+
+document.querySelectorAll('.task-type-select').forEach(select => select.addEventListener('change', () => {
+  selectedTaskType = select.value;
+  document.querySelectorAll('.task-type-select').forEach(other => { other.value = selectedTaskType; });
+}));
+document.querySelectorAll('.task-upload-btn').forEach(button => button.addEventListener('click', () => projectWorkspace.openImport()));
 
 // DOM Elements: Navigation
 const navButtons = document.querySelectorAll('.nav-tab-btn');
@@ -173,8 +191,8 @@ export function renderTasksBoard() {
           <span class="kanban-stage-tag tag-${task.stage}">${task.stage.toUpperCase()}</span>
           <span class="kanban-card-time">${task.time || ''}</span>
         </div>
-        <div class="kanban-card-title">${task.title}</div>
-        <div class="kanban-card-desc">${task.desc || ''}</div>
+        <div class="kanban-card-title">${escapeHtml(task.title)}</div>
+        <div class="kanban-card-desc">${escapeHtml(task.desc)}</div>
         <div class="kanban-card-footer">
           <span class="kanban-agent-badge">
             <span class="kanban-agent-dot" style="background:${agent.color || '#3B82F6'};"></span>
@@ -262,6 +280,41 @@ export function startPipelineTasks(promptText) {
   renderTasksBoard();
 }
 
+function startDocumentTasks(prompt) {
+  tasksStore = [
+    { id: 'task-doc-read', title: 'Inspect source material', desc: prompt, stage: 'progress', agentId: 'document-1', agentName: 'Document Analyst' },
+    { id: 'task-doc-write', title: 'Write the requested Markdown document', desc: 'Use source evidence, requested detail, and format.', stage: 'backlog', agentId: 'document-1', agentName: 'Document Analyst' },
+    { id: 'task-doc-save', title: 'Save and deliver the .md file', desc: 'Keep original files intact and record a new revision.', stage: 'backlog', agentId: 'document-1', agentName: 'Document Analyst' },
+  ];
+  renderTasksBoard();
+}
+
+async function openDocumentResult(projectId, path) {
+  selectProject(projectId, false);
+  if (activeProjectId !== projectId) return;
+  projectWorkspace.selectedPath = path;
+  switchTab('ide');
+  await loadProjectFiles(projectId);
+  await loadFileContent(projectId, path);
+}
+
+function showDocumentResult(projectId, data) {
+  const doc = data.document;
+  for (const stream of [chatMessagesStream, sidebarChatStream]) {
+    if (!stream) continue;
+    const card = document.createElement('div'); card.className = 'document-result';
+    const title = document.createElement('strong'); title.textContent = doc.title;
+    const detail = document.createElement('p'); detail.textContent = `${doc.path} · Revision ${data.revision}`;
+    const coverage = document.createElement('p'); coverage.textContent = doc.warnings.length ? `${doc.warnings.length} source limitation(s); see Source coverage in the document.` : 'Markdown document saved.';
+    const actions = document.createElement('div'); actions.className = 'result-actions';
+    const open = document.createElement('button'); open.className = 'btn btn-xs btn-primary'; open.textContent = 'Open Markdown';
+    open.addEventListener('click', () => { if (!isOrchestrating && !projectWorkspace.busy) openDocumentResult(projectId, doc.path); });
+    const download = document.createElement('a'); download.className = 'btn btn-xs btn-outline'; download.textContent = 'Download .md';
+    download.href = `/api/projects/${encodeURIComponent(projectId)}/files/${doc.path.split('/').map(encodeURIComponent).join('/')}?download=true`;
+    actions.append(open, download); card.append(title, detail, coverage, actions); stream.append(card); stream.scrollTop = stream.scrollHeight;
+  }
+}
+
 export function setTaskStage(taskId, newStage, note = null) {
   const task = tasksStore.find(t => t.id === taskId);
   if (task) {
@@ -330,14 +383,14 @@ export function renderInteragentStream() {
     <div class="interagent-card">
       <div class="interagent-route-row">
         <div class="wire-route-wrap">
-          <span class="wire-sender-tag">${m.fromName}</span>
+           <span class="wire-sender-tag">${escapeHtml(m.fromName)}</span>
           <span class="wire-arrow">➔</span>
-          <span class="wire-receiver-tag">${m.toName}</span>
+           <span class="wire-receiver-tag">${escapeHtml(m.toName)}</span>
         </div>
         <span class="wire-time">${m.timestamp}</span>
       </div>
-      <div class="wire-subject">${m.subject}</div>
-      <div class="wire-body">${m.message}</div>
+      <div class="wire-subject">${escapeHtml(m.subject)}</div>
+      <div class="wire-body">${escapeHtml(m.message)}</div>
     </div>
   `).join('');
 
@@ -406,8 +459,8 @@ export function renderActivityTimeline() {
             </div>
             <span class="timeline-time">${item.timestamp}</span>
           </div>
-          <div style="font-size:0.76rem;font-weight:700;color:var(--text-primary);margin-top:2px;">${item.title}</div>
-          <div class="timeline-text">${item.desc}</div>
+          <div style="font-size:0.76rem;font-weight:700;color:var(--text-primary);margin-top:2px;">${escapeHtml(item.title)}</div>
+          <div class="timeline-text">${escapeHtml(item.desc)}</div>
         </div>
       </div>
     `;
@@ -1016,7 +1069,7 @@ export function addTerminalEntry(timestamp, agentTag, status, message, type = 'i
     <span class="term-status-pill status-${(status || 'info').toLowerCase()}">
       ${status || 'INFO'}
     </span>
-    <span class="term-msg">${cleanMsg}</span>
+    <span class="term-msg">${escapeHtml(cleanMsg)}</span>
   `;
 
   sidebarTerminalLogs.appendChild(entry);
@@ -1102,7 +1155,7 @@ function renderProjectDropdowns() {
     optionsHtml += `<optgroup label="Saved Projects (${projectsList.length})">`;
     optionsHtml += projectsList.map(p => {
       const name = p.name || p.id;
-      return `<option value="${p.id}">${name}</option>`;
+      return `<option value="${escapeHtml(p.id)}">${escapeHtml(name)}</option>`;
     }).join('');
     optionsHtml += `</optgroup>`;
   }
@@ -1119,7 +1172,13 @@ function renderProjectDropdowns() {
 }
 
 export function selectProject(projectId, reloadPreview = true) {
+  if (projectWorkspace.dirty && projectId !== activeProjectId) {
+    if (!confirm('Discard your unsaved file edits?')) { renderProjectDropdowns(); return; }
+    projectWorkspace.cancelEdit();
+  }
   if (projectId === '__new__' || !projectId) {
+    ++previewRequest;
+    projectWorkspace.clear();
     activeProjectId = '__new__';
 
     if (headerProjectSelect) headerProjectSelect.value = '__new__';
@@ -1164,16 +1223,13 @@ export function selectProject(projectId, reloadPreview = true) {
 
   // Previous saved project was selected
   activeProjectId = projectId;
+  loadProjectFiles(projectId);
 
   if (headerProjectSelect) headerProjectSelect.value = projectId;
   if (ideProjectSelect) ideProjectSelect.value = projectId;
 
   if (reloadPreview) {
     updatePreview(activeProjectId);
-  }
-
-  if (activeTab === 'ide') {
-    loadProjectFiles(activeProjectId);
   }
 
   const proj = projectsList.find(p => p.id === projectId);
@@ -1216,7 +1272,7 @@ export function setControlsLocked(locked) {
     sidebarPromptInput.disabled = locked;
     sidebarPromptInput.placeholder = locked
       ? 'Agents are actively collaborating... Modifications locked.'
-      : "Direct the team or suggest changes (e.g. 'Add product cards with cart')...";
+      : 'Summarize files, explain a topic, write a document, or build a website...';
   }
   if (sidebarLaunchBtn) sidebarLaunchBtn.disabled = locked;
 
@@ -1224,7 +1280,7 @@ export function setControlsLocked(locked) {
     chatPromptInput.disabled = locked;
     chatPromptInput.placeholder = locked
       ? 'Agents are collaborating on sprint... Modifications locked.'
-      : 'Enter objective or instructions for the team (or use @Agent)...';
+      : 'What should the agents explain, summarize, write, or build?';
   }
   if (chatSendBtn) chatSendBtn.disabled = locked;
 
@@ -1235,6 +1291,9 @@ export function setControlsLocked(locked) {
       : 'e.g. Change primary button color to emerald and add customer review cards...';
   }
   if (applyFeedbackBtn) applyFeedbackBtn.disabled = locked;
+  document.querySelectorAll('.budget-pill, .budget-number-input, .preset-btn, .inspector-actions button').forEach(el => { el.disabled = locked; });
+  document.querySelectorAll('.task-type-select, .task-upload-btn').forEach(el => { el.disabled = locked; });
+  projectWorkspace.updateControls();
 }
 
 // ==========================================================================
@@ -1243,83 +1302,11 @@ export function setControlsLocked(locked) {
 let currentActiveFilename = null;
 
 export async function loadProjectFiles(projectId) {
-  if (!ideFileList) return;
-
-  if (!projectId) {
-    ideFileList.innerHTML = '<div class="ide-empty-state">No active project selected. Generate or select a project first.</div>';
-    if (ideFileCount) ideFileCount.textContent = '0 files';
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/projects/${projectId}/files`);
-    if (!res.ok) throw new Error('Failed to fetch project files');
-    const data = await res.json();
-    const files = data.files || [];
-
-    if (ideFileCount) ideFileCount.textContent = `${files.length} file${files.length === 1 ? '' : 's'}`;
-
-    if (files.length === 0) {
-      ideFileList.innerHTML = '<div class="ide-empty-state">No files generated yet for this project.</div>';
-      return;
-    }
-
-    ideFileList.innerHTML = files.map(file => {
-      const ext = file.extension || 'txt';
-      const isSelected = file.name === currentActiveFilename;
-      return `
-        <div class="file-item ${isSelected ? 'active' : ''}" data-file="${file.name}">
-          <span class="file-item-icon">${getLucideIcon(FILE_EXT_ICONS[ext] || 'file-text', { size: 14 })}</span>
-          <span class="file-item-name">${file.name}</span>
-          <span class="file-item-meta">${Math.max(1, Math.ceil(file.size / 1024))} KB</span>
-        </div>
-      `;
-    }).join('');
-
-    ideFileList.querySelectorAll('.file-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const filename = item.dataset.file;
-        loadFileContent(projectId, filename);
-      });
-    });
-
-    // Auto-select index.html or first file
-    const targetFile = files.find(f => f.name === currentActiveFilename) ||
-                       files.find(f => f.name === 'index.html') ||
-                       files[0];
-    if (targetFile) {
-      loadFileContent(projectId, targetFile.name);
-    }
-  } catch (err) {
-    ideFileList.innerHTML = `<div class="ide-empty-state error">Error loading files: ${err.message}</div>`;
-  }
+  return projectWorkspace.load(projectId);
 }
 
 export async function loadFileContent(projectId, filename) {
-  currentActiveFilename = filename;
-  if (!ideFileContent) return;
-
-  ideFileList?.querySelectorAll('.file-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.file === filename);
-  });
-
-  const ext = filename.split('.').pop() || '';
-  if (ideActiveFilename) ideActiveFilename.textContent = filename;
-  if (ideActiveFileExt) ideActiveFileExt.textContent = ext.toUpperCase();
-  if (ideActiveFileIcon) {
-    ideActiveFileIcon.innerHTML = getLucideIcon(FILE_EXT_ICONS[ext] || 'file-text', { size: 16 });
-  }
-
-  ideFileContent.textContent = '// Loading file contents...';
-
-  try {
-    const res = await fetch(`/api/projects/${projectId}/files/${filename}`);
-    if (!res.ok) throw new Error('File not found');
-    const data = await res.json();
-    ideFileContent.textContent = data.content || '// Empty file';
-  } catch (err) {
-    ideFileContent.textContent = `// Error loading file: ${err.message}`;
-  }
+  return projectWorkspace.read(projectId, filename);
 }
 
 if (copyCodeBtn) {
@@ -1346,15 +1333,26 @@ if (refreshFilesBtn) {
 // ==========================================================================
 // 8. Live Preview Device Controls
 // ==========================================================================
-export function updatePreview(projectId = null) {
-  const cacheBuster = `t=${Date.now()}`;
-  if (projectId) {
-    currentPreviewUrl = `/api/projects/${projectId}/preview`;
-  } else {
-    currentPreviewUrl = `/api/preview`;
+export async function updatePreview(projectId = null) {
+  const sequence = ++previewRequest;
+  currentPreviewUrl = '/api/preview?starter=true';
+  if (projectId && projectId !== '__new__') {
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/preview-info`);
+      const info = await res.json();
+      if (sequence !== previewRequest) return;
+      if (!res.ok) throw new Error(info.error || 'Unable to load preview');
+      if (!info.supported) {
+        previewIframe.src = '/api/preview?starter=true';
+        previewUrlBadge.textContent = info.message;
+        return;
+      }
+      currentPreviewUrl = info.url;
+    } catch (err) { previewUrlBadge.textContent = err.message; return; }
   }
-
-  if (previewIframe) previewIframe.src = `${currentPreviewUrl}?${cacheBuster}`;
+  const url = new URL(currentPreviewUrl, location.origin);
+  url.searchParams.set('t', Date.now());
+  if (previewIframe) previewIframe.src = url.href;
   if (previewUrlBadge) previewUrlBadge.textContent = currentPreviewUrl;
 }
 
@@ -1371,8 +1369,8 @@ vpButtons.forEach(btn => {
 
 if (openNewTabBtn) {
   openNewTabBtn.addEventListener('click', () => {
-    const url = activeProjectId ? `/api/projects/${activeProjectId}/preview` : `/api/preview`;
-    window.open(url, '_blank');
+    const url = currentPreviewUrl;
+    window.open(url, '_blank', 'noopener,noreferrer');
     addLog(`Opened live preview in full browser tab: ${url}`, 'info', 'SYS');
   });
 }
@@ -1388,41 +1386,9 @@ if (refreshPreviewBtn) {
 async function handleApplyFeedback() {
   const feedback = feedbackInput.value.trim();
   if (!feedback || isOrchestrating) return;
-
-  addLog(`Feedback received: "${feedback}"`, 'info', 'USER', 'FEEDBACK');
-  agentStateManager.setAgentState('byte', {
-    status: AGENT_STATUS.QUEUED,
-    currentTask: `Modify application: "${feedback}"`,
-    lastAction: 'Human feedback received. Queued for patch',
-    progress: 10,
-  });
-
-  setControlsLocked(true);
-
-  try {
-    const res = await fetch('/api/orchestrate/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId: activeProjectId, feedback })
-    });
-    const data = await res.json();
-    if (!res.ok || data.status !== 'success') {
-      if (res.status === 402 || data.status === 'budget_exhausted') {
-        showBudgetExhaustedModal(data.spent, data.budget, handleApplyFeedback);
-        return;
-      }
-      throw new Error(data.message || data.error || 'Feedback failed');
-    }
-
-    feedbackInput.value = '';
-    updatePreview(activeProjectId || data.projectId);
-    loadProjectFiles(activeProjectId || data.projectId);
-    addLog(`Minimal-change edit applied. Preview reloaded.`, 'success', 'BY', 'COMPLETE');
-  } catch (err) {
-    addLog(`Feedback failed: ${err.message}`, 'error', 'QR', 'FAILED');
-  } finally {
-    setControlsLocked(false);
-  }
+  if (!activeProjectId || activeProjectId === '__new__') { addLog('Select or import a project before editing.', 'error'); return; }
+  if (projectWorkspace.dirty || projectWorkspace.busy) { addLog('Save or cancel the current file edit first.', 'error'); return; }
+  await handleSendPrompt(feedback);
 }
 
 if (applyFeedbackBtn) applyFeedbackBtn.addEventListener('click', handleApplyFeedback);
@@ -1936,7 +1902,9 @@ export async function executeChoreographedMeetingWorkflow(promptText, { runBacke
 // ==========================================================================
 async function handleSendPrompt(promptText) {
   if (!promptText || !promptText.trim() || isOrchestrating) return;
+  if (projectWorkspace.dirty || projectWorkspace.busy) { addLog('Save or cancel your file edit before starting an agent run.', 'error'); return; }
   const prompt = promptText.trim();
+  activeRunId = crypto.randomUUID();
 
   // Lock project switching and user inputs while agents are actively working
   setControlsLocked(true);
@@ -1948,7 +1916,7 @@ async function handleSendPrompt(promptText) {
     <div class="msg-avatar">${getLucideIcon('users', { size: 14 })}</div>
     <div class="msg-content">
       <div class="msg-header"><span class="msg-sender">YOU</span><span class="msg-time">${timestamp}</span></div>
-      <div class="msg-body">${prompt}</div>
+      <div class="msg-body">${escapeHtml(prompt)}</div>
     </div>
   `;
 
@@ -1974,7 +1942,7 @@ async function handleSendPrompt(promptText) {
       <div class="msg-avatar">${getLucideIcon('crown', { size: 14 })}</div>
       <div class="msg-content">
         <div class="msg-header"><span class="msg-sender">ATLAS (MANAGER)</span><span class="msg-time">${new Date().toLocaleTimeString()}</span></div>
-        <div class="msg-body">Objective accepted. Summoning team to Conference Room for pre-sprint alignment and task division. Execution remains locked until specialists reach their workstations!</div>
+        <div class="msg-body">Request submitted. The Manager will choose a document or website workflow, and the assigned agent will use your project files to produce the requested result.</div>
       </div>
     `;
 
@@ -1999,23 +1967,50 @@ async function handleSendPrompt(promptText) {
   agentStateManager.setAgentState('atlas', {
     status: AGENT_STATUS.QUEUED,
     currentTask: prompt,
-    lastAction: 'Summoning quorum in Conference Room',
+    lastAction: 'Preparing project-aware execution',
     progress: 5,
   });
 
-  if (chatStatusTag) chatStatusTag.textContent = 'Quorum Meeting...';
+  if (chatStatusTag) chatStatusTag.textContent = 'Working on project…';
 
   try {
-    await executeChoreographedMeetingWorkflow(prompt, { runBackendBuild: true });
-    if (chatStatusTag) chatStatusTag.textContent = 'Preview Ready';
+    tasksStore = [{ id: 'task-route', title: 'Select the requested deliverable', desc: prompt, stage: 'progress', agentId: 'atlas', agentName: 'Manager' }];
+    renderTasksBoard();
+    const payload = { prompt, taskType: selectedTaskType, budget: currentBudgetAmount, runId: activeRunId };
+    if (activeProjectId && activeProjectId !== '__new__') payload.projectId = activeProjectId;
+    const response = await fetch('/api/orchestrate/task', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const result = await response.json();
+    if (!response.ok) {
+      if (response.status === 402) { showBudgetExhaustedModal(result.spent, result.budget, prompt); return; }
+      throw new Error(result.error || result.message || 'Task failed');
+    }
+    activeProjectId = result.projectId;
+    await loadProjects();
+    if (result.data.taskType === 'document') {
+      showDocumentResult(activeProjectId, result.data);
+      await openDocumentResult(activeProjectId, result.data.document.path);
+      if (chatStatusTag) chatStatusTag.textContent = 'Markdown Ready';
+      projectWorkspace.message(`Saved ${result.data.document.path} · Revision ${result.data.revision}. ${result.data.document.warnings.length} source limitation(s).`);
+      return;
+    }
+    selectProject(activeProjectId);
+    const verdict = result.data.qaReport?.result || 'not audited';
+    if (chatStatusTag) chatStatusTag.textContent = verdict === 'passed' ? 'Preview Ready' : 'Saved · Review Findings';
+    projectWorkspace.message(`Revision ${result.data.revision} saved. QA: ${verdict}. Open History to inspect file changes.`);
   } catch (err) {
     if (chatStatusTag) chatStatusTag.textContent = 'Error';
-    addLog(`Build failed: ${err.message}`, 'error', 'QR', 'FAILED');
+    addLog(`Task failed: ${err.message}`, 'error', 'SYS', 'FAILED');
+    for (const stream of [chatMessagesStream, sidebarChatStream]) {
+      if (!stream) continue;
+      const message = document.createElement('p'); message.className = 'task-error'; message.setAttribute('role', 'alert'); message.textContent = err.message;
+      stream.append(message); stream.scrollTop = stream.scrollHeight;
+    }
     agentStateManager.setAgentState('atlas', {
       status: AGENT_STATUS.FAILED,
       lastAction: err.message,
     });
   } finally {
+    activeRunId = null;
     setControlsLocked(false);
   }
 }
@@ -2091,6 +2086,7 @@ function initEventSource() {
   eventSource.addEventListener('agentState', (e) => {
     try {
       const data = JSON.parse(e.data);
+      if (activeRunId ? data.runId !== activeRunId : data.projectId && data.projectId !== activeProjectId) return;
       agentStateManager.handleAgentStateEvent(data);
     } catch (_) {}
   });
@@ -2098,9 +2094,27 @@ function initEventSource() {
   eventSource.addEventListener('pipeline', (e) => {
     try {
       const data = JSON.parse(e.data);
+      if (data.runId && (activeRunId ? data.runId !== activeRunId : data.projectId !== activeProjectId)) return;
+      if (data.projectId && activeRunId === data.runId && (!activeProjectId || activeProjectId === '__new__')) activeProjectId = data.projectId;
       agentStateManager.handlePipelineEvent(data);
 
-      if (data.stage === 'INTERAGENT_COMMUNICATION') {
+      if (data.stage === 'TASK_ROUTING_STARTED') {
+        updateTasksBanner('Manager identifying the requested deliverable…');
+      } else if (data.stage === 'TASK_ROUTED') {
+        if (data.taskType === 'document') startDocumentTasks(data.prompt);
+        else startPipelineTasks(data.prompt);
+        addLog(`Selected workflow: ${data.taskType}`, 'info', 'MANAGER', 'ROUTE');
+      } else if (data.stage === 'DOCUMENT_STARTED') {
+        if (chatStatusTag) chatStatusTag.textContent = 'Analyzing source material…';
+        updateTasksBanner('Document Analyst reading project files and preparing Markdown.', 'Document Analyst');
+      } else if (data.stage === 'DOCUMENT_READING') {
+        setTaskStage('task-doc-write', 'progress');
+        addLog(`Document analysis turn ${data.round}: ${data.sources.filter(s => ['read', 'partial'].includes(s.status)).length} source(s) inspected.`, 'info', 'DOC', 'READ');
+      } else if (data.stage === 'DOCUMENT_COMPLETED') {
+        tasksStore.forEach(task => { task.stage = 'done'; }); renderTasksBoard();
+        updateTasksBanner(`Markdown saved: ${data.document.path}`, 'Document Analyst');
+        addLog(`Document saved: ${data.document.path}`, 'success', 'DOC', 'COMPLETE');
+      } else if (data.stage === 'INTERAGENT_COMMUNICATION') {
         addInteragentMessage(data);
       } else if (isChoreographyActive) {
         // Physical office simulation is actively orchestrating meetings, desk walks & reviews.
@@ -2195,7 +2209,7 @@ function initEventSource() {
         if (pid) loadProjectFiles(pid);
       } else if (data.stage === 'CODING_AGENT_STARTED') {
         setTaskStage('task-code', 'progress');
-        updateTasksBanner('Byte generating production index.html web application...', 'Byte (Lead Coder)');
+        updateTasksBanner('Coding Agent implementing the requested project files...', 'Coding Agent');
       } else if (data.stage === 'CODING_AGENT_COMPLETED') {
         setTaskStage('task-code', 'review');
         updateTasksBanner('Code delivery ready. Submitting to Query for QA audit...', 'Byte (Lead Coder)');
@@ -2204,7 +2218,7 @@ function initEventSource() {
           agentId: 'byte',
           agentName: 'Byte (Lead Coder)',
           title: 'Code Delivery Finalized',
-          desc: `Generated index.html (${data.contentLength} bytes) and build summary.`,
+          desc: `Saved revision ${data.revision} with ${data.changes?.length || 0} file change(s) and build summary.`,
           timestamp: new Date().toLocaleTimeString(),
         });
         const pid = data.projectId || activeProjectId;
@@ -2215,13 +2229,13 @@ function initEventSource() {
       } else if (data.stage === 'QA_COMPLETED') {
         setTaskStage('task-code', 'done');
         setTaskStage('task-qa', 'done');
-        updateTasksBanner(`QA Audit completed: ${(data.result || 'PASSED').toUpperCase()}`, 'Query (QA Auditor)');
+        updateTasksBanner(`QA Audit completed: ${(data.result || 'NOT AUDITED').toUpperCase()}`, 'Query (QA Auditor)');
         addActivityItem({
           type: 'pipeline',
           agentId: 'query',
           agentName: 'Query (QA Auditor)',
-          title: `QA Audit Verdict: ${(data.result || 'PASSED').toUpperCase()}`,
-          desc: `Audit finished with status: ${data.result || 'passed'} (${(data.issues || []).length} issues found).`,
+          title: `QA Audit Verdict: ${(data.result || 'NOT AUDITED').toUpperCase()}`,
+          desc: `Audit finished with status: ${data.result || 'not audited'} (${(data.issues || []).length} issues found).`,
           timestamp: new Date().toLocaleTimeString(),
         });
         const pid = data.projectId || activeProjectId;
@@ -2272,9 +2286,10 @@ function initEventSource() {
       }
 
       if (data.stage === 'PIPELINE_COMPLETED') {
-        setControlsLocked(false);
-        updateTasksBanner('Sprint completed successfully. Ready for inspection.', 'Atlas (Manager)');
-        tasksStore.forEach(t => { t.stage = 'done'; });
+        if (!activeRunId) setControlsLocked(false);
+        const passed = data.qaReport?.result === 'passed';
+        updateTasksBanner(data.specificationOnly ? 'Specification ready.' : passed ? 'Project saved and audited. Preview ready.' : 'Project saved. Review the QA findings.', 'Atlas (Manager)');
+        tasksStore.forEach(t => { t.stage = !passed && t.id === 'task-qa' ? 'review' : 'done'; });
         renderTasksBoard();
         const pid = data.projectId || activeProjectId;
         if (pid) {
@@ -2284,8 +2299,8 @@ function initEventSource() {
           loadProjectFiles(pid);
           updatePreview(pid);
         }
-      } else if (data.stage === 'PIPELINE_FAILED' || data.stage === 'FEEDBACK_FAILED') {
-        setControlsLocked(false);
+      } else if (data.stage === 'PIPELINE_FAILED' || data.stage === 'FEEDBACK_FAILED' || data.stage === 'TASK_FAILED') {
+        if (!activeRunId) setControlsLocked(false);
         updateTasksBanner(`Pipeline halted: ${data.error || 'Check logs'}`, 'System');
       }
     } catch (_) {}
@@ -2306,6 +2321,10 @@ async function initSystemHealth() {
 }
 
 function bootstrap() {
+  projectWorkspace.init();
+  // Global budget dialog must remain visible regardless of the active tab.
+  const budgetDialog = document.getElementById('budgetExhaustedModal');
+  if (budgetDialog) document.body.appendChild(budgetDialog);
   initOfficeSimulation();
   renderAgentRosters();
   loadProjects();
@@ -2443,4 +2462,3 @@ if (document.readyState === 'loading') {
 } else {
   bootstrap();
 }
-

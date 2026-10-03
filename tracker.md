@@ -1,5 +1,37 @@
 # Agent Orchestra — Implementation Tracker
 
+## Current Delivery — General Tasks and Markdown Results (2026-10-02)
+
+| Task | Status | Notes |
+|---|---|---|
+| Automatic intent routing and explicit output modes | COMPLETED | Generic task API; document versus website deliverables |
+| Document Analyst agent | COMPLETED | Independent writing contract, model/fallback routing, source-grounded responses |
+| File analysis and extraction | COMPLETED | Bounded text excerpts, PDF/DOCX workers, coverage and carried-forward notes |
+| Versioned Markdown deliverables | COMPLETED | New files, source preservation, collision protection, atomic provenance |
+| Dashboard document workflow | COMPLETED | Chat upload, output selector, progress, open/download, IDE selection |
+| Regression verification | COMPLETED | 54 default passes + 1 opt-in skip; 26 Mongo passes; browser website/document workflows and syntax checks passed |
+| Live-provider acceptance | PENDING | Model responses mocked in verification |
+| OCR and additional binary readers | OUT OF SCOPE | Unsupported or incomplete evidence reported explicitly |
+
+## Previous Delivery — Multi-file Website Workspace (2026-10-02)
+
+| Task | Status | Notes |
+|---|---|---|
+| Nested source files and binary assets | COMPLETED | Full-path manifests; filesystem blobs or MongoDB/GridFS |
+| Atomic revisions and concurrency | COMPLETED | Cross-process filesystem lock, Mongo CAS, expected-revision conflicts |
+| ZIP/folder/multi-file import | COMPLETED | Bounded uploads, filtered dependencies, preserved paths/bytes, legacy migration |
+| Project-aware generation and editing | COMPLETED | Shared contracts, bounded reads, staged multi-round changes, explicit rename/delete |
+| Validation and QA result integrity | COMPLETED | Syntax/references/DOM checks; failed audits never pass |
+| Separate static preview | COMPLETED | Pages, styles, modules, assets, project-scoped local browser storage |
+| Nested IDE and revision UI | COMPLETED | Text editing, file operations, upload, entry point, diffs, restore |
+| Verification | COMPLETED | 46 default checks passed, 1 opt-in check skipped; 18 Mongo checks reported passing; Chromium workflow and JS syntax checks passed |
+| Live model acceptance | PENDING | Automated checks use mocked model responses |
+| Framework build/runtime | OUT OF SCOPE | Source import/editing supported; execution requires external static build |
+
+## Historical Milestones
+
+The single-file constraints in the earlier milestones below have been superseded by the current delivery; see [architecture.md](architecture.md).
+
 | Phase | Task | Status | Notes |
 |---|---|---|---|
 | **Phase 0** | **Foundation** | **COMPLETED** | Node.js project, environment config, docs, Git-safe setup, preview workspace |
@@ -51,4 +83,3 @@
 | Phase 9 | Agent Registry Model Switch | COMPLETED | All 6 logical agents defaulted to `gemini-3.5-flash` |
 | Phase 9 | UI & Dashboard Provider Display | COMPLETED | Displays Google AI Studio and `gemini-3.5-flash` with dynamic status check |
 | Phase 9 | Comprehensive Test Suite Verification | COMPLETED | 22/22 unit & integration tests passing |
-

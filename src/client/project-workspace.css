@@ -1,0 +1,46 @@
+[hidden] { display: none !important; }
+.task-mode-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 6px 0; font-size: .75rem; }
+.task-type-select { flex: 1; min-width: 130px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; }
+.document-result { padding: 12px; border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; margin: 10px 0; overflow-wrap: anywhere; }
+.document-result p { margin: 6px 0; font-size: .8rem; }
+.document-result .result-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.task-error { padding: 10px; color: #b91c1c; font-size: .85rem; overflow-wrap: anywhere; }
+.project-file-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border-subtle); font-size: .75rem; }
+.project-file-toolbar select { max-width: 220px; padding: 5px; border: 1px solid var(--border-medium); border-radius: 4px; }
+#workspaceNotice { color: #475569; flex: 1; min-width: 160px; }
+#workspaceNotice.notice-error { color: #b91c1c; }
+.ide-toolbar-actions { flex-wrap: wrap; }
+#ideFileList details { padding-left: 12px; }
+#ideFileList summary { cursor: pointer; padding: 7px 4px; font-size: .8rem; font-weight: 600; }
+#ideFileList .file-item { width: 100%; text-align: left; font-family: var(--font-code); font-size: .75rem; background: transparent; border: 0; border-radius: 4px; overflow-wrap: anywhere; }
+#ideFileList .file-item:hover { background: #f1f5f9; }
+#ideFileList .file-item.active { background: #dbeafe; color: #1d4ed8; }
+#projectFileEditor { width: 100%; height: 100%; min-height: 280px; resize: none; padding: 18px; border: 0; background: #fff; color: #0f172a; font: 13px/1.6 var(--font-code); tab-size: 2; white-space: pre; }
+.viewer-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.viewer-file-info { min-width: 0; overflow-wrap: anywhere; }
+.project-dialog { margin: auto; width: min(660px, 94vw); max-height: 90vh; overflow: auto; padding: 24px; border: 1px solid #cbd5e1; border-radius: 12px; color: #0f172a; background: #fff; box-shadow: 0 20px 60px #0f172a33; }
+.project-dialog::backdrop { background: #0f172a88; }
+.project-dialog-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+.project-dialog h2 { font-size: 1.1rem; }
+.project-dialog p { font-size: .85rem; line-height: 1.5; margin: 12px 0; }
+.project-dialog label { display: block; font-size: .85rem; margin: 12px 0; }
+#importProjectName { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+.project-upload-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.upload-help { color: #64748b; }
+#importProgress { color: #1d4ed8; }
+.history-dialog { width: min(1000px, 94vw); }
+.revision-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.revision-row > :first-child { flex: 1; justify-content: flex-start; height: auto; min-height: 32px; text-align: left; overflow-wrap: anywhere; }
+#revisionDiff { padding: 14px; background: #f1f5f9; border-radius: 6px; overflow: auto; max-height: 50vh; font: 12px/1.6 var(--font-code); }
+@media (max-width: 1000px) {
+  .app-header { padding: 6px; height: auto; flex-wrap: wrap; gap: 6px; }
+  .header-left, .header-right { min-width: 0; }
+  .header-center { order: 3; flex-basis: 100%; overflow: auto; justify-content: flex-start; }
+  .nav-tab-btn { padding: 0 8px; }
+  .office-workspace-layout { grid-template-columns: 1fr; overflow: auto; }
+  .office-canvas-panel { min-height: 380px; }
+  .office-control-sidebar { min-height: 500px; }
+  .ide-dual-container { grid-template-columns: minmax(140px, 30%) minmax(0, 1fr); }
+  .tab-header-toolbar { flex-wrap: wrap; gap: 8px; height: auto; padding: 10px; }
+  .viewer-header { flex-wrap: wrap; height: auto; min-height: 46px; }
+}

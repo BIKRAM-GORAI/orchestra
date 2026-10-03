@@ -93,6 +93,6 @@ test('Phase 7: Human Feedback Loop with Minimal Change Preservation', async () =
   assert.ok(savedHtml.includes('Cart logic active'), 'Script strictly preserved');
 
   const updatedProject = await getProject(project.id);
-  assert.strictEqual(updatedProject.version, 3, 'Version incremented after feedback');
+  assert.strictEqual(updatedProject.version, 2, 'Initial save is revision 1; feedback is revision 2');
   assert.ok(updatedProject.history.length >= 2, 'History recorded modification note');
 });

@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./index.css?v=3">
+  <link rel="stylesheet" href="./project-workspace.css">
   <script src="./vendor/pixi.min.js"></script>
   <script src="./vendor/lucide.min.js"></script>
   <script src="./vendor/motion.js"></script>
@@ -314,6 +315,11 @@
 
               <!-- Task Dispatcher & Budget Box -->
               <div class="sidebar-prompt-box">
+                <div class="task-mode-bar">
+                  <label for="sidebarTaskType">Output</label>
+                  <select id="sidebarTaskType" class="task-type-select"><option value="auto">Auto — choose from request</option><option value="document">Markdown document</option><option value="website">Website / app</option></select>
+                  <button type="button" class="btn btn-xs btn-outline task-upload-btn">Upload files</button>
+                </div>
                 <div class="prompt-budget-bar">
                   <div class="budget-control-compact">
                     <span class="budget-label">Budget:</span>
@@ -333,7 +339,7 @@
                 </div>
 
                 <div class="prompt-textarea-wrap">
-                  <textarea id="sidebarPromptInput" rows="3" class="sidebar-prompt-textarea" placeholder="Direct the team with your project goal or detailed modifications..."></textarea>
+                  <textarea id="sidebarPromptInput" rows="3" class="sidebar-prompt-textarea" placeholder="Summarize files, explain a topic, write a guide, or build a website..."></textarea>
                   <div class="prompt-textarea-footer">
                     <span class="prompt-hint-kbd">Enter ↵ newline</span>
                     <button class="btn-prompt-send-inline" id="sidebarSendInlineBtn" title="Send Directive (Click to send)">
@@ -444,7 +450,7 @@
                   <span class="pane-indicator manager-dot"></span>
                   <div>
                     <h3 class="chat-pane-title">Manager Dialogue</h3>
-                    <span class="chat-pane-subtitle">Direct channel with Atlas (Engineering Manager)</span>
+                    <span class="chat-pane-subtitle">Ask for a document, an explanation, or a website</span>
                   </div>
                 </div>
                 <span class="pane-badge">USER ↔ MANAGER</span>
@@ -457,7 +463,7 @@
                   </div>
                   <div class="msg-content">
                     <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
-                    <div class="msg-body">Agent Orchestra online. 10 specialized roles ready in atelier. Model: Gemini 3.5 Flash.</div>
+                    <div class="msg-body">Upload files and ask for a summary, explanation, comparison, or requirements document. Written answers are saved as Markdown. You can also create and edit websites.</div>
                   </div>
                 </div>
               </div>
@@ -465,11 +471,16 @@
               <div class="chat-quick-chips">
                 <span class="chips-label">Quick Prompts:</span>
                 <button class="chat-chip" data-prompt="Build an artisan flower boutique website with cart">+ Flower Boutique</button>
-                <button class="chat-chip" data-prompt="Add customer review cards with 5-star ratings">+ Reviews Section</button>
-                <button class="chat-chip" data-prompt="Run comprehensive automated test suite and compliance audit">+ Run Tests</button>
+                <button class="chat-chip" data-prompt="Summarize the uploaded files, highlighting key points and action items. Save the result as Markdown.">+ Summarize Files</button>
+                <button class="chat-chip" data-prompt="Explain the uploaded material step by step for a beginner, with examples and source references.">+ Explain Files</button>
               </div>
 
               <div class="chat-composer-box">
+                <div class="task-mode-bar">
+                  <label for="chatTaskType">Output</label>
+                  <select id="chatTaskType" class="task-type-select"><option value="auto">Auto — choose from request</option><option value="document">Markdown document</option><option value="website">Website / app</option></select>
+                  <button type="button" class="btn btn-xs btn-outline task-upload-btn">Upload files</button>
+                </div>
                 <div class="prompt-budget-bar">
                   <div class="budget-control-compact">
                     <select class="agent-mention-select" id="chatMentionSelect">
@@ -496,7 +507,7 @@
                 </div>
 
                 <div class="prompt-textarea-wrap">
-                  <textarea id="chatPromptInput" rows="3" class="chat-prompt-textarea" placeholder="Enter comprehensive objective, feature request, or styling guidelines for the team..."></textarea>
+                  <textarea id="chatPromptInput" rows="3" class="chat-prompt-textarea" placeholder="What should the agents explain, summarize, write, or build? Include your preferred audience, format, and detail..."></textarea>
                   <div class="prompt-textarea-footer">
                     <span class="prompt-hint-kbd">Enter ↵ newline</span>
                     <button class="btn-prompt-send-inline" id="chatSendInlineBtn" title="Send Directive (Click to send)">
@@ -550,12 +561,14 @@
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/></svg>
                 </span>
                 <div>
-                  <h2 class="tab-heading">Project IDE & Source Explorer</h2>
-                  <span class="tag-subtext">Browse project files, HTML blueprints, and assets in real-time</span>
+                  <h2 class="tab-heading">Project Files & Revisions</h2>
+                  <span class="tag-subtext">Upload source material, read Markdown results, and edit project files</span>
                 </div>
               </div>
             </div>
             <div class="toolbar-right ide-toolbar-actions">
+              <button class="btn btn-sm btn-primary" id="importProjectBtn">Import / Upload</button>
+              <button class="btn btn-sm btn-outline" id="projectHistoryBtn">History & Diffs</button>
               <div class="ide-project-selector-wrap">
                 <label for="ideProjectSelect" class="ide-selector-label">Select Project:</label>
                 <select id="ideProjectSelect" class="ide-project-select" aria-label="Select Project for IDE">
@@ -567,6 +580,15 @@
                 <span>Refresh</span>
               </button>
             </div>
+          </div>
+
+          <div class="project-file-toolbar">
+            <button class="btn btn-xs btn-outline" id="newFileBtn">+ File</button>
+            <button class="btn btn-xs btn-outline" id="renameFileBtn">Rename</button>
+            <button class="btn btn-xs btn-outline" id="deleteFileBtn">Delete</button>
+            <label for="projectEntryPoint">Preview entry:</label>
+            <select id="projectEntryPoint" aria-label="Preview entry point"></select>
+            <span id="workspaceNotice" role="status">HTML, CSS, JavaScript, images, and fonts are supported.</span>
           </div>
 
           <div class="ide-dual-container">
@@ -592,6 +614,10 @@
                   <span class="viewer-badge" id="ideActiveFileExt"></span>
                 </div>
                 <div class="viewer-actions">
+                  <a id="downloadProjectFile" class="btn btn-xs btn-outline" hidden>Download</a>
+                  <button class="btn btn-xs btn-outline" id="editFileBtn">Edit</button>
+                  <button class="btn btn-xs btn-primary" id="saveFileBtn" hidden>Save</button>
+                  <button class="btn btn-xs btn-outline" id="cancelFileEditBtn" hidden>Cancel</button>
                   <button class="btn btn-xs btn-outline" id="copyCodeBtn" title="Copy file content">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                     <span>Copy</span>
@@ -599,6 +625,7 @@
                 </div>
               </div>
               <div class="viewer-code-container">
+                <textarea id="projectFileEditor" spellcheck="false" aria-label="Edit file content" hidden></textarea>
                 <pre class="viewer-code-block"><code id="ideFileContent">// Select a file from the explorer on the left to inspect its contents.</code></pre>
               </div>
             </main>
@@ -638,7 +665,7 @@
 
           <div class="preview-stage-container" id="previewStage">
             <div class="device-frame desktop-mode" id="previewWrap">
-              <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-same-origin allow-modals" title="Project Live Preview"></iframe>
+              <iframe id="previewIframe" src="/api/preview" sandbox="allow-scripts allow-forms allow-modals allow-same-origin" title="Project Live Preview"></iframe>
             </div>
           </div>
 
@@ -787,6 +814,30 @@
     </main>
   </div>
 
-  <script type="module" src="./js/app.js?v=4"></script>
+  <dialog id="projectImportDialog" class="project-dialog" aria-labelledby="importDialogTitle">
+    <div class="project-dialog-header"><h2 id="importDialogTitle">Import files or a website</h2><button class="btn btn-xs btn-outline" data-close-dialog="projectImportDialog">Close</button></div>
+    <p>Upload text, Markdown, code, CSV/JSON, text-based PDFs, DOCX, or a website. ZIPs and folder paths are preserved. Ask for a summary or explanation in Chat after uploading.</p>
+    <label for="importProjectName">Project name</label><input id="importProjectName" maxlength="150" placeholder="My files or project">
+    <div class="project-upload-actions">
+      <button id="uploadZipBtn" class="btn btn-outline">Choose ZIP</button>
+      <button id="uploadFolderBtn" class="btn btn-outline">Choose folder</button>
+      <button id="uploadFilesBtn" class="btn btn-outline">Choose files</button>
+    </div>
+    <input type="file" id="projectZipInput" accept=".zip" hidden>
+    <input type="file" id="projectFolderInput" webkitdirectory multiple hidden>
+    <input type="file" id="projectFilesInput" multiple hidden>
+    <p id="uploadSelection">No files selected</p>
+    <label><input type="checkbox" id="stripUploadRoot" checked> Remove a common outer folder</label>
+    <label><input type="checkbox" id="uploadToCurrent"> Add/replace files in the selected project</label>
+    <p class="upload-help">Up to 500 files, 10 MB per file, 50 MB total; ZIP up to 25 MB. Dependency/cache folders are skipped. Framework source can be imported and edited; preview requires browser-ready static files.</p>
+    <p id="importProgress" role="status"></p>
+    <button id="submitProjectImport" class="btn btn-primary">Import project</button>
+  </dialog>
+  <dialog id="projectHistoryDialog" class="project-dialog history-dialog" aria-labelledby="historyDialogTitle">
+    <div class="project-dialog-header"><h2 id="historyDialogTitle">Revision history & file changes</h2><button class="btn btn-xs btn-outline" data-close-dialog="projectHistoryDialog">Close</button></div>
+    <div id="revisionList"></div>
+    <pre id="revisionDiff" tabindex="0" aria-label="Revision diff"></pre>
+  </dialog>
+  <script type="module" src="./js/app.js?v=6"></script>
 </body>
 </html>

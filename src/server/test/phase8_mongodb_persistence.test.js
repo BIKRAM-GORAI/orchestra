@@ -10,17 +10,19 @@ import {
   getProjectFiles,
   getProjectFileContent,
   revertProjectHtml,
+  getRevision,
 } from '../services/projectService.js';
 import { getDb, closeMongo } from '../db/mongo.js';
 
 test('Phase 8: MongoDB Project-Isolated Persistence & Versioning', async (t) => {
   const db = await getDb();
   if (!db) {
-    console.warn('[TEST SKIPPED] MongoDB not configured. Skipping online persistence test.');
+    t.skip('Set ORCHESTRA_TEST_MONGO_URI to test MongoDB in a disposable database');
     return;
   }
 
   t.after(async () => {
+    await db.dropDatabase();
     await closeMongo();
   });
 
@@ -49,13 +51,13 @@ test('Phase 8: MongoDB Project-Isolated Persistence & Versioning', async (t) => 
     assert.notEqual(fetchedA, fetchedB);
 
     // Verify direct database query enforces projectId + filePath uniqueness
-    const fileDocA = await db.collection('project_files').findOne({ projectId: projA.id, filePath: 'index.html' });
-    const fileDocB = await db.collection('project_files').findOne({ projectId: projB.id, filePath: 'index.html' });
+    const fileDocA = (await getProject(projA.id)).manifest['index.html'];
+    const fileDocB = (await getProject(projB.id)).manifest['index.html'];
 
     assert.ok(fileDocA);
     assert.ok(fileDocB);
-    assert.equal(fileDocA.projectId, projA.id);
-    assert.equal(fileDocB.projectId, projB.id);
+    assert.ok(await db.collection('orchestra_blobs.files').findOne({ _id: `${projA.id}:${fileDocA.blob}` }));
+    assert.ok(await db.collection('orchestra_blobs.files').findOne({ _id: `${projB.id}:${fileDocB.blob}` }));
     assert.equal(fileDocA.version, 1);
     assert.equal(fileDocB.version, 1);
   });
@@ -84,12 +86,10 @@ test('Phase 8: MongoDB Project-Isolated Persistence & Versioning', async (t) => 
     assert.equal(latestHtml, v3Content);
 
     // Check versions array in MongoDB
-    const doc = await db.collection('project_files').findOne({ projectId: proj.id, filePath: 'index.html' });
-    assert.equal(doc.version, 3);
-    assert.equal(doc.versions.length, 3);
-    assert.equal(doc.versions[0].version, 1);
-    assert.equal(doc.versions[1].version, 2);
-    assert.equal(doc.versions[2].version, 3);
+    const doc = await getProject(proj.id);
+    assert.equal(doc.revision, 3);
+    assert.equal(doc.history.length, 3);
+    for (const n of [1, 2, 3]) assert.equal((await getRevision(proj.id, n)).revision, n);
   });
 
   // 3. CONCURRENCY & SAFE UPDATES

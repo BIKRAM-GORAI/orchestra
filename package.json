@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/server/index.js",
     "dev": "node --watch-path=src/server src/server/index.js",
-    "test": "node --test --test-concurrency=1"
+    "test": "node scripts/run-tests.js",
+    "test:browser": "node scripts/test-browser.js",
+    "test:mongo": "node scripts/test-mongo.js"
   },
   "keywords": [
     "multi-agent",
@@ -20,10 +22,28 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "acorn": "^8.18.0",
     "cors": "^2.8.5",
+    "diff": "^9.0.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "lucide-react": "^1.50.0",
+    "mammoth": "^1.13.0",
+    "mime-types": "^3.0.2",
     "mongodb": "^7.7.0",
-    "motion": "^13.4.6"
+    "motion": "^13.4.6",
+    "multer": "^2.4.0",
+    "parse5": "^8.0.1",
+    "proper-lockfile": "^4.1.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "unpdf": "^1.8.1",
+    "vite": "^8.3.2",
+    "yauzl": "^3.4.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "playwright": "^1.63.0"
   }
 }

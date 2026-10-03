@@ -1,901 +1,254 @@
-import EventEmitter from 'events';
-import { agentRegistry } from '../agents/agentRegistry.js';
-import { getProject, updateProject, saveProjectHtml, getProjectHtml, saveAgentArtifact, saveProjectFile } from '../services/projectService.js';
+import EventEmitter from 'node:events';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { randomUUID } from 'node:crypto';
+import { agentRegistry, AgentRegistry } from '../agents/agentRegistry.js';
+import { BaseAgent } from '../agents/baseAgent.js';
+import { getProject, getProjectFiles, updateProject, getProjectHtml, saveProjectFile } from '../services/projectService.js';
 import { budgetService } from '../services/budgetService.js';
+import { projectError } from '../services/filePaths.js';
+import { projectFileSession, runFileAgent } from '../services/agentFileSession.js';
+import { validateWebsite } from '../services/validationService.js';
+import { DocumentAgent, TASK_ROUTER_PROMPT } from '../agents/definitions/documentAgent.js';
+import { writeDocument } from '../services/documentSession.js';
 
-/**
- * Helper to safely extract HTML content from various structured outputs
- */
+// Compatibility utility for old provider responses. Parsed JSON is already decoded.
 export function extractHtmlFromCodingResult(result, rawText = '') {
-  let content = '';
-
-  if (result && typeof result === 'object') {
-    content = result.file?.content || result.artifact?.content || result.content || result.html || '';
+  const structured = result?.file?.content || result?.artifact?.content || result?.content || result?.html;
+  let content = typeof structured === 'string' ? structured : '';
+  if (!content && rawText) {
+    try { return extractHtmlFromCodingResult(JSON.parse(rawText)); } catch { /* Fenced/raw HTML only. */ }
+    content = rawText.match(/```html\s*([\s\S]*?)```/i)?.[1]?.trim() || '';
+    if (!content && /^\s*<!doctype html/i.test(rawText)) content = rawText.trim();
   }
-
-  if (!content && typeof rawText === 'string') {
-    // 1. Check for explicit html code fences: ```html ... ```
-    const htmlFenceMatch = rawText.match(/```html\s*([\s\S]*?)(?:```|$)/i);
-    if (htmlFenceMatch && htmlFenceMatch[1].trim().includes('<')) {
-      content = htmlFenceMatch[1].trim();
-    }
-
-    // 2. Check for "content": "...<!DOCTYPE html>..." inside raw JSON string
-    if (!content) {
-      const contentJsonMatch = rawText.match(/"content"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"|"\s*\}|$)/);
-      if (contentJsonMatch && contentJsonMatch[1].includes('<')) {
-        content = contentJsonMatch[1];
-      }
-    }
-
-    // 3. Fallback: find <!DOCTYPE html> ... </html>
-    if (!content) {
-      const docIndex = rawText.indexOf('<!DOCTYPE html>');
-      if (docIndex !== -1) {
-        const lastHtmlClose = rawText.lastIndexOf('</html>');
-        if (lastHtmlClose !== -1 && lastHtmlClose > docIndex) {
-          content = rawText.slice(docIndex, lastHtmlClose + 7).trim();
-        } else {
-          content = rawText.slice(docIndex).trim();
-        }
-      }
-    }
-
-    // 4. Fallback: generic code fences that are NOT json fences
-    if (!content) {
-      const fenceMatch = rawText.match(/```(?!(?:json))\w*\s*([\s\S]*?)(?:```|$)/i);
-      if (fenceMatch && fenceMatch[1].trim().includes('<')) {
-        content = fenceMatch[1].trim();
-      }
-    }
-  }
-
-  // Unescape literal JSON escape sequences if extracted from raw JSON string
-  if (content.includes('\\n') || content.includes('\\"')) {
-    content = content
-      .replace(/\\r\\n/g, '\n')
-      .replace(/\\n/g, '\n')
-      .replace(/\\t/g, '\t')
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, '\\');
-  }
-
-  // Strip trailing JSON quotes/brackets if sliced from incomplete JSON
-  content = content.replace(/["}\]\s]+$/, '').trim();
-
-  // Ensure DOCTYPE is present
-  if (content && !content.trim().toLowerCase().startsWith('<!doctype')) {
-    content = `<!DOCTYPE html>\n${content.trim()}`;
-  }
-
-  // Ensure unclosed tags are gracefully closed if output was truncated
-  if (content.includes('<body') && !content.includes('</body>')) {
-    if (content.includes('<script') && !content.includes('</script>')) {
-      content += '\n</script>';
-    }
-    content += '\n</body>';
-  }
-  if (content.includes('<html') && !content.includes('</html>')) {
-    content += '\n</html>';
-  }
-
+  if (content && !/^\s*<!doctype/i.test(content)) content = `<!DOCTYPE html>\n${content}`;
   return content;
 }
 
-/**
- * Orchestrator Service
- * 
- * Coordinates the multi-agent execution pipeline:
- * 1. Manager Planning & Specialist Selection
- * 2. Concurrent Specialist Execution (Designer, Frontend Architect, Feature Architect)
- * 3. Manager Synthesis into Unified Implementation Specification
- * 4. (Phase 4: Coding Agent)
- * 5. (Phase 6: QA Audit)
- */
 export class Orchestrator extends EventEmitter {
   constructor(registry = agentRegistry) {
     super();
     this.registry = registry;
-
-    // Relay agent state and fallback events
-    this.registry.on('agentState', (ev) => {
-      this.emit('agentState', ev);
-    });
-    this.registry.on('agentFallback', (ev) => {
-      this.emitPipelineEvent('AGENT_FALLBACK', ev);
-    });
+    this.context = new AsyncLocalStorage();
+    this.running = new Set();
+    this.setMaxListeners(100);
+    registry.on('agentState', ev => this.emit('agentState', ev));
+    registry.on('agentFallback', ev => this.emitPipelineEvent('AGENT_FALLBACK', ev));
   }
 
-  /**
-   * Record spend and emit cost tracking events
-   */
-  recordAgentExecution(projectId, agent, output) {
-    const cost = output?.cost ?? 0;
-    const modelUsed = output?.model ?? agent.modelId;
-    const totalSpend = budgetService.recordSpend(projectId, cost);
-    this.emitPipelineEvent('AGENT_COST_INCURRED', {
-      projectId,
-      agentId: agent.id,
-      agentName: agent.name,
-      modelUsed,
-      cost,
-      totalProjectSpend: totalSpend,
-      budget: budgetService.getBudget(),
-    });
+  get agents() { return this.context.getStore()?.registry || this.registry; }
+
+  async withRun(projectId, task, { runId = randomUUID(), reuseContext = false } = {}) {
+    if (reuseContext && this.context.getStore()?.projectId === projectId) return task();
+    if (projectId && this.running.has(projectId)) throw projectError('This project already has an active agent run', 409);
+    if (projectId) this.running.add(projectId);
+    const registry = new AgentRegistry();
+    registry.agents.clear();
+    registry.aliasMap = new Map(this.registry.aliasMap);
+    for (const source of this.registry.getAllStaff()) {
+      const agent = new BaseAgent({ ...source.toJSON(), contractRole: source.contractRole, model: source.modelId, systemPrompt: source.systemPrompt, outputSchema: source.outputSchema, fallbackModels: source.fallbackModels });
+      registry.registerAgent(agent);
+    }
+    registry.on('agentState', ev => this.emit('agentState', { ...ev, projectId, runId }));
+    registry.on('agentFallback', ev => this.emitPipelineEvent('AGENT_FALLBACK', ev));
+    try { return await this.context.run({ projectId, runId, registry }, task); }
+    finally { this.running.delete(projectId); }
   }
 
-  /**
-   * Helper to emit structured pipeline events
-   */
   emitPipelineEvent(stage, data = {}) {
-    const event = {
-      stage,
-      timestamp: new Date().toISOString(),
-      ...data,
-    };
+    const run = this.context.getStore();
+    const event = { stage, timestamp: new Date().toISOString(), ...data, ...(run ? { projectId: run.projectId, runId: run.runId } : {}) };
     this.emit('pipeline', event);
     return event;
   }
 
-  /**
-   * Stage 1: Manager Plan & Agent Selection
-   */
+  recordAgentExecution(projectId, agent, output) {
+    const cost = output?.cost || 0;
+    this.emitPipelineEvent('AGENT_COST_INCURRED', { projectId, agentId: agent.id, agentName: agent.name, modelUsed: output?.model || agent.modelId,
+      cost, totalProjectSpend: budgetService.recordSpend(projectId, cost), budget: budgetService.getBudget() });
+  }
+
+  async saveReport(projectId, name, response, agentId = 'manager') {
+    if (!projectId) return;
+    await saveProjectFile(projectId, { filePath: `reports/${name}.md`, content: `# ${name.replaceAll('_', ' ')}\n\n\`\`\`json\n${JSON.stringify(response, null, 2)}\n\`\`\`\n`, agentId, type: 'markdown' });
+  }
+
+  async executeTask({ projectId, prompt, taskType = 'auto', outputPath, gateway, onChunk, runId } = {}) {
+    if (!['auto', 'website', 'document'].includes(taskType)) throw projectError('taskType must be auto, website, or document');
+    return this.withRun(projectId, async () => {
+      try {
+        const project = await getProject(projectId);
+        if (!project) throw projectError('Project not found', 404);
+        if (taskType === 'auto') {
+          this.emitPipelineEvent('TASK_ROUTING_STARTED', { prompt });
+          const manager = this.agents.getAgent('manager');
+          const output = await manager.execute({ input: prompt, systemPrompt: TASK_ROUTER_PROMPT,
+            outputSchema: { taskType: 'website | document', reason: 'Why this deliverable fits the request' },
+            context: { project_type: project.projectType, last_task: project.lastTask?.taskType, files: (await getProjectFiles(projectId)).filter(f => !f.artifact).map(f => ({ path: f.path, binary: f.binary })) }, gateway, onChunk });
+          this.recordAgentExecution(projectId, manager, output);
+          if (!['website', 'document'].includes(output.result?.taskType)) throw projectError('The Manager could not classify this task. Choose Website or Markdown explicitly and retry.', 422);
+          taskType = output.result.taskType;
+        }
+        this.emitPipelineEvent('TASK_ROUTED', { taskType, prompt });
+        if (taskType === 'website') return { ...await this.buildFullProject({ projectId, prompt, gateway, onChunk, runId, reuseContext: true }), taskType };
+        const model = this.agents.getAgent('coding_agent');
+        const analyst = new DocumentAgent({ model: model.modelId, fallbackModels: model.fallbackModels });
+        this.agents.registerAgent(analyst);
+        this.emitPipelineEvent('DOCUMENT_STARTED', { prompt, agentId: analyst.id, agentName: analyst.name });
+        const result = await writeDocument({ project, prompt, outputPath, agent: analyst, gateway,
+          onExecution: output => this.recordAgentExecution(projectId, analyst, output),
+          onReading: details => this.emitPipelineEvent('DOCUMENT_READING', details) });
+        this.emitPipelineEvent('DOCUMENT_COMPLETED', result);
+        return result;
+      } catch (error) { this.emitPipelineEvent('TASK_FAILED', { error: error.message }); throw error; }
+    }, { runId });
+  }
+
   async plan(prompt, { projectId, gateway, onChunk } = {}) {
-    const manager = this.registry.getAgent('manager');
+    const manager = this.agents.getAgent('manager');
     this.emitPipelineEvent('MANAGER_PLAN_STARTED', { prompt });
-
-    const managerOutput = await manager.execute({
-      input: `Analyze the following user goal and provide a structured execution plan, extract explicit user requirements, and select required specialist agents:\n\n"${prompt}"`,
-      gateway,
-      onChunk,
-    });
-
-    const plan = managerOutput.result;
-    this.recordAgentExecution(projectId, manager, managerOutput);
+    const output = await manager.execute({ input: `Analyze the following user goal and provide a structured execution plan, extract explicit user requirements, and select required specialist agents:\n${prompt}`, gateway, onChunk });
+    this.recordAgentExecution(projectId, manager, output);
+    const plan = output.result;
+    if (!plan || plan.parseError || !Array.isArray(plan.selected_agents) || plan.selected_agents.some(a => !['designer', 'frontend_architect', 'feature_architect'].includes(a))) throw projectError('Manager returned an invalid execution plan', 422);
+    await this.saveReport(projectId, 'manager_plan', plan);
     this.emitPipelineEvent('MANAGER_PLAN_COMPLETED', { plan });
-
-    if (projectId) {
-      const planMd = `# Manager Plan & Orchestration Blueprint
-**Project:** ${plan.project?.name || 'Web Project'}
-**Generated By:** Atlas (Engineering Manager)
-**Timestamp:** ${new Date().toISOString()}
-
-## Summary
-${plan.project?.summary || 'Project architecture plan'}
-
-## Explicit Requirements
-${(plan.explicit_requirements || []).map(r => `- ${r}`).join('\n')}
-
-## Selected Specialist Agents
-${(plan.selected_agents || []).map(a => `- **${a}**`).join('\n')}
-
-## Structured Plan Details
-\`\`\`json
-${JSON.stringify(plan, null, 2)}
-\`\`\`
-`;
-      saveProjectFile(projectId, {
-        filePath: 'manager_plan.md',
-        filename: 'manager_plan.md',
-        content: planMd,
-        agentId: 'manager',
-        agentName: 'Atlas (Manager)',
-        type: 'markdown',
-        changeNote: 'Manager Plan Created',
-      }).catch(err => console.warn('[PROJECT FILE] Error saving manager_plan.md:', err.message));
-
-      saveAgentArtifact({
-        projectId,
-        agentId: 'manager',
-        agentName: 'Atlas (Manager)',
-        task: `Analyze user goal and produce plan for "${prompt}"`,
-        status: 'Completed',
-        response: plan,
-      }).catch(err => console.warn('[ARTIFACT] Error saving manager plan artifact:', err.message));
-    }
-
-    this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-      fromAgent: 'manager',
-      fromName: 'Atlas (Manager)',
-      toAgent: 'specialists',
-      toName: 'Specialist Ensemble',
-      subject: 'Architecture & Design Directives',
-      message: `Directives issued: ${(plan.selected_agents || []).join(', ')} assigned. Requirements: ${(plan.explicit_requirements || []).length} explicit points.`,
-      timestamp: new Date().toISOString(),
-    });
-
     return plan;
   }
 
-  /**
-   * Stage 2: Concurrent Specialist Execution
-   * Runs Designer, Frontend Architect, and Feature Architect in parallel.
-   * Direct response is returned directly to Manager, while simultaneously persisting .md artifact.
-   */
   async runSpecialists(plan, userPrompt, { projectId, gateway, onChunk } = {}) {
-    this.emitPipelineEvent('SPECIALISTS_STARTED', {
-      selectedAgents: plan.selected_agents || ['designer', 'frontend_architect', 'feature_architect'],
-    });
-
-    const specialistsToRun = plan.selected_agents || ['designer', 'frontend_architect', 'feature_architect'];
-    const tasks = [];
-
-    // Designer task
-    if (specialistsToRun.includes('designer')) {
-      const designer = this.registry.getAgent('designer');
-      tasks.push(
-        designer.execute({
-          input: `Formulate the complete visual direction and UX design specification for this project: "${userPrompt}"`,
-          context: {
-            explicit_requirements: plan.explicit_requirements,
-            project: plan.project,
-          },
-          gateway,
-          onChunk: onChunk ? (chunk) => onChunk({ agent: 'designer', chunk }) : null,
-        }).then(out => {
-          if (projectId) {
-            const designMd = `# Design System & UI/UX Specification
-**Agent:** Pixel (UI/UX Designer)
-**Project:** ${plan.project?.name || projectId}
-**Timestamp:** ${new Date().toISOString()}
-
-## Visual Direction & Tokens
-\`\`\`json
-${JSON.stringify(out.result, null, 2)}
-\`\`\`
-`;
-            saveProjectFile(projectId, {
-              filePath: 'design_system.md',
-              filename: 'design_system.md',
-              content: designMd,
-              agentId: 'designer',
-              agentName: 'Pixel (UI/UX Designer)',
-              type: 'markdown',
-              changeNote: 'Design System Generated',
-            }).catch(e => console.warn('[PROJECT FILE] Error saving design_system.md:', e.message));
-
-            saveAgentArtifact({
-              projectId,
-              agentId: 'designer',
-              agentName: 'Pixel (UI/UX Designer)',
-              task: `Visual direction and UX design specification for "${userPrompt}"`,
-              status: 'Completed',
-              response: out.result,
-            }).catch(e => console.warn('[ARTIFACT] Error saving designer artifact:', e.message));
-          }
-
-          this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-            fromAgent: 'designer',
-            fromName: 'Pixel (UI/UX Designer)',
-            toAgent: 'manager',
-            toName: 'Atlas (Manager)',
-            subject: 'Design System & Visual Specs Complete',
-            message: `Created cohesive palette, typography hierarchy, animations, and micro-interactions.`,
-            timestamp: new Date().toISOString(),
-          });
-
-          this.recordAgentExecution(projectId, designer, out);
-          return { agent: 'designer', output: out.result };
-        })
-      );
-    }
-
-    // Frontend Architect task
-    if (specialistsToRun.includes('frontend_architect')) {
-      const frontendArchitect = this.registry.getAgent('frontend_architect');
-      tasks.push(
-        frontendArchitect.execute({
-          input: `Design the technical architecture and structure for a single-file index.html web application for: "${userPrompt}"`,
-          context: {
-            explicit_requirements: plan.explicit_requirements,
-            project: plan.project,
-          },
-          gateway,
-          onChunk: onChunk ? (chunk) => onChunk({ agent: 'frontend_architect', chunk }) : null,
-        }).then(out => {
-          if (projectId) {
-            const archMd = `# Frontend Technical Architecture
-**Agent:** Nova (Frontend Architect)
-**Project:** ${plan.project?.name || projectId}
-**Timestamp:** ${new Date().toISOString()}
-
-## Architecture & DOM Specifications
-\`\`\`json
-${JSON.stringify(out.result, null, 2)}
-\`\`\`
-`;
-            saveProjectFile(projectId, {
-              filePath: 'frontend_architecture.md',
-              filename: 'frontend_architecture.md',
-              content: archMd,
-              agentId: 'frontend_architect',
-              agentName: 'Nova (Frontend Architect)',
-              type: 'markdown',
-              changeNote: 'Technical Architecture Generated',
-            }).catch(e => console.warn('[PROJECT FILE] Error saving frontend_architecture.md:', e.message));
-
-            saveAgentArtifact({
-              projectId,
-              agentId: 'frontend_architect',
-              agentName: 'Nova (Frontend Architect)',
-              task: `Single-file index.html technical architecture for "${userPrompt}"`,
-              status: 'Completed',
-              response: out.result,
-            }).catch(e => console.warn('[ARTIFACT] Error saving frontend_architect artifact:', e.message));
-          }
-
-          this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-            fromAgent: 'frontend_architect',
-            fromName: 'Nova (Frontend Architect)',
-            toAgent: 'manager',
-            toName: 'Atlas (Manager)',
-            subject: 'Technical Architecture Engineered',
-            message: `Completed single-file DOM hierarchy, state management schema, and execution pipeline.`,
-            timestamp: new Date().toISOString(),
-          });
-
-          this.recordAgentExecution(projectId, frontendArchitect, out);
-          return { agent: 'frontend_architect', output: out.result };
-        })
-      );
-    }
-
-    // Feature Architect task
-    if (specialistsToRun.includes('feature_architect')) {
-      const featureArchitect = this.registry.getAgent('feature_architect');
-      tasks.push(
-        featureArchitect.execute({
-          input: `Define the behavioral specifications and interaction flows for the features requested in: "${userPrompt}"`,
-          context: {
-            explicit_requirements: plan.explicit_requirements,
-            project: plan.project,
-          },
-          gateway,
-          onChunk: onChunk ? (chunk) => onChunk({ agent: 'feature_architect', chunk }) : null,
-        }).then(out => {
-          if (projectId) {
-            const specMd = `# Feature Specifications & Interaction Flows
-**Agent:** Scout (Feature Architect)
-**Project:** ${plan.project?.name || projectId}
-**Timestamp:** ${new Date().toISOString()}
-
-## Behavioral Requirements & Flows
-\`\`\`json
-${JSON.stringify(out.result, null, 2)}
-\`\`\`
-`;
-            saveProjectFile(projectId, {
-              filePath: 'feature_specifications.md',
-              filename: 'feature_specifications.md',
-              content: specMd,
-              agentId: 'feature_architect',
-              agentName: 'Scout (Feature Architect)',
-              type: 'markdown',
-              changeNote: 'Feature Specifications Generated',
-            }).catch(e => console.warn('[PROJECT FILE] Error saving feature_specifications.md:', e.message));
-
-            saveAgentArtifact({
-              projectId,
-              agentId: 'feature_architect',
-              agentName: 'Scout (Feature Architect)',
-              task: `Feature behavior and interaction flow specification for "${userPrompt}"`,
-              status: 'Completed',
-              response: out.result,
-            }).catch(e => console.warn('[ARTIFACT] Error saving feature_architect artifact:', e.message));
-          }
-
-          this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-            fromAgent: 'feature_architect',
-            fromName: 'Scout (Feature Architect)',
-            toAgent: 'manager',
-            toName: 'Atlas (Manager)',
-            subject: 'Feature Behaviors & Flows Defined',
-            message: `Specified interactive logic, data flows, validation constraints, and user action states.`,
-            timestamp: new Date().toISOString(),
-          });
-
-          this.recordAgentExecution(projectId, featureArchitect, out);
-          return { agent: 'feature_architect', output: out.result };
-        })
-      );
-    }
-
-    // Run all selected specialists in parallel
-    const results = await Promise.all(tasks);
-    const specialistOutputs = {};
-    for (const res of results) {
-      specialistOutputs[res.agent] = res.output;
-    }
-
+    const selectedAgents = [...new Set(plan.selected_agents || ['designer', 'frontend_architect', 'feature_architect'])];
+    this.emitPipelineEvent('SPECIALISTS_STARTED', { selectedAgents });
+    const instructions = {
+      designer: `Formulate the complete visual direction and UX design specification for: ${userPrompt}`,
+      frontend_architect: `Design the technical architecture, file tree, entry points, shared CSS and JavaScript modules for: ${userPrompt}`,
+      feature_architect: `Define the behavioral specifications and interaction flows for: ${userPrompt}`,
+    };
+    // allSettled keeps a failed run alive until its sibling tasks finish, so another
+    // run cannot enter while old specialists are still saving artifacts.
+    const results = await Promise.allSettled(selectedAgents.map(async id => {
+      const agent = this.agents.getAgent(id);
+      const output = await agent.execute({ input: instructions[id], context: { explicit_requirements: plan.explicit_requirements, project: plan.project }, gateway, onChunk });
+      this.recordAgentExecution(projectId, agent, output);
+      if (!output.result || output.result.parseError) throw projectError(`${agent.name} returned invalid JSON`, 422);
+      await this.saveReport(projectId, id, output.result, id);
+      this.emitPipelineEvent('INTERAGENT_COMMUNICATION', { fromAgent: agent.id, fromName: agent.name, toAgent: 'manager', toName: 'Manager', subject: 'Specification delivered', message: `${agent.name} completed the project specification.` });
+      return [id, output.result];
+    }));
+    const failure = results.find(r => r.status === 'rejected');
+    if (failure) throw failure.reason;
+    const specialistOutputs = Object.fromEntries(results.map(r => r.value));
     this.emitPipelineEvent('SPECIALISTS_COMPLETED', { specialistOutputs });
     return specialistOutputs;
   }
 
-  /**
-   * Stage 3: Manager Synthesis
-   * Synthesizes all specialist outputs into a single Unified Implementation Specification.
-   */
   async synthesize(userPrompt, plan, specialistOutputs, { projectId, gateway, onChunk } = {}) {
-    const manager = this.registry.getAgent('manager');
+    const manager = this.agents.getAgent('manager');
     this.emitPipelineEvent('MANAGER_SYNTHESIS_STARTED');
-
-    const synthesisPrompt = `You must now synthesize the specialist specifications into one cohesive Unified Implementation Specification for the Coding Agent.
-Preserve the specialist decisions, resolve any overlap, and ensure the Coding Agent has all required guidance.
-
-Return a JSON object conforming to:
-{
-  "agent": "manager",
-  "status": "completed",
-  "unified_specification": {
-    "project": {
-      "name": "...",
-      "summary": "..."
-    },
-    "user_requirements": [...],
-    "design_system": { ... },
-    "technical_architecture": { ... },
-    "features_and_behaviors": [ ... ],
-    "implementation_constraints": [
-      "Strict single index.html file with embedded CSS and JS",
-      "No external build dependencies",
-      "Fully functional interactions and responsive layout"
-    ]
-  }
-}`;
-
-    const synthesisOutput = await manager.execute({
-      input: synthesisPrompt,
-      context: {
-        original_goal: userPrompt,
-        manager_plan: plan,
-        specialist_outputs: specialistOutputs,
-      },
-      gateway,
-      onChunk,
-    });
-
-    const unifiedSpec = synthesisOutput.result?.unified_specification || synthesisOutput.result;
-    this.recordAgentExecution(projectId, manager, synthesisOutput);
+    const output = await manager.execute({ input: 'You must now synthesize the specialist specifications into one cohesive Unified Implementation Specification, including file_plan and entry_point for a multi-file website.',
+      context: { original_goal: userPrompt, manager_plan: plan, specialist_outputs: specialistOutputs },
+      outputSchema: { agent: 'manager', status: 'completed', unified_specification: { project: {}, user_requirements: [], design_system: {}, technical_architecture: {}, features_and_behaviors: [], entry_point: 'index.html', file_plan: [{ path: 'index.html', purpose: 'Entry page', dependencies: [] }] } }, gateway, onChunk });
+    this.recordAgentExecution(projectId, manager, output);
+    if (!output.result || output.result.parseError) throw projectError('Manager synthesis returned invalid JSON', 422);
+    const unifiedSpec = output.result.unified_specification || output.result;
+    await this.saveReport(projectId, 'unified_implementation_spec', unifiedSpec);
     this.emitPipelineEvent('MANAGER_SYNTHESIS_COMPLETED', { unifiedSpec });
-
-    if (projectId) {
-      const unifiedMd = `# Unified Implementation Specification
-**Synthesizer:** Atlas (Manager)
-**Recipient:** Coder (Full-Stack Engineer)
-**Timestamp:** ${new Date().toISOString()}
-
-## Master Blueprint
-\`\`\`json
-${JSON.stringify(unifiedSpec, null, 2)}
-\`\`\`
-`;
-      saveProjectFile(projectId, {
-        filePath: 'unified_implementation_spec.md',
-        filename: 'unified_implementation_spec.md',
-        content: unifiedMd,
-        agentId: 'manager',
-        agentName: 'Atlas (Manager)',
-        type: 'markdown',
-        changeNote: 'Unified Implementation Specification Synthesized',
-      }).catch(e => console.warn('[PROJECT FILE] Error saving unified_implementation_spec.md:', e.message));
-
-      saveAgentArtifact({
-        projectId,
-        agentId: 'manager',
-        agentName: 'Atlas (Manager)',
-        task: 'Synthesize specialist specifications into Unified Implementation Specification',
-        status: 'Completed',
-        response: unifiedSpec,
-      }).catch(e => console.warn('[ARTIFACT] Error saving manager synthesis artifact:', e.message));
-    }
-
-    this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-      fromAgent: 'manager',
-      fromName: 'Atlas (Manager)',
-      toAgent: 'coding_agent',
-      toName: 'Coder (Full-Stack Engineer)',
-      subject: 'Unified Implementation Order Dispatched',
-      message: `Full specification synthesized. Implement self-contained index.html conforming to design tokens and architecture.`,
-      timestamp: new Date().toISOString(),
-    });
-
     return unifiedSpec;
   }
 
-  /**
-   * Execute Full Specification Pipeline (Phase 3)
-   */
-  async executeSpecificationPipeline({ projectId, prompt, gateway, onChunk } = {}) {
-    this.emitPipelineEvent('PIPELINE_STARTED', { projectId, prompt });
-
-    // Step 1: Manager Plan
-    const plan = await this.plan(prompt, { projectId, gateway, onChunk });
-
-    // Step 2: Parallel Specialists
-    const specialistOutputs = await this.runSpecialists(plan, prompt, { projectId, gateway, onChunk });
-
-    // Step 3: Manager Synthesis
-    const unifiedSpec = await this.synthesize(prompt, plan, specialistOutputs, { projectId, gateway, onChunk });
-
-    // Save to isolated project directory if projectId provided
-    if (projectId) {
-      await updateProject(projectId, {
-        managerPlan: plan,
-        specialistOutputs,
-        unifiedSpec,
-        status: 'specification_ready',
-      });
-    }
-
-    this.emitPipelineEvent('PIPELINE_COMPLETED', {
-      projectId,
-      plan,
-      specialistOutputs,
-      unifiedSpec,
-    });
-
-    return {
-      projectId,
-      plan,
-      specialistOutputs,
-      unifiedSpec,
+  async executeSpecificationPipeline({ projectId, prompt, gateway, onChunk, standalone = true, runId } = {}) {
+    const execute = async () => {
+      this.emitPipelineEvent('PIPELINE_STARTED', { projectId, prompt });
+      const plan = await this.plan(prompt, { projectId, gateway, onChunk });
+      const specialistOutputs = await this.runSpecialists(plan, prompt, { projectId, gateway, onChunk });
+      const unifiedSpec = await this.synthesize(prompt, plan, specialistOutputs, { projectId, gateway, onChunk });
+      if (projectId) await updateProject(projectId, { managerPlan: plan, specialistOutputs, unifiedSpec, status: 'specification_ready' });
+      const result = { projectId, plan, specialistOutputs, unifiedSpec };
+      this.emitPipelineEvent('SPECIFICATION_COMPLETED', result);
+      if (standalone) this.emitPipelineEvent('PIPELINE_COMPLETED', { ...result, specificationOnly: true });
+      return result;
     };
+    return standalone ? this.withRun(projectId, execute, { runId }) : execute();
   }
 
-  /**
-   * Stage 4: Coding Agent Implementation
-   * Sole agent authorized to generate or edit index.html
-   */
-  async implement({
-    projectId,
-    userPrompt,
-    unifiedSpec,
-    existingHtml = null,
-    changeNote = 'Initial Generation',
-    gateway,
-    onChunk,
-  } = {}) {
-    const codingAgent = this.registry.getAgent('coding_agent');
+  async implement({ projectId, userPrompt, unifiedSpec, existingHtml = null, changeNote = 'Website generated', gateway, onChunk } = {}) {
+    const agent = this.agents.getAgent('coding_agent');
     this.emitPipelineEvent('CODING_AGENT_STARTED', { projectId, userPrompt });
-
-    let codingInput = `Generate the complete, responsive, self-contained "index.html" based on the provided Unified Implementation Specification.`;
-    if (existingHtml) {
-      codingInput = `Modify the existing "index.html" according to the user request.
-CRITICAL PRESERVATION RULE: Change ONLY what the user explicitly requested. Preserve all other HTML, CSS, JavaScript, functions, and layout intact.
-User Modification Request:\n"${userPrompt}"`;
-    }
-
-    const codingOutput = await codingAgent.execute({
-      input: codingInput,
-      context: {
-        user_goal: userPrompt,
-        unified_specification: unifiedSpec,
-        existing_html: existingHtml || undefined,
-      },
-      gateway,
-      onChunk: onChunk ? (chunk) => onChunk({ agent: 'coding_agent', chunk }) : null,
-    });
-
-    const htmlContent = extractHtmlFromCodingResult(codingOutput.result, codingOutput.rawText);
-    if (!htmlContent) {
-      throw new Error('Coding Agent failed to produce valid HTML content');
-    }
-
-    this.recordAgentExecution(projectId, codingAgent, codingOutput);
-
-    // Persist into isolated project directory and mirror to workspace
-    if (projectId) {
-      await saveProjectHtml(projectId, htmlContent, changeNote);
-
-      const buildSummaryMd = `# Build & Implementation Summary
-**Agent:** Coder (Full-Stack Engineer)
-**Artifact:** index.html (${htmlContent.length} bytes)
-**Timestamp:** ${new Date().toISOString()}
-
-## Summary
-${codingOutput.result?.summary ? JSON.stringify(codingOutput.result.summary, null, 2) : 'Single-file application generated successfully with embedded CSS and modern JavaScript.'}
-
-## Technical Details
-- File: index.html
-- Size: ${htmlContent.length} bytes
-- Status: Production Ready
-`;
-      saveProjectFile(projectId, {
-        filePath: 'build_summary.md',
-        filename: 'build_summary.md',
-        content: buildSummaryMd,
-        agentId: 'coding_agent',
-        agentName: 'Coder (Full-Stack Engineer)',
-        type: 'markdown',
-        changeNote: 'Build Summary Generated',
-      }).catch(e => console.warn('[PROJECT FILE] Error saving build_summary.md:', e.message));
-    }
-
-    this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-      fromAgent: 'coding_agent',
-      fromName: 'Coder (Full-Stack Engineer)',
-      toAgent: 'manager',
-      toName: 'Atlas (Manager)',
-      subject: 'Code Delivery & QA Readiness',
-      message: `Generated production index.html (${htmlContent.length} bytes). Handing over for QA audit.`,
-      timestamp: new Date().toISOString(),
-    });
-
-    this.emitPipelineEvent('CODING_AGENT_COMPLETED', {
-      projectId,
-      contentLength: htmlContent.length,
-      summary: codingOutput.result?.summary || {},
-    });
-
-    return {
-      projectId,
-      htmlContent,
-      summary: codingOutput.result?.summary || {},
-      rawOutput: codingOutput,
-    };
+    const session = await projectFileSession(projectId, { fallbackHtml: existingHtml, entryPoint: unifiedSpec?.entry_point || 'index.html' });
+    const result = await runFileAgent(agent, session, { input: `${session.tree().length ? 'Modify the existing project according to the user request. MINIMAL CHANGE PRESERVATION RULE: preserve unrelated files and behavior.' : 'Generate the complete multi-file website.'}\n${userPrompt}`,
+      context: { user_goal: userPrompt, unified_specification: unifiedSpec, existing_html: session.seed.find(f => f.path === 'index.html')?.content }, gateway, onChunk,
+      onExecution: out => this.recordAgentExecution(projectId, agent, out) });
+    const saved = await session.commit(changeNote);
+    const htmlContent = saved.files.find(f => f.path === session.entryPoint)?.content || saved.files.find(f => f.path === session.entryPoint)?.data?.toString('utf8') || '';
+    await this.saveReport(projectId, 'build_summary', { summary: result.summary, changes: saved.changes, validation: saved.validation }, agent.id);
+    this.emitPipelineEvent('CODING_AGENT_COMPLETED', { projectId, revision: saved.revision, changes: saved.changes, contentLength: htmlContent.length, validation: saved.validation });
+    return { ...saved, projectId, htmlContent, summary: result.summary, entryPoint: session.entryPoint };
   }
 
-  /**
-   * Stage 5: QA Agent Audit
-   * Evaluates generated implementation against requirements and standards.
-   */
-  async audit({
-    projectId,
-    userPrompt,
-    unifiedSpec,
-    htmlContent,
-    gateway,
-    onChunk,
-  } = {}) {
-    const qaAgent = this.registry.getAgent('qa');
+  async audit({ projectId, userPrompt, unifiedSpec, htmlContent, gateway, onChunk } = {}) {
+    const agent = this.agents.getAgent('qa');
     this.emitPipelineEvent('QA_STARTED', { projectId });
-
-    const auditInput = `Audit the generated single-file index.html website for semantic DOM integrity, JavaScript errors, broken handlers, responsive layout bugs, and compliance with the user requirements.
-Return a structured audit report with status "passed" or "issues_found". Do NOT modify the code.`;
-
-    const qaOutput = await qaAgent.execute({
-      input: auditInput,
-      context: {
-        user_goal: userPrompt,
-        unified_specification: unifiedSpec,
-        html_to_inspect: htmlContent,
-      },
-      gateway,
-      onChunk: onChunk ? (chunk) => onChunk({ agent: 'qa', chunk }) : null,
-    });
-
-    const report = qaOutput.result || {};
-    this.recordAgentExecution(projectId, qaAgent, qaOutput);
-    if (projectId) {
-      await updateProject(projectId, { qaReport: report });
-
-      const qaMd = `# QA Audit & Verification Report
-**Agent:** Query (QA Auditor)
-**Timestamp:** ${new Date().toISOString()}
-**Result:** ${(report.result || 'passed').toUpperCase()}
-
-## Issues & Warnings
-${(report.issues && report.issues.length) ? report.issues.map(i => `- [${i.severity || 'INFO'}] ${i.description || JSON.stringify(i)}`).join('\n') : 'No blocking issues found. Code passes all quality gates.'}
-
-## Full Audit Payload
-\`\`\`json
-${JSON.stringify(report, null, 2)}
-\`\`\`
-`;
-      saveProjectFile(projectId, {
-        filePath: 'qa_audit_report.md',
-        filename: 'qa_audit_report.md',
-        content: qaMd,
-        agentId: 'qa',
-        agentName: 'Query (QA Auditor)',
-        type: 'markdown',
-        changeNote: 'QA Audit Report Generated',
-      }).catch(e => console.warn('[PROJECT FILE] Error saving qa_audit_report.md:', e.message));
-
-      saveAgentArtifact({
-        projectId,
-        agentId: 'qa',
-        agentName: 'Query (QA Auditor)',
-        task: `Audit generated index.html for "${userPrompt}"`,
-        status: report.result || 'Completed',
-        response: report,
-      }).catch(e => console.warn('[ARTIFACT] Error saving qa artifact:', e.message));
+    const session = await projectFileSession(projectId, { fallbackHtml: htmlContent });
+    // For standalone audit calls the caller may supply an unsaved document.
+    if (!session.tree().length && htmlContent) {
+      session.stage([{ action: 'create', path: 'index.html', content: htmlContent }]);
+      session.seed.push({ path: 'index.html', content: htmlContent });
     }
-
-    this.emitPipelineEvent('INTERAGENT_COMMUNICATION', {
-      fromAgent: 'qa',
-      fromName: 'Query (QA Auditor)',
-      toAgent: 'manager',
-      toName: 'Atlas (Manager)',
-      subject: `QA Audit Verdict: ${(report.result || 'PASSED').toUpperCase()}`,
-      message: `Audit finalized. Result: ${report.result || 'passed'}. Verified DOM structure and runtime scripts.`,
-      timestamp: new Date().toISOString(),
-    });
-
-    this.emitPipelineEvent('QA_COMPLETED', {
-      projectId,
-      result: report.result || 'passed',
-      issues: report.issues || [],
-      summary: report.summary || {},
-    });
-
+    const validation = validateWebsite(await session.candidate(), session.entryPoint);
+    let report;
+    try {
+      report = await runFileAgent(agent, session, { mode: 'qa', input: `Audit the generated multi-file website for requirements compliance and cross-file correctness.\n${userPrompt}`,
+        context: { user_goal: userPrompt, unified_specification: unifiedSpec, deterministic_validation: validation }, gateway, onChunk,
+        onExecution: out => this.recordAgentExecution(projectId, agent, out) });
+    } catch (err) {
+      report = { agent: 'qa', status: 'failed', result: 'issues_found', summary: { verdict: `Audit could not complete: ${err.message}` }, issues: [{ severity: 'high', category: 'audit', location: 'QA response', description: err.message }] };
+    }
+    report.issues = [...report.issues, ...validation.issues];
+    report.validation = validation;
+    if (report.issues.length) report.result = 'issues_found';
+    if (projectId) {
+      await updateProject(projectId, { qaReport: report, validation });
+      await this.saveReport(projectId, 'qa_audit_report', report, agent.id);
+    }
+    this.emitPipelineEvent('QA_COMPLETED', { projectId, ...report });
     return report;
   }
 
-  /**
-   * Execute Full End-to-End Build Pipeline (Phase 4 / 6)
-   * Manager Plan -> Parallel Specialists -> Manager Synthesis -> Coding Agent -> QA Agent -> Saved index.html
-   */
-  async buildFullProject({ projectId, prompt, gateway, onChunk } = {}) {
-    try {
-      // Run specification pipeline first
-      const specResult = await this.executeSpecificationPipeline({
-        projectId,
-        prompt,
-        gateway,
-        onChunk,
-      });
-
-      // Implement via Coding Agent
-      const implementResult = await this.implement({
-        projectId: specResult.projectId,
-        userPrompt: prompt,
-        unifiedSpec: specResult.unifiedSpec,
-        gateway,
-        onChunk,
-      });
-
-      // Run QA Audit
-      let qaReport = await this.audit({
-        projectId: specResult.projectId,
-        userPrompt: prompt,
-        unifiedSpec: specResult.unifiedSpec,
-        htmlContent: implementResult.htmlContent,
-        gateway,
-        onChunk,
-      });
-
-      let finalHtml = implementResult.htmlContent;
-      let finalSummary = implementResult.summary;
-
-      // Automated QA Auto-Repair Loop: If QA found defects, trigger Coding Agent to fix them
-      if (qaReport.result === 'issues_found' && qaReport.issues?.length > 0) {
-        this.emitPipelineEvent('QA_REPAIR_STARTED', {
-          projectId: specResult.projectId,
-          issueCount: qaReport.issues.length,
-          verdict: qaReport.summary?.verdict || 'Issues detected during audit',
-        });
-
-        try {
-          const issuesSummary = qaReport.issues
-            .map((iss, i) => `${i + 1}. [${iss.severity?.toUpperCase() || 'DEFECT'}] ${iss.location || 'Code'}: ${iss.description}. Fix: ${iss.recommendation || 'Complete implementation'}`)
-            .join('\n');
-
-          const repairPrompt = `The QA Agent audited your previous code and detected the following ${qaReport.issues.length} defect(s):\n${issuesSummary}\n\nPlease repair all identified defects immediately and output the complete, valid, self-contained "index.html" with all missing tags, CSS styles, and JavaScript interactions fully resolved.`;
-
-          const repairResult = await this.implement({
-            projectId: specResult.projectId,
-            userPrompt: repairPrompt,
-            unifiedSpec: specResult.unifiedSpec,
-            existingHtml: finalHtml,
-            changeNote: `QA Automated Repair (${qaReport.issues.length} defect(s) fixed)`,
-            gateway,
-            onChunk,
-          });
-
-          finalHtml = repairResult.htmlContent;
-          finalSummary = repairResult.summary;
-
-          // Re-audit repaired code
-          qaReport = await this.audit({
-            projectId: specResult.projectId,
-            userPrompt: prompt,
-            unifiedSpec: specResult.unifiedSpec,
-            htmlContent: finalHtml,
-            gateway,
-            onChunk,
-          });
-
-          this.emitPipelineEvent('QA_REPAIR_COMPLETED', {
-            projectId: specResult.projectId,
-            qaResult: qaReport.result,
-            issues: qaReport.issues || [],
-            summary: qaReport.summary || {},
-          });
-        } catch (repairErr) {
-          console.warn(`[ORCHESTRATOR] QA auto-repair encountered an error:`, repairErr.message);
+  async buildFullProject({ projectId, prompt, gateway, onChunk, runId, reuseContext = false } = {}) {
+    // Existing applications always use the contextual edit flow, never a rebuild
+    // from a short prompt that discards the uploaded implementation.
+    const project = projectId ? await getProject(projectId) : null;
+    if (project?.revision > 0 || (project && await getProjectHtml(projectId))) return this.applyFeedback({ projectId, feedback: prompt, gateway, onChunk, runId, reuseContext });
+    return this.withRun(projectId, async () => {
+      try {
+        const spec = await this.executeSpecificationPipeline({ projectId, prompt, gateway, onChunk, standalone: false });
+        let built = await this.implement({ projectId, userPrompt: prompt, unifiedSpec: spec.unifiedSpec, gateway, onChunk });
+        let qaReport = await this.audit({ projectId, userPrompt: prompt, unifiedSpec: spec.unifiedSpec, htmlContent: built.htmlContent, gateway, onChunk });
+        if (qaReport.status !== 'failed' && qaReport.result === 'issues_found' && qaReport.issues.length) {
+          this.emitPipelineEvent('QA_REPAIR_STARTED', { issueCount: qaReport.issues.length });
+          built = await this.implement({ projectId, userPrompt: `Repair only these QA defects: ${JSON.stringify(qaReport.issues)}`, unifiedSpec: spec.unifiedSpec, existingHtml: built.htmlContent, changeNote: 'QA repair', gateway, onChunk });
+          qaReport = await this.audit({ projectId, userPrompt: prompt, unifiedSpec: spec.unifiedSpec, htmlContent: built.htmlContent, gateway, onChunk });
+          this.emitPipelineEvent('QA_REPAIR_COMPLETED', { qaResult: qaReport.result, issues: qaReport.issues });
         }
-      }
-
-      return {
-        projectId: specResult.projectId,
-        plan: specResult.plan,
-        specialistOutputs: specResult.specialistOutputs,
-        unifiedSpec: specResult.unifiedSpec,
-        htmlContent: finalHtml,
-        summary: finalSummary,
-        qaReport,
-      };
-    } catch (err) {
-      this.emitPipelineEvent('PIPELINE_FAILED', {
-        projectId,
-        error: err.message,
-      });
-      throw err;
-    }
+        const result = { ...spec, ...built, qaReport };
+        this.emitPipelineEvent('PIPELINE_COMPLETED', { projectId, revision: built.revision, changes: built.changes, qaReport });
+        return result;
+      } catch (err) { this.emitPipelineEvent('PIPELINE_FAILED', { projectId, error: err.message }); throw err; }
+    }, { runId, reuseContext });
   }
 
-  /**
-   * Stage 6: Human Feedback Modification (Phase 7)
-   * Direct-to-Coder modification strictly adhering to the Minimal Change Preservation Rule.
-   */
-  async applyFeedback({
-    projectId,
-    feedback,
-    gateway,
-    onChunk,
-  } = {}) {
-    try {
-      const project = await getProject(projectId);
-      if (!project) throw new Error(`Project "${projectId}" not found`);
-
-      const existingHtml = await getProjectHtml(projectId);
-      if (!existingHtml) throw new Error(`Project "${projectId}" has no generated HTML to modify`);
-
-      const codingAgent = this.registry.getAgent('coding_agent');
-      this.emitPipelineEvent('FEEDBACK_STARTED', { projectId, feedback });
-
-      const feedbackInput = `The user has provided human feedback requesting a modification:
-"${feedback}"
-
-CRITICAL MINIMAL CHANGE PRESERVATION RULE:
-1. Treat the existing "index.html" as the absolute source of truth.
-2. Modify ONLY what the user explicitly asked to change.
-3. Preserve all unrelated HTML, CSS, JavaScript, functions, variables, IDs, classes, animations, and layout exactly intact.
-4. Do NOT perform unrequested redesigns, refactors, or optimizations.
-5. Return a complete, valid index.html containing the targeted modification.`;
-
-      const codingOutput = await codingAgent.execute({
-        input: feedbackInput,
-        context: {
-          operation: 'modify',
-          scope: 'targeted_change',
-          user_feedback: feedback,
-          original_prompt: project.prompt,
-          explicit_requirements: project.managerPlan?.explicit_requirements || [],
-          existing_html: existingHtml,
-        },
-        gateway,
-        onChunk: onChunk ? (chunk) => onChunk({ agent: 'coding_agent', chunk }) : null,
-      });
-
-      const modifiedHtml = extractHtmlFromCodingResult(codingOutput.result, codingOutput.rawText);
-      if (!modifiedHtml) {
-        throw new Error('Coding Agent failed to produce valid HTML for feedback modification');
-      }
-
-      const updatedProject = await saveProjectHtml(projectId, modifiedHtml, `Human Feedback: ${feedback}`);
-
-      this.emitPipelineEvent('FEEDBACK_COMPLETED', {
-        projectId,
-        feedback,
-        version: updatedProject.version,
-        contentLength: modifiedHtml.length,
-      });
-
-      return {
-        projectId,
-        version: updatedProject.version,
-        htmlContent: modifiedHtml,
-        summary: codingOutput.result?.summary || {},
-      };
-    } catch (err) {
-      this.emitPipelineEvent('FEEDBACK_FAILED', {
-        projectId,
-        error: err.message,
-      });
-      throw err;
-    }
+  async applyFeedback({ projectId, feedback, gateway, onChunk, runId, reuseContext = false } = {}) {
+    return this.withRun(projectId, async () => {
+      try {
+        const project = await getProject(projectId);
+        if (!project) throw projectError('Project not found', 404);
+        this.emitPipelineEvent('FEEDBACK_STARTED', { projectId, feedback });
+        const built = await this.implement({ projectId, userPrompt: feedback, unifiedSpec: project.unifiedSpec, changeNote: `Human Feedback: ${feedback}`, gateway, onChunk });
+        const qaReport = await this.audit({ projectId, userPrompt: `${project.prompt}\nRequested edit: ${feedback}`, unifiedSpec: project.unifiedSpec, htmlContent: built.htmlContent, gateway, onChunk });
+        const result = { ...built, version: built.revision, qaReport };
+        this.emitPipelineEvent('FEEDBACK_COMPLETED', { projectId, feedback, version: built.revision, revision: built.revision, changes: built.changes, qaReport });
+        return result;
+      } catch (err) { this.emitPipelineEvent('FEEDBACK_FAILED', { projectId, error: err.message }); throw err; }
+    }, { runId, reuseContext });
   }
 }
 

@@ -16,7 +16,6 @@ export async function connectMongo() {
   if (initPromise) return initPromise;
 
   if (!config.mongoUri) {
-    console.warn('[MONGODB] No MONGO_URI provided in environment. Operating in memory/fallback mode.');
     return null;
   }
 
@@ -57,11 +56,15 @@ export async function connectMongo() {
         { unique: true, background: true }
       );
 
+      await db.collection('project_revisions').createIndex({ projectId: 1, id: 1 }, { unique: true });
+
       return db;
     } catch (err) {
       console.error('[MONGODB] Connection failed:', err.message);
       db = null;
+      await client?.close().catch(() => {});
       client = null;
+      initPromise = null;
       throw err;
     } finally {
       isConnecting = false;
@@ -96,4 +99,5 @@ export async function closeMongo() {
     db = null;
     initPromise = null;
   }
+  initPromise = null;
 }

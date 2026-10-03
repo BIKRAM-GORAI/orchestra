@@ -1,10 +1,10 @@
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config, validateConfig } from './config/env.js';
 import { router as apiRouter } from './routes/api.js';
 import { connectMongo } from './db/mongo.js';
+import { previewApp } from './routes/preview.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,15 +12,21 @@ const rootDir = path.resolve(__dirname, '../../');
 
 const app = express();
 
-app.use(cors());
+// Preview documents run on another origin (or an opaque sandbox origin).
+// They must not be able to read or mutate the studio API.
+app.use('/api', (req, res, next) => {
+  const origin = req.get('origin');
+  if (origin && origin !== `${req.protocol}://${req.get('host')}`) return res.status(403).json({ error: 'Cross-origin API access is not allowed' });
+  next();
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // API routes
 app.use('/api', apiRouter);
 
-// Serve live preview workspace statically as well
-app.use('/workspace', express.static(config.workspaceDir));
+// Legacy workspace content is no longer executed on the studio origin.
+app.use('/workspace', (req, res) => res.redirect('/api/preview?starter=true'));
 
 // Serve client frontend statically
 const clientDir = path.join(rootDir, 'src', 'client');
@@ -40,8 +46,9 @@ app.get('*', (req, res, next) => {
 
 // Central error handler
 app.use((err, req, res, next) => {
-  console.error('[SERVER ERROR]', err);
-  res.status(500).json({
+  if (!err.status || err.status >= 500) console.error('[SERVER ERROR]', err);
+  res.status(err.status || (err.name === 'MulterError' ? 413 : 500)).json({
+    status: 'error',
     error: err.message || 'Internal Server Error',
   });
 });
@@ -55,6 +62,12 @@ export function startServer() {
   const server = app.listen(config.port, config.host, () => {
     console.log(`[ORCHESTRA SERVER] Running at http://${config.host}:${config.port}`);
   });
+  const previewServer = previewApp.listen(config.previewPort, config.host, () => {
+    console.log(`[PREVIEW SERVER] Running at http://${config.host}:${config.previewPort}`);
+  });
+  previewServer.on('error', err => { console.error('[PREVIEW SERVER]', err.message); server.close(); });
+  server.on('close', () => previewServer.close());
+  server.on('error', () => previewServer.close());
 
   if (config.mongoUri) {
     connectMongo().then(() => {
@@ -73,3 +86,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 
 export default app;
+export { previewApp };

@@ -13,7 +13,7 @@
  * - Smooth camera panning, zooming (0.8x - 1.8x), and click-to-focus on agents
  */
 
-import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=3';
+import { agentStateManager, AGENT_STATUS, getStatusDisplayText } from './agent-state.js?v=4';
 
 export const WORKFLOW_STATE = {
   IDLE: 'IDLE',

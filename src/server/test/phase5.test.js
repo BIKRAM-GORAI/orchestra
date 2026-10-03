@@ -1,15 +1,18 @@
 import assert from 'node:assert';
 import test from 'node:test';
-import app from '../index.js';
+import app, { previewApp } from '../index.js';
 import { createProject, saveProjectHtml, getProjectHtml } from '../services/projectService.js';
 
 test('Phase 5: Multi-Project Isolated Previews & REST Endpoints', async (t) => {
   const server = app.listen(0);
   const port = server.address().port;
   const baseUrl = `http://localhost:${port}`;
+  const preview = previewApp.listen(0);
+  const previewUrl = `http://localhost:${preview.address().port}`;
 
   t.after(() => {
     server.close();
+    preview.close();
   });
 
   // Create Project A
@@ -23,16 +26,16 @@ test('Phase 5: Multi-Project Isolated Previews & REST Endpoints', async (t) => {
   await saveProjectHtml(projB.id, htmlB, 'Initial Beta');
 
   // Verify Project A preview endpoint
-  const resA = await fetch(`${baseUrl}/api/projects/${projA.id}/preview`);
+  const resA = await fetch(`${previewUrl}/p/${projA.id}/index.html`);
   assert.strictEqual(resA.status, 200);
   const textA = await resA.text();
-  assert.strictEqual(textA, htmlA);
+  assert.ok(textA.includes('Project Alpha Website'));
 
   // Verify Project B preview endpoint
-  const resB = await fetch(`${baseUrl}/api/projects/${projB.id}/preview`);
+  const resB = await fetch(`${previewUrl}/p/${projB.id}/index.html`);
   assert.strictEqual(resB.status, 200);
   const textB = await resB.text();
-  assert.strictEqual(textB, htmlB);
+  assert.ok(textB.includes('Project Beta Website'));
 
   // Verify isolation: A does not equal B
   assert.notStrictEqual(textA, textB);

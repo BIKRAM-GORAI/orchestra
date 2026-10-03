@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Orchestrator, extractHtmlFromCodingResult } from '../orchestrator/orchestrator.js';
 import { AgentRegistry } from '../agents/agentRegistry.js';
-import { createProject, getProjectHtml } from '../services/projectService.js';
+import { createProject, getProjectHtml, getProject } from '../services/projectService.js';
 import { config } from '../config/env.js';
 
 test('Phase 4: HTML Extraction Utility Resilience', () => {
@@ -91,9 +91,8 @@ test('Phase 4: Coding Agent Implementation & Project Persistence', async () => {
   const savedProjectHtml = await getProjectHtml(project.id);
   assert.strictEqual(savedProjectHtml, generatedHtml);
 
-  // Verify sync to workspace/index.html
-  const workspaceHtml = await fs.readFile(config.workspaceIndexHtml, 'utf-8');
-  assert.strictEqual(workspaceHtml, generatedHtml);
+  // Multi-file builds commit an isolated project revision, not a global workspace.
+  assert.strictEqual((await getProject(project.id)).revision, 1);
 });
 
 test('Phase 4: End-to-End Build Pipeline (Spec + Coding Agent)', async () => {
@@ -160,7 +159,7 @@ test('Phase 4: End-to-End Build Pipeline (Spec + Coding Agent)', async () => {
           attempts: 1,
         };
       }
-      if (msgStr.includes('Audit the generated single-file index.html')) {
+      if (msgStr.includes('Audit the generated multi-file website')) {
         return {
           text: JSON.stringify({
             agent: 'qa',
