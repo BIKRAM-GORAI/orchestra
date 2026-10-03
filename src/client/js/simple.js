@@ -363,10 +363,12 @@ async function displayResults(projectId) {
       card.className = 'file-card';
       const ext = file.path.split('.').pop() || 'txt';
       const sizeKb = Math.max(1, Math.round((file.size || 0) / 1024));
+      const iconColor = ext === 'html' ? '#e11d48' : ext === 'css' ? '#0284c7' : ext === 'js' ? '#d97706' : '#6366f1';
+      const iconName = ext === 'html' ? 'layout' : ext === 'css' ? 'palette' : ext === 'js' ? 'code-2' : 'file';
 
       card.innerHTML = `
         <div class="file-info">
-          <i data-lucide="${ext === 'html' ? 'layout' : ext === 'css' ? 'palette' : ext === 'js' ? 'code-2' : 'file'}" style="width: 16px; height: 16px; color: var(--accent-cyan); flex-shrink: 0;"></i>
+          <i data-lucide="${iconName}" style="width: 18px; height: 18px; color: ${iconColor}; flex-shrink: 0;"></i>
           <span class="file-name" title="${file.path}">${file.path}</span>
         </div>
         <span class="file-size">${sizeKb} KB</span>
