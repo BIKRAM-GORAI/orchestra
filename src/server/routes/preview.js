@@ -46,6 +46,10 @@ export async function handlePreviewRequest(req, res, next) {
     if (!project) throw projectError('Project not found', 404);
     if (req.hostname.endsWith('.localhost') && req.hostname !== `${project.id}.localhost`) throw projectError('Project does not belong to this preview host', 404);
     if (project.projectType === 'source-only') throw projectError('This source project requires a build/runtime. Import a browser-ready static build to preview it.', 422);
+    const rawPath = req.path || '';
+    if (rawPath === `/p/${project.id}` || rawPath === `/p/${encodeURIComponent(project.id)}`) {
+      return res.redirect(301, `${req.baseUrl || ''}/p/${encodeURIComponent(project.id)}/`);
+    }
     let requested = req.params[0] || project.entryPoint || 'index.html';
     if (requested.endsWith('/')) requested += 'index.html';
     let file = await getProjectFile(project.id, requested);
@@ -60,6 +64,6 @@ export async function handlePreviewRequest(req, res, next) {
   } catch (err) { next(err); }
 }
 
-previewApp.get('/p/:id/*', handlePreviewRequest);
+previewApp.get(['/p/:id', '/p/:id/*'], handlePreviewRequest);
 previewApp.use((req, res) => res.status(404).type('text/plain').send('Preview resource not found'));
 previewApp.use((err, req, res, next) => res.status(err.status || 500).type('text/plain').send(err.message));

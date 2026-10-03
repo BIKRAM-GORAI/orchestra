@@ -326,6 +326,41 @@ async function displayResults(projectId) {
   } catch (_) {}
 
   currentPreviewUrl = previewUrl;
+  const absolutePreviewUrl = new URL(previewUrl, window.location.origin).href;
+
+  const liveShareInput = document.getElementById('liveShareInput');
+  if (liveShareInput) {
+    liveShareInput.value = absolutePreviewUrl;
+  }
+
+  // Bind Copy Live Link button
+  const copyLiveUrlBtn = document.getElementById('copyLiveUrlBtn');
+  const copyBtnText = document.getElementById('copyBtnText');
+  if (copyLiveUrlBtn && !copyLiveUrlBtn.dataset.bound) {
+    copyLiveUrlBtn.dataset.bound = 'true';
+    copyLiveUrlBtn.addEventListener('click', async () => {
+      const input = document.getElementById('liveShareInput');
+      const textToCopy = input?.value || currentPreviewUrl;
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        copyLiveUrlBtn.classList.add('copied');
+        if (copyBtnText) copyBtnText.textContent = 'Copied!';
+        setTimeout(() => {
+          copyLiveUrlBtn.classList.remove('copied');
+          if (copyBtnText) copyBtnText.textContent = 'Copy Link';
+        }, 2200);
+      } catch (_) {
+        input?.select();
+        document.execCommand('copy');
+        copyLiveUrlBtn.classList.add('copied');
+        if (copyBtnText) copyBtnText.textContent = 'Copied!';
+        setTimeout(() => {
+          copyLiveUrlBtn.classList.remove('copied');
+          if (copyBtnText) copyBtnText.textContent = 'Copy Link';
+        }, 2200);
+      }
+    });
+  }
 
   // 2. Fetch Generated Files
   try {

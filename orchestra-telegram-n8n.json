@@ -1,0 +1,106 @@
+{
+  "name": "Orchestra Telegram Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "1",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $json.message || {};\nconst text = (msg.text || msg.caption || '').trim();\nconst chatId = msg.chat?.id;\n\nlet taskType = 'auto';\nlet prompt = text;\n\nif (text.startsWith('/doc')) {\n  taskType = 'document';\n  prompt = text.replace(/^\\/doc\\s*/, '');\n} else if (text.startsWith('/site')) {\n  taskType = 'website';\n  prompt = text.replace(/^\\/site\\s*/, '');\n}\n\nreturn {\n  json: {\n    chatId,\n    prompt: prompt || 'Analyze and summarize this request',\n    taskType,\n    budget: 0.35\n  }\n};"
+      },
+      "id": "2",
+      "name": "Parse Directive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/orchestrate/task",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\": {{ JSON.stringify($json.prompt) }},\n  \"taskType\": {{ JSON.stringify($json.taskType) }},\n  \"budget\": {{ $json.budget }}\n}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "3",
+      "name": "Call Orchestra",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Directive').item.json.chatId }}",
+        "text": "=🚀 *Agent Orchestra Task Completed!*\n\n{{ $json.data.markdown || $json.data.summary || 'Website generated successfully!' }}\n\n📁 Project ID: `{{ $json.projectId }}`",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "4",
+      "name": "Send Telegram Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Directive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Directive": {
+      "main": [
+        [
+          {
+            "node": "Call Orchestra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Orchestra": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

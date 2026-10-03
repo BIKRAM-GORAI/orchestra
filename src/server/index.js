@@ -30,7 +30,7 @@ app.use('/api', apiRouter);
 app.use('/workspace', (req, res) => res.redirect('/api/preview?starter=true'));
 
 // Preview route support for single-port deployments (Render)
-app.get('/p/:id/*', (req, res, next) => {
+app.get(['/p/:id', '/p/:id/*'], (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cache-Control', 'no-store');
