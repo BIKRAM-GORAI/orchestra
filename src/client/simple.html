@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OmniVerse — Simplified Quick Generator</title>
-  <meta name="description" content="Type a prompt, watch the agent orchestra build your website with live progress, and review your live sandbox instantly.">
+  <title>OmniVerse — AI Website Generator</title>
+  <meta name="description" content="Type what website you need. An autonomous multi-agent team designs, codes, and audits full production-ready websites in seconds.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./simple.css?v=2">
+  <link rel="stylesheet" href="./simple.css?v=3">
   <script src="./vendor/lucide.min.js"></script>
 </head>
 <body>
@@ -50,20 +50,42 @@
       <section id="promptSection">
         <div class="hero-header">
           <div class="hero-tag">
-            <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-            <span>Agentic Multi-File Architecture</span>
+            <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+            <span>AI Website Generator</span>
           </div>
-          <h1 class="hero-title">What do you want to build?</h1>
+          <h1 class="hero-title">Give a prompt. Get a production-ready website.</h1>
           <p class="hero-desc">
-            Describe your idea in plain English. The agent team will plan the architecture, draft styling contracts, generate modular source code, and run deterministic QA audits.
+            Describe your idea in plain words. An autonomous team of AI agents designs, codes, and audits full multi-file HTML, CSS, and JavaScript websites ready to ship.
           </p>
+
+          <!-- 3-Step Process Indicator -->
+          <div class="workflow-steps-bar">
+            <div class="wf-step">
+              <span class="wf-num">1</span>
+              <span class="wf-text">Give your prompt</span>
+            </div>
+            <div class="wf-divider">→</div>
+            <div class="wf-step">
+              <span class="wf-num">2</span>
+              <span class="wf-text">AI team codes & audits</span>
+            </div>
+            <div class="wf-divider">→</div>
+            <div class="wf-step highlight">
+              <span class="wf-num">3</span>
+              <span class="wf-text">Get live site & source files</span>
+            </div>
+          </div>
         </div>
 
         <form id="promptForm" class="prompt-card">
+          <label for="promptInput" class="prompt-label">
+            <i data-lucide="terminal" style="width: 16px; height: 16px; color: var(--color-terracotta);"></i>
+            <span>Describe the website you want to generate:</span>
+          </label>
           <textarea
             id="promptInput"
             class="prompt-textarea"
-            placeholder="e.g. Build a high-converting landing page for a decentralized cloud compute protocol with dark mode, interactive pricing tiers, latency calculator, and responsive navigation..."
+            placeholder="e.g., Build a modern SaaS landing page for an AI writing assistant with a responsive dark/light hero section, interactive pricing tiers, customer testimonial slider, and contact booking modal..."
             required
             rows="4"
           ></textarea>
@@ -71,10 +93,10 @@
           <div class="prompt-controls">
             <div class="options-pill-row">
               <div class="budget-select-wrap">
-                <i data-lucide="coins" style="width: 14px; height: 14px; color: var(--accent-cyan);"></i>
-                <span>Budget:</span>
+                <i data-lucide="cpu" style="width: 15px; height: 15px; color: var(--color-cobalt);"></i>
+                <span>Model Engine:</span>
                 <select id="budgetSelect" class="budget-select" aria-label="Agent Budget Allocation">
-                  <option value="1.00" selected>⚡ Max Model ($1.00 — Gemini Flash Max Context)</option>
+                  <option value="1.00" selected>⚡ Max Tier ($1.00 — Gemini Flash Max Context)</option>
                   <option value="0.35">Standard ($0.35 — Balanced Pro)</option>
                   <option value="0.00">Free Tier ($0.00 — Mistral Codestral)</option>
                 </select>
@@ -83,25 +105,25 @@
 
             <button type="submit" id="generateBtn" class="btn-generate">
               <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
-              <span>Generate Website</span>
+              <span>Generate Production Website</span>
             </button>
           </div>
         </form>
 
         <!-- Quick Idea Chips -->
         <div class="idea-chips">
-          <span class="chip-label">Try an idea:</span>
-          <button type="button" class="idea-chip" data-prompt="Build a SaaS landing page for an AI audio enhancer with interactive before/after waveform player, feature grid, and pricing cards.">
-            🎙️ AI Audio Enhancer SaaS
+          <span class="chip-label">Quick Ideas:</span>
+          <button type="button" class="idea-chip" data-prompt="Build a high-converting SaaS landing page for an AI audio enhancer with interactive before/after waveform audio player, feature comparison grid, and yearly/monthly pricing tiers.">
+            🚀 SaaS Landing Page
           </button>
-          <button type="button" class="idea-chip" data-prompt="Create a sleek developer portfolio for a full-stack Web3 engineer with project showcase, skills radar, and terminal contact form.">
+          <button type="button" class="idea-chip" data-prompt="Create a sleek developer portfolio website for a full-stack Web3 engineer with an interactive project showcase, skills radar, and terminal contact form.">
             💻 Developer Portfolio
           </button>
-          <button type="button" class="idea-chip" data-prompt="Design a luxury real estate showcase for modern smart homes with interactive gallery, neighborhood map stats, and consultation booking.">
-            🏡 Luxury Real Estate
+          <button type="button" class="idea-chip" data-prompt="Design an elegant restaurant website for an Italian bistro with interactive pasta menu, daily specials carousel, customer reviews, and table reservation booking modal.">
+            🍽️ Italian Bistro & Menu
           </button>
-          <button type="button" class="idea-chip" data-prompt="Build a fitness workout planner dashboard with weekly routine tracking, calorie calculator, and workout timer.">
-            ⚡ Fitness Workout Tracker
+          <button type="button" class="idea-chip" data-prompt="Build a luxury real estate agency showcase with property filter, neighborhood stat cards, virtual tour gallery, and agent consultation booking.">
+            🏡 Luxury Real Estate
           </button>
         </div>
       </section>
@@ -177,9 +199,9 @@
             <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
             <span>Build Complete & Audited</span>
           </div>
-          <h2 class="results-title">Your Website is Live & Ready!</h2>
+          <h2 class="results-title">Your Production-Ready Website is Live!</h2>
           <p class="results-desc">
-            All files passed syntax validation, AST resource verification, and responsive viewport checks.
+            All files passed deterministic syntax parsing, resource integrity verification, and responsive viewport checks. Ready to deploy or host.
           </p>
         </div>
 
@@ -187,7 +209,7 @@
         <div class="deliverables-actions">
           <a id="previewUrlBtn" href="#" target="_blank" class="btn-open-preview">
             <i data-lucide="external-link" style="width: 18px; height: 18px;"></i>
-            <span>Open Live Preview</span>
+            <span>Open Live Website</span>
           </a>
 
           <button type="button" id="toggleInlineBtn" class="btn-toggle-inline">
