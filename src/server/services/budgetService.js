@@ -177,7 +177,7 @@ export class BudgetService {
         if (id.endsWith('-1')) {
           // Free Tier (Pixel, Nova, Scout, Byte, Query)
           primary = 'codestral-latest';
-          fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
+          fallbacks = ['gemini-3.5-flash-lite', 'kimi-k3'];
         } else if (id.endsWith('-2')) {
           // Pro Tier (Chroma, Blueprint, Beacon, Cipher, Audit)
           primary = 'kimi-k3';
@@ -185,35 +185,35 @@ export class BudgetService {
         } else if (id.endsWith('-3')) {
           // Max / Premium Tier (Canvas, Apex, Compass, Matrix, Sentinel)
           primary = 'gemini-3.5-flash-lite';
-          fallbacks = ['kimi-k3', 'codestral-latest'];
+          fallbacks = ['gemini-3.5-flash', 'kimi-k3', 'codestral-latest'];
         } else if (id.startsWith('manager')) {
           // Manager (Atlas)
           primary = 'gemini-3.5-flash-lite';
-          fallbacks = ['kimi-k3', 'codestral-latest'];
+          fallbacks = ['gemini-3.5-flash', 'kimi-k3', 'codestral-latest'];
         } else {
           primary = agent.modelId || 'codestral-latest';
           fallbacks = primary === 'codestral-latest'
-            ? ['kimi-k3', 'gemini-3.5-flash-lite']
-            : (primary === 'kimi-k3' ? ['gemini-3.5-flash-lite', 'codestral-latest'] : ['kimi-k3', 'codestral-latest']);
+            ? ['gemini-3.5-flash-lite', 'kimi-k3']
+            : (primary === 'kimi-k3' ? ['gemini-3.5-flash-lite', 'codestral-latest'] : ['gemini-3.5-flash', 'kimi-k3', 'codestral-latest']);
         }
       } else {
         // Legacy 6-agent unit test compatibility harness
         if (tier === 'free') {
           primary = 'codestral-latest';
-          fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
+          fallbacks = ['gemini-3.5-flash-lite', 'kimi-k3'];
         } else if (tier === 'balanced') {
           if (id.startsWith('manager')) {
             primary = 'gemini-3.5-flash-lite';
             fallbacks = ['kimi-k3', 'codestral-latest'];
           } else if (id.startsWith('coder')) {
             primary = id === 'coder-1' ? 'kimi-k3' : 'gemini-3.5-flash-lite';
-            fallbacks = ['codestral-latest', 'gemini-3.5-flash-lite'];
+            fallbacks = ['gemini-3.5-flash-lite', 'codestral-latest'];
           } else if (id.startsWith('qa') || id.startsWith('designer') || id.startsWith('frontend')) {
             primary = 'kimi-k3';
-            fallbacks = ['codestral-latest', 'gemini-3.5-flash-lite'];
+            fallbacks = ['gemini-3.5-flash-lite', 'codestral-latest'];
           } else {
             primary = 'codestral-latest';
-            fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
+            fallbacks = ['gemini-3.5-flash-lite', 'kimi-k3'];
           }
         } else {
           // Premium tier

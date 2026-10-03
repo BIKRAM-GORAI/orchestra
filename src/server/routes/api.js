@@ -43,21 +43,49 @@ router.get('/orchestrate/events', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
+
   const send = type => ev => {
     if (req.query.projectId && ev.projectId !== req.query.projectId) return;
-    if (!res.destroyed) res.write(`event: ${type}\ndata: ${JSON.stringify(ev)}\n\n`);
+    if (!res.destroyed && !res.writableEnded) {
+      try {
+        res.write(`event: ${type}\ndata: ${JSON.stringify(ev)}\n\n`);
+      } catch (_) {
+        // Socket closed or resetting
+      }
+    }
   };
+
   const onAgentState = send('agentState');
   const onPipeline = send('pipeline');
   orchestrator.on('agentState', onAgentState);
   orchestrator.on('pipeline', onPipeline);
-  const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000);
+
+  const heartbeat = setInterval(() => {
+    if (!res.destroyed && !res.writableEnded) {
+      try {
+        res.write(': heartbeat\n\n');
+      } catch (_) {
+        clearInterval(heartbeat);
+      }
+    } else {
+      clearInterval(heartbeat);
+    }
+  }, 15000);
   heartbeat.unref();
-  res.on('close', () => {
+
+  let cleanedUp = false;
+  const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
     clearInterval(heartbeat);
     orchestrator.off('agentState', onAgentState);
     orchestrator.off('pipeline', onPipeline);
-  });
+  };
+
+  res.on('close', cleanup);
+  res.on('finish', cleanup);
+  res.on('error', cleanup);
+  req.on('error', cleanup);
 });
 
 for (const kind of ['spec', 'build', 'feedback', 'task']) {
@@ -97,12 +125,20 @@ router.get('/gateway/test-stream', async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.flushHeaders();
-  const send = (event, data) => { if (!res.destroyed) res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); };
+  const send = (event, data) => {
+    if (!res.destroyed && !res.writableEnded) {
+      try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch (_) {}
+    }
+  };
+  res.on('error', () => {});
+  req.on('error', () => {});
   try {
     const result = await modelGateway.generate({ modelId: req.query.modelId || 'kimi-k3', messages: [{ role: 'user', content: req.query.prompt || 'Say hello.' }], onChunk: chunk => send('chunk', chunk), onStateChange: (state, details) => send('state', { state, details }) });
     send('completed', result);
   } catch (err) { send('error', { message: err.message }); }
-  res.end();
+  if (!res.destroyed && !res.writableEnded) {
+    try { res.end(); } catch (_) {}
+  }
 });
 
 router.get('/preview', (req, res) => {

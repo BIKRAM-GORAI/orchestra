@@ -2006,7 +2006,12 @@ async function handleSendPrompt(promptText) {
     const payload = { prompt, taskType: selectedTaskType, budget: currentBudgetAmount, runId: activeRunId };
     if (activeProjectId && activeProjectId !== '__new__') payload.projectId = activeProjectId;
     const response = await fetch('/api/orchestrate/task', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (_) {
+      throw new Error(`Server connection closed or returned unexpected format (${response.status} ${response.statusText})`);
+    }
     if (!response.ok) {
       if (response.status === 402) { showBudgetExhaustedModal(result.spent, result.budget, prompt); return; }
       throw new Error(result.error || result.message || 'Task failed');
@@ -2026,15 +2031,19 @@ async function handleSendPrompt(promptText) {
     projectWorkspace.message(`Revision ${result.data.revision} saved. QA: ${verdict}. Open History to inspect file changes.`);
   } catch (err) {
     if (chatStatusTag) chatStatusTag.textContent = 'Error';
-    addLog(`Task failed: ${err.message}`, 'error', 'SYS', 'FAILED');
+    const isNetworkError = err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('NetworkError'));
+    const displayMsg = isNetworkError
+      ? 'Network error: request to server timed out or failed to fetch. Please verify that the server and model providers are reachable.'
+      : err.message;
+    addLog(`Task failed: ${displayMsg}`, 'error', 'SYS', 'FAILED');
     for (const stream of [chatMessagesStream, sidebarChatStream]) {
       if (!stream) continue;
-      const message = document.createElement('p'); message.className = 'task-error'; message.setAttribute('role', 'alert'); message.textContent = err.message;
+      const message = document.createElement('p'); message.className = 'task-error'; message.setAttribute('role', 'alert'); message.textContent = displayMsg;
       stream.append(message); stream.scrollTop = stream.scrollHeight;
     }
     agentStateManager.setAgentState('atlas', {
       status: AGENT_STATUS.FAILED,
-      lastAction: err.message,
+      lastAction: displayMsg,
     });
   } finally {
     activeRunId = null;

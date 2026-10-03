@@ -3,7 +3,12 @@ const $ = id => document.getElementById(id);
 
 async function api(url, options) {
   const response = await fetch(url, options);
-  const result = await response.json();
+  let result;
+  try {
+    result = await response.json();
+  } catch (_) {
+    throw new Error(`Server connection closed or returned unexpected format (${response.status} ${response.statusText})`);
+  }
   if (!response.ok) throw new Error(result.error || result.message || `Request failed (${response.status})`);
   return result;
 }

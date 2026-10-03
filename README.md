@@ -1,279 +1,341 @@
 # Agent Orchestra 🎼
 
-> **Agent workspace for file analysis, Markdown deliverables, and website development**, with project-scoped files, revision history, and live website preview.
+> **Autonomous Multi-Agent Web & Document Engineering Platform** featuring a **16-Agent Multi-Tier Staff Roster**, **Pixi.js 2.5D Animated Virtual Office**, **Multi-Provider AI Gateway** (Gemini 3.5 Flash, NVIDIA NIM Kimi K3, Mistral Codestral), **Intelligent Budget Allocation Engine**, **Sandboxed Live Preview**, and **Atomic Versioned Storage** (Filesystem or MongoDB + GridFS).
 
 ---
 
 ## 🌟 Overview
 
-**Agent Orchestra** routes your request to the appropriate agent workflow. Upload files and ask for a summary, explanation, comparison, requirements document, guide, or other written answer—the **Document Analyst** saves the actual deliverable as a Markdown file. You can also ask general questions without uploading anything.
+**Agent Orchestra** transforms natural-language requests into production-grade multi-file websites or comprehensive, source-grounded Markdown documents. It pairs a **16-agent team of specialists** with an intelligent **Manager (Atlas)**, coordinating visual design, frontend architecture, interaction behavior, implementation, deterministic validation, and QA audits.
 
-Website requests use the existing Manager → specialists → Coding Agent → QA workflow. Import a ZIP, folder, or selection of files, or generate a new site with separate pages, stylesheets, JavaScript modules, and assets.
-
-In Chat and the Office dispatcher, **Output** offers **Auto**, **Markdown document**, and **Website / app**. Auto uses the Manager to choose the requested deliverable; explicit modes skip that classification call. The diagram below shows the website branch.
+Inside the **Studio Atelier**, watch your agents collaborate in real-time within a **Pixi.js 2.5D isometric virtual office simulation**, follow real-time streaming telemetry across a 4-quadrant layout, test your applications in a multi-device simulator, and collaborate via targeted human feedback.
 
 ```
-                    ┌─────────────────────────┐
-                    │       USER REQUEST      │
-                    └────────────┬────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │      MANAGER AGENT      │
-                    │   (Plan & Agent Select) │
-                    └────────────┬────────────┘
-                                 │
-                 ┌───────────────┼───────────────┐
-                 ▼               ▼               ▼
-          ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-          │   DESIGNER  │ │  FRONTEND   │ │   FEATURE   │
-          │    AGENT    │ │  ARCHITECT  │ │  ARCHITECT  │
-          │ (UI/UX, CSS)│ │(DOM, State) │ │ (Behavior)  │
-          └──────┬──────┘ └──────┬──────┘ └──────┬──────┘
-                 │               │               │
-                 └───────────────┼───────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │    MANAGER SYNTHESIS    │
-                    │ (Unified Implementation)│
-                    └────────────┬────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │      CODING AGENT       │
-                    │  (Stages file changes)  │
-                    └────────────┬────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │        QA AGENT         │
-                    │   (Structured Audit)    │
-                    └────────────┬────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │      LIVE PREVIEW       │
-                    │   (Interactive iframe)  │
-                    └────────────┬────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │     HUMAN FEEDBACK      │
-                    │(Minimal Change Editing) │
-                    └─────────────────────────┘
+                            ┌─────────────────────────┐
+                            │       USER REQUEST      │
+                            │ (Chat / Dispatch / API) │
+                            └────────────┬────────────┘
+                                         │
+                                         ▼
+                            ┌─────────────────────────┐
+                            │    ROUTING & BUDGET     │
+                            │(Auto-Detect / Tier Pick)│
+                            └────────────┬────────────┘
+                                         │
+                 ┌───────────────────────┴───────────────────────┐
+                 │                                               │
+                 ▼                                               ▼
+       [ Website / App Flow ]                         [ Document Analyst Flow ]
+  ┌─────────────────────────────┐                  ┌─────────────────────────────┐
+  │        MANAGER AGENT        │                  │      DOCUMENT ANALYST       │
+  │     (Atlas - Plan & Spec)   │                  │  (Bounded Excerpts/Workers) │
+  └──────────────┬──────────────┘                  └──────────────┬──────────────┘
+                 │                                                │
+   ┌─────────────┼─────────────┐                   ┌──────────────┴──────────────┐
+   ▼             ▼             ▼                   ▼                             ▼
+┌───────┐   ┌─────────┐   ┌─────────┐       ┌──────────────┐              ┌──────────────┐
+│DESIGN │   │FRONTEND │   │ FEATURE │       │  PDF / DOCX  │              │ UTF-8 Source │
+│(3 Tiers)  │(3 Tiers)│   │(3 Tiers)│       │  Extraction  │              │ Text Analysis│
+└───────┬─┘ └────┬────┘   └────┬────┘       └──────┬───────┘              └──────┬───────┘
+        │        │             │                   │                             │
+        └────────┼─────────────┘                   └──────────────┬──────────────┘
+                 │                                                │
+                 ▼                                                ▼
+  ┌─────────────────────────────┐                  ┌─────────────────────────────┐
+  │      MANAGER SYNTHESIS      │                  │    MARKDOWN DELIVERABLE     │
+  │  (Unified Architecture Spec)│                  │(documents/<title>.md + Cov.)│
+  └──────────────┬──────────────┘                  └──────────────┬──────────────┘
+                 │                                                │
+                 ▼                                                ▼
+  ┌─────────────────────────────┐                  ┌─────────────────────────────┐
+  │        CODING AGENT         │                  │    IDE / DOWNLOAD EXPORT    │
+  │ (Byte / Cipher / Matrix)    │                  │  (Atomic Provenance Commit) │
+  └──────────────┬──────────────┘                  └─────────────────────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────┐
+  │ DETERMINISTIC AUDIT + QA    │
+  │  (Acorn/DOM + Sentinel/QA)  │
+  └──────────────┬──────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────┐
+  │  SANDBOXED LIVE PREVIEW     │
+  │ (Isolated Project Origin)   │
+  └──────────────┬──────────────┘
+                 │
+                 ▼
+  ┌─────────────────────────────┐
+  │  HUMAN-IN-THE-LOOP FEEDBACK │
+  │ (Minimal Change Preserved)  │
+  └─────────────────────────────┘
 ```
 
 ---
 
-## 🏛️ Core Architectural Principles
+## 🏛️ Core Architectural Pillars
 
-### 1. Agents and Models Are Decoupled
-- **Agents** are logical personas with specific skills, boundaries, and prompt contracts.
-- **Models** are inference engines (`moonshotai/kimi-k3` via NVIDIA NIM).
-- Agents never call provider endpoints directly. All inference flows through the centralized **Model Gateway**. Changing models requires zero rewrites to agents or orchestration logic.
+### 1. Decoupled 16-Agent Multi-Tier Staff Roster
+Agents are logical personas with strict boundaries, schemas, and skills. They never invoke LLM APIs directly. Inference is routed dynamically through the **Model Gateway**.
 
-### 2. Project-Scoped Files and Revisions
-- Each project has its own manifest, source files, binary assets, and revision history:
-  ```text
-  projects/
-  ├── sports-ecommerce-1727623910-abcd/
-   │   ├── index.html
-   │   ├── css/main.css
-   │   ├── js/app.js
-   │   ├── pages/about.html
-   │   ├── assets/logo.png
-   │   ├── project.json     <- Committed manifest and metadata
-   │   └── .orchestra/      <- Immutable local blobs and revision snapshots
-  └── boutique-store-1727623990-wxyz/
-      ├── index.html
-      └── project.json
-  ```
-- The committed manifest is authoritative; source files on disk are compatibility mirrors. MongoDB mode stores blobs in GridFS and snapshots in `project_revisions`.
-- A file batch publishes as one revision. Stale edits are rejected with HTTP `409`; rollback creates a new revision without erasing history.
+The agency employs **16 registered staff members** across **3 specialization tiers**:
 
-### 3. Sole Implementation Ownership
-- The **Coding Agent** owns application changes across all files. Specialists provide plans, including a file tree, entry point, and dependencies. Manual edits are available in the IDE.
-- The **Document Analyst** reads project files and creates a new Markdown deliverable. It has no source-edit/delete tool; original uploads are preserved.
+| Role | Free Tier (`-1`)<br>*(Codestral Latest)* | Pro Tier (`-2`)<br>*(Kimi K3)* | Max Tier (`-3`)<br>*(Gemini 3.5 Flash Lite)* | Responsibilities |
+|---|---|---|---|---|
+| **Manager** | — | — | **Atlas** (`manager-1`) | Intent routing, specialist delegation, graph planning, unified specification synthesis. |
+| **Designer** | **Pixel** (`designer-1`) | **Chroma** (`designer-2`) | **Canvas** (`designer-3`) | Design systems, color palettes, typography, glassmorphism, responsive UX. |
+| **Frontend Architect** | **Nova** (`frontend-1`) | **Blueprint** (`frontend-2`) | **Apex** (`frontend-3`) | DOM hierarchy, file tree structure, CSS/JS modularity, dependencies. |
+| **Feature Architect** | **Scout** (`feature-1`) | **Beacon** (`feature-2`) | **Compass** (`feature-3`) | User journeys, state transitions, interactive behaviors, edge cases. |
+| **Coding Agent** | **Byte** (`coder-1`) | **Cipher** (`coder-2`) | **Matrix** (`coder-3`) | **Sole implementation owner**. Stages atomic multi-file edits, renames, and deletions. |
+| **QA Auditor** | **Query** (`qa-1`) | **Audit** (`qa-2`) | **Sentinel** (`qa-3`) | AST validation, broken link/import auditing, DOM completeness checks. |
+| **Document Analyst** | — | — | Run-local Specialist | Deep file analysis, PDF/DOCX extraction, source-grounded Markdown reports. |
 
-### 4. Minimal Change Preservation Rule (Human Feedback)
-- Existing projects, including uploads, use the contextual editing flow. The agent receives the file tree and relevant source, can request additional files, and must read existing files before modifying them.
-- Omitted files remain byte-for-byte unchanged. Renames and deletions are explicit; all staged batches commit together after a complete response.
+### 2. Tri-Provider Model Gateway & Automatic Fallback Cascades
+Inference runs through a unified provider-agnostic gateway supporting streaming, token usage calculation, exponential backoff, and automatic fallback chains:
+
+1. **Lead / Premium**: **Google Gemini 3.5 Flash / Flash Lite** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`) via Google AI Studio. 32,768 output tokens, ultra-low latency, and structured reasoning.
+2. **Standard / Deep Reasoning**: **Moonshot AI Kimi K3** (`kimi-k3` / `moonshotai/kimi-k3`) via NVIDIA NIM. 16,384 output tokens with deep chain-of-thought capability (`reasoning_effort: max`).
+3. **Budget / Free**: **Mistral AI Codestral** (`codestral-latest`). 256,000 token context window, 16,384 output tokens, optimized for code generation. *(Replaces deprecated OpenRouter free models to prevent output clamping).*
+4. **Quota Guard & Cascade Fallback**: If an upstream model encounters rate limits, transient `5xx` errors, or daily quota exhaustion (`RESOURCE_EXHAUSTED`), the gateway automatically cascades to configured fallback models without breaking active pipelines.
+
+### 3. Dynamic Budget Allocation Engine
+Optimize spend per project across 3 pricing tiers:
+- **Free Tier ($0.00)**: Deploys all Free-tier specialists powered by Mistral Codestral.
+- **Lean / Balanced Tier ($0.05 – $0.49, default $0.25)**: Smart prioritization engine allocates the high-performance **Matrix** (`coder-3`) for code generation, balancing research and planning specialists on standard/free tiers.
+- **Premium Tier ($0.50+, uncapped)**: Deploys the top-tier Max specialist roster powered by Gemini 3.5 Flash Lite and Kimi K3.
+- **Spend Tracking & Guardrails**: In-memory expenditure tracking per project with automatic budget caps (`HTTP 402` returned when budget limit is reached).
+
+### 4. Interactive Virtual Office & Modern UI Experiences
+- **Pixi.js 2.5D Animated Office**: Real-time canvas simulation featuring isometric desks, animated agent sprites, activity badges, thinking bubbles, and walking/working states.
+- **4-Quadrant Studio Atelier**:
+  - **Left**: Agent Team Roster & live status badges (`IDLE`, `WORKING`, `STREAMING`, `COMPLETED`, `RETRYING`, `ERROR`).
+  - **Center**: Dual Chat Wire, real-time pipeline visualizer, and color-coded streaming terminal logs.
+  - **Right**: Sandboxed Live Preview with responsive viewports (Desktop 100%, Tablet 768px, Mobile 375px) and Direct-to-Coder Human Feedback card.
+  - **Bottom / Drawer**: Multi-file nested IDE with syntax highlighting, diff viewer, and revision restore.
+- **Paperclip-Inspired Minimal Landing Page** (`/home`): Minimalist luxury landing page with interactive, connected organizational chart illustrating agent hierarchies.
+
+### 5. Multi-File Project Workspace & Nested IDE
+- Full directory hierarchies: HTML pages, CSS stylesheets, ES modules, images, fonts, and data files.
+- Drag-and-drop ZIP, folder, and multi-file imports with path normalization and malicious file/symlink filtering.
+- In-memory working tree (`agentFileSession.js`) supporting iterative file reads (up to 12 files / 160k characters per round) with atomic staged commits.
+- **Minimal Change Preservation Rule**: Targeted feedback edits only touch requested files, keeping untouched source code byte-for-byte intact.
+
+### 6. Dual-Engine Storage & Concurrency
+- **Filesystem Mode** (Default): Committed manifests in `projects/<id>/project.json`, immutable content-addressed blobs in `.orchestra/blobs/`, revision records in `.orchestra/revisions/`, protected with cross-process file locks (`proper-lockfile`).
+- **MongoDB + GridFS Mode**: High-scale distributed storage storing manifests in `projects`, snapshots in `project_revisions`, and binary/text blobs in `orchestra_blobs` GridFS with `_generation` Compare-And-Swap (CAS) optimistic concurrency.
+- **Zero-Data-Loss History**: Revisions increment monotonically. Stale edits return `HTTP 409 Conflict`. Rollback creates a new revision without destroying past snapshots.
+
+### 7. Isolated Multi-Origin Live Preview
+- Separate read-only preview server running on `PREVIEW_PORT` (default `3001`).
+- Origin isolation via `<projectId>.localhost:3001` guarantees that project scripts, cookies, and `localStorage` cannot access or compromise Studio APIs.
+- Strict Content Security Policy (CSP) sandboxing with root-relative and module URL rewriting.
 
 ---
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
-- **Node.js 24** (the verified runtime).
-- API keys for the providers selected by your model/budget routing: NVIDIA NIM, Google Gemini, and/or OpenRouter. File import, manual editing, preview, and revision history work without model keys.
+- **Node.js 24+** (ESM native runtime).
+- API keys for your preferred model providers:
+  - **Google Gemini** (Recommended primary): [Google AI Studio](https://aistudio.google.com/)
+  - **NVIDIA NIM** (Reasoning tier): [NVIDIA Build](https://build.nvidia.com/)
+  - **Mistral AI** (Free/Budget tier): [Mistral Console](https://console.mistral.ai/)
+- *(Optional)* **MongoDB 6+** for enterprise persistence.
 
-### 2. Environment Setup
-Create `.env` from `.env.example` if you do not already have one. The default local configuration is:
-```env
-PORT=3000
-HOST=localhost
-PREVIEW_PORT=3001
-# Add the API keys for your selected providers.
-```
-
-### 3. Install Dependencies
+### 2. Installation
 ```bash
+git clone https://github.com/BIKRAM-GORAI/orchestra.git
+cd orchestra
 npm install
 ```
 
-### 4. Run Automated Tests
-```bash
-npm test
-```
-This uses disposable filesystem storage and mocked model providers. MongoDB checks are opt-in; see **Verification** below.
+### 3. Environment Configuration
+Create a `.env` file in the root directory (refer to `.env.example`):
+```env
+# Server Configuration
+PORT=3000
+HOST=localhost
+PREVIEW_PORT=3001
 
-### 5. Launch the Platform
+# Model Provider API Keys
+GEMINI_API_KEY=your_gemini_api_key_here
+NVIDIA_API_KEY=your_nvidia_api_key_here
+MISTRAL_API_KEY=your_mistral_api_key_here
+
+# Optional: MongoDB Storage (defaults to local filesystem if blank)
+# MONGO_URI=mongodb://localhost:27017
+# MONGO_DB_NAME=orchestra
+```
+
+### 4. Running the Platform
 ```bash
+# Start in development mode (with server auto-restart)
 npm run dev
-# or: npm start
-```
-Open **`http://localhost:3000`** in your browser.
 
-The same process also starts the read-only preview server on port **3001**. Local project previews use `<projectId>.localhost:3001`, providing separate browser storage per project. When accessing the studio from another machine, set `HOST=0.0.0.0` and make both ports accessible. Behind HTTPS/reverse proxies, set `PREVIEW_ORIGIN` to a separate preview origin; use `https://{projectId}.preview.example.com` with wildcard DNS/TLS for per-project origins. Proxy that host to the preview listener, never the studio listener.
+# Or run in standard production mode
+npm start
+```
+
+Access the interfaces:
+- **Studio Atelier & Virtual Office**: [http://localhost:3000](http://localhost:3000)
+- **Paperclip Org Tree Landing Page**: [http://localhost:3000/home](http://localhost:3000/home)
+- **Live Preview Listener**: [http://localhost:3001](http://localhost:3001)
 
 ---
 
-## 🖥️ Dashboard Features
+## 🛠️ Verification & Test Suite
 
-1. **Agent Registry & Playground (Left Panel)**: Real-time agent state indicators (`IDLE`, `WORKING`, `STREAMING`, `COMPLETED`, `RETRYING`, `ERROR`) with active pulse glow animations.
-2. **Orchestration Flow & Pipeline (Center Panel)**:
-   - 7-step visual execution pipeline.
-   - Live streaming terminal log with timestamped progress.
-   - Interactive QA Audit card displaying overall verdict and categorized findings.
-3. **Live Preview & Human Feedback (Right Panel)**:
-   - Sandboxed iframe with auto-reloading preview.
-   - Viewport switcher: Desktop (100%), Tablet (768px), and Mobile (375px).
-   - Project switcher dropdown to jump between isolated projects.
-    - Direct-to-Coder Human Feedback card for targeted edits.
-4. **IDE Workspace**: Nested explorer, full-path file selection, text editing, create/rename/delete, binary download, entry-page selection, revision diffs, and restore.
-5. **Document Tasks**: Upload directly from Chat, choose an output mode, and open/download the generated `.md` file. Task progress shows source inspection and writing rather than website-building stages.
-
-## 📝 Summaries, Explanations, and Other Written Tasks
-
-1. In **Chat**, choose **Upload files**, or import files from the IDE. Select a saved project to use its existing material instead.
-2. Leave Output on **Auto**, or select **Markdown document**.
-3. Describe the deliverable, audience, and level of detail. For example:
-   - “Summarize these files in five key points and list the action items.”
-   - “Explain this code step by step for a beginner, with examples.”
-   - “Compare these documents and list conflicting requirements.”
-   - “Turn these notes into a requirements document with acceptance criteria.”
-   - “Explain reinforcement learning with a simple example.” (No upload needed.)
-4. The result opens in the IDE as `documents/<title>.md`. Chat also provides **Open Markdown** and **Download .md** actions. Each response creates a new revision and a new filename if the title was already used.
-
-The file contains the requested response itself, followed by **Source coverage** describing which files/text ranges were available to the agent. Document-only projects do not need `index.html` and do not run website QA. You can also ask for an explanation of an existing website without modifying its HTML, CSS, scripts, or assets.
-
-### Readable Material
-
-- UTF-8 text, Markdown, source code, CSV/TSV, JSON, XML, YAML, logs, and other plain-text files.
-- **Text-based PDF** and **DOCX**, extracted in bounded worker threads. Original binary files remain unchanged and downloadable.
-- Image-only/scanned PDFs, images, audio/video, legacy `.doc`, and other unsupported binary formats require a different reader/OCR. Unavailable or partially inspected material is identified in Source coverage. If none of the uploaded files provide readable text, the task fails with an explanation instead of inventing a summary.
-
-Analysis allows at most 12 agent turns, up to 6 excerpts of 16,000 characters per turn, and 24,000 characters of carried-forward evidence notes. Extraction is limited to 2 million characters/file, 200 PDF pages, and 30 seconds per PDF/DOCX worker. Truncation and incomplete coverage are reported. Document generation uses the selected implementation-tier model/fallbacks through the same gateway and spend tracking as website generation.
-
-## 📂 Import and Continue an Existing Website
-
-1. Open **IDE → Import** and choose a ZIP, folder, or multiple files.
-2. Set the project name. Keep **strip outer folder** enabled for a ZIP/folder containing one enclosing directory; disable it when that directory is part of your website's paths.
-3. Import into a new project, or choose the current project to add/replace matching files. Files omitted from an upload are preserved.
-4. Select the HTML entry page and open **Preview**. Relative pages/assets, CSS, browser ES modules, images, fonts, and local storage are supported.
-5. Edit files directly, or send a targeted request in Chat/Feedback. Open **History** to inspect changes or restore a previous snapshot.
-
-### Supported Scope and Limits
-
-- Preview executes **browser-ready static HTML/CSS/JavaScript**. Framework source such as React/Vite/Next.js can be imported and edited, but is marked source-only. Build that project externally and import its static output as a separate project for preview. Orchestra does not install uploaded dependencies or start application servers.
-- Up to **500 tracked files**, **10 MB per file**, **50 MB total**, and **25 MB per ZIP**; ZIP expanded contents also obey project limits. Agent reports count toward tracked-file limits.
-- Dependency/cache folders, VCS metadata, `.env` files, and platform junk are filtered. Unsafe paths, symlinks, duplicate/case-conflicting paths, and file/directory collisions are rejected.
-- Preview resolves relative URLs and rewrites root-relative HTML/CSS URLs and literal JavaScript module/`fetch` URLs. Dynamically constructed absolute URLs, remote APIs, and external services still depend on the site's implementation and network configuration.
-- QA combines JavaScript/JSON parsing, local-reference and DOM checks, and a model audit. This is not automatic browser execution of every generated site. Findings remain visible even when a revision was saved successfully.
-- Existing budget selection uses estimated per-call prices and a pre-run check; it is not a hard spending cap during multi-round generation. Spend tracking is currently in memory.
-
-### Storage
-
-Without a Mongo URI, data is stored under `projects/` and `workspace/`. Set `ORCHESTRA_DATA_DIR` to choose their parent directory, or `ORCHESTRA_STORAGE=filesystem` to explicitly use local storage.
-
-Set `MONGO_URI` and optionally `MONGO_DB_NAME` for MongoDB/GridFS persistence. Legacy nested filesystem and `project_files` data are migrated on their first source edit, retaining a baseline revision. Back up the complete data directory in filesystem mode; in MongoDB mode back up the database including GridFS. Disk mirrors alone are not a MongoDB backup or a storage-mode migration.
-
-## ✅ Verification
+The test suite covers provider contracts, model gateway fallbacks, budget allocation, multi-round agent sessions, document analysis workers, concurrency locks, and revision rollbacks:
 
 ```bash
+# Run the complete test suite (unit, integration & gateway mocks)
 npm test
 
-# Install Chromium once; Linux may also need Playwright system dependencies.
+# Run browser automated workflow tests (requires Playwright Chromium)
 npx playwright install chromium
 npm run test:browser
 
-# Starts a disposable local MongoDB process; downloads its binary on first use.
+# Run MongoDB persistence & GridFS concurrency tests
 npm run test:mongo
 ```
 
-On supported Linux distributions, `npx playwright install-deps chromium` installs the browser's OS dependencies. Use `PLAYWRIGHT_BROWSERS_PATH` if you keep browser binaries in a custom cache.
-
-All test commands isolate application data and use mocked model responses. PDF/DOCX extraction uses the real parsers. `test:browser` covers website import/editing/preview/revisions, automatic routing, document upload/analysis, Markdown open/download, source preservation, and explanations without uploads through the actual HTTP/SSE pipeline. `test:mongo` exercises document and website persistence, GridFS, revisions, and competing processes. To use an existing test MongoDB server, set `ORCHESTRA_TEST_MONGO_URI` when running `npm test`; the runner uses a uniquely named disposable database, not your application database.
-
-The studio served by `npm start` is `src/client/`. The separate root `client/` and `dist/` directories are not the frontend served by this Express application.
-
 ---
 
-## 📡 REST & SSE API Reference
+## 📡 REST & Real-Time SSE API Reference
+
+### Orchestration & Execution
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/health` | Gateway & API key status check |
-| `GET` | `/api/models` | Available model registry & retry policies |
-| `GET` | `/api/agents` | All registered logical agents and assigned models |
-| `POST` | `/api/agents/:id/model` | Dynamically reassign an agent's model |
-| `GET` | `/api/projects` | List all isolated projects |
-| `GET` | `/api/projects/:id` | Get project metadata & specifications |
-| `POST` | `/api/projects` | Create an empty project |
-| `POST` | `/api/projects/import` | Import a ZIP/folder/multiple files as a new project |
-| `POST` | `/api/projects/:id/import` | Add/replace files with `expectedRevision` |
-| `GET` | `/api/projects/:id/files` | File metadata, full relative paths, revision and entry point |
-| `GET` | `/api/projects/:id/files/:path` | Read a nested file; `?download=true` downloads original bytes |
-| `POST` | `/api/projects/:id/changes` | Commit create/update/delete/rename actions |
-| `GET` | `/api/projects/:id/preview-info` | Preview URL and runtime support status |
-| `GET` | `/api/projects/:id/preview` | Redirect to the separate preview origin |
-| `GET` | `/api/projects/:id/revisions` | Revision history |
-| `GET` | `/api/projects/:id/revisions/:revision` | Textual/binary change summary and diffs |
-| `POST` | `/api/projects/:id/revisions/:revision/restore` | Restore as a new revision with `expectedRevision` |
-| `POST` | `/api/orchestrate/spec` | Run Manager Plan -> Specialists -> Synthesis |
-| `POST` | `/api/orchestrate/task` | General request: auto-route, create Markdown, or build/edit a website |
-| `POST` | `/api/orchestrate/build` | Generate a new site, or contextually edit an existing project |
-| `POST` | `/api/orchestrate/feedback` | Apply targeted human feedback edit |
-| `GET` | `/api/orchestrate/events` | Real-time Server-Sent Events (SSE) stream |
+| `POST` | `/api/orchestrate/task` | Unified entry point: auto-classifies intent, produces Markdown document or builds website. |
+| `POST` | `/api/orchestrate/build` | Initiates full website generation pipeline (Manager → Specialists → Coder → QA). |
+| `POST` | `/api/orchestrate/feedback` | Sends human-in-the-loop feedback directly to Coding Agent with Minimal Change preservation. |
+| `POST` | `/api/orchestrate/spec` | Executes Manager decomposition, parallel specialist planning, and specification synthesis. |
+| `GET` | `/api/orchestrate/events` | Real-time Server-Sent Events (SSE) stream (`agentState`, `pipeline`, and `heartbeat`). |
 
-Multipart uploads use field `files`, optional JSON `paths` (one relative path per file), `name`, `stripRoot`, and `entryPoint`. Existing-project uploads require `expectedRevision`.
-
-Example JSON body for `/api/projects/:id/changes`:
-
+#### Task Execution Payload (`POST /api/orchestrate/task`)
 ```json
 {
-  "expectedRevision": 1,
-  "note": "Update shared styling",
+  "prompt": "Analyze uploaded contracts, extract key milestones, and compare liability clauses.",
+  "taskType": "auto",
+  "projectId": "project-id-optional",
+  "budget": 0.25,
+  "outputPath": "documents/contract_analysis.md"
+}
+```
+*Note: `taskType` accepts `"auto"`, `"document"`, or `"website"`. Omit `projectId` to automatically create a new project workspace.*
+
+---
+
+### Budget & Model Management
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/budget/status` | Current budget limit, active project spend, budget tier descriptions, and model registry. |
+| `POST` | `/api/budget/allocate` | Dynamically re-assigns the 16-agent roster and fallback chains based on budget amount. |
+| `GET` | `/api/models` | List all available registered models, latency profiles, pricing, and retry policies. |
+| `GET` | `/api/agents` | List active agent team configurations, assigned model IDs, and fallback cascades. |
+| `POST` | `/api/agents/create` | Instantiate a new dynamic specialist with a unique sequential ID (`designer-4`, `coder-4`). |
+| `PUT` | `/api/agents/:id/config` | Update an agent's primary model and fallback model cascade. |
+| `POST` | `/api/agents/:id/model` | Quick reassignment of an agent's primary model. |
+
+---
+
+### Project & File Workspace Management
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/projects` | List all projects with metadata, revision counters, and file counts. |
+| `POST` | `/api/projects` | Create a new empty project. |
+| `GET` | `/api/projects/:id` | Fetch project details, specifications, and QA reports. |
+| `POST` | `/api/projects/import` | Upload a ZIP, folder, or multi-file bundle to initialize a new project. |
+| `POST` | `/api/projects/:id/import` | Import files into an existing project (requires `expectedRevision`). |
+| `GET` | `/api/projects/:id/files` | Get full-path manifest, revision number, entry point, and project type. |
+| `GET` | `/api/projects/:id/files/:path` | Read file content (`?download=true` for binary download). |
+| `POST` | `/api/projects/:id/changes` | Commit staged batch of file additions, modifications, renames, and deletions. |
+| `GET` | `/api/projects/:id/preview-info` | Get sandboxed preview URL and runtime compatibility status. |
+| `GET` | `/api/projects/:id/preview` | Direct redirect to the project's sandboxed preview origin. |
+| `GET` | `/api/projects/:id/revisions` | Retrieve revision history timeline. |
+| `GET` | `/api/projects/:id/revisions/:rev` | View detailed unified text diffs and binary change summaries. |
+| `POST` | `/api/projects/:id/revisions/:rev/restore` | Restore a historical snapshot as a new revision. |
+
+#### File Changes Batch Payload (`POST /api/projects/:id/changes`)
+```json
+{
+  "expectedRevision": 3,
+  "note": "Refactor navigation and update theme tokens",
   "changes": [
-    { "action": "update", "path": "css/main.css", "content": "body { color: navy; }" },
-    { "action": "rename", "path": "pages/about.html", "to": "pages/team.html" }
+    { "action": "update", "path": "css/theme.css", "content": ":root { --brand: #6366f1; }" },
+    { "action": "rename", "path": "pages/old-contact.html", "to": "pages/contact.html" },
+    { "action": "delete", "path": "temp.js" }
   ]
 }
 ```
 
-Renaming a file does not automatically rewrite its references; include the corresponding source edits in the same request. To change only the preview page, send `changes: []`, `entryPoint`, and `expectedRevision`. Agent-run events carry `projectId` and `runId`; SSE supports `?projectId=...` filtering.
+---
 
-Example request to `/api/orchestrate/task`:
+## 📁 Repository Structure
 
-```json
-{
-  "projectId": "your-uploaded-project-id",
-  "prompt": "Explain these files for a beginner and list the requirements",
-  "taskType": "document",
-  "outputPath": "documents/explanation.md",
-  "budget": 0.35
-}
+```text
+orchestra/
+├── src/
+│   ├── client/                  # Frontend UI Assets
+│   │   ├── home.html            # Ultra-minimal Paperclip-inspired landing page
+│   │   ├── index.html           # 4-Quadrant Atelier studio application
+│   │   ├── index.css            # Atelier design system & dark theme tokens
+│   │   └── js/
+│   │       ├── app.js           # Studio client controller & SSE stream coordinator
+│   │       ├── pixi-office.js   # Pixi.js 2.5D isometric virtual office simulation
+│   │       ├── office.js        # Office telemetry, agent desk mapping & state sync
+│   │       ├── agent-state.js   # Real-time state machine & activity feeds
+│   │       └── project-workspace.js # Multi-file IDE explorer, diffs, & file editor
+│   └── server/                  # Backend Node.js Services (ESM)
+│       ├── index.js             # Express application & preview server listeners
+│       ├── agents/              # Agent Registry & Logical Personas
+│       │   ├── agentRegistry.js # 16-agent staff roster & dynamic instantiation
+│       │   ├── baseAgent.js     # Base state machine & fallback event emitter
+│       │   └── definitions/     # Manager, Designer, Frontend, Feature, Coder, QA, Doc
+│       ├── config/              # Central Configuration
+│       │   ├── env.js           # Environment parser & validation
+│       │   └── models.js        # Tri-provider model registry, pricing, & retry policies
+│       ├── db/                  # Persistence Layer
+│       │   └── mongo.js         # MongoDB connection & GridFS bucket setup
+│       ├── gateway/             # Multi-Model AI Gateway
+│       │   └── modelGateway.js  # Streaming, exponential retry backoff, & fallback engine
+│       ├── orchestrator/        # Pipeline Coordination
+│       │   └── orchestrator.js  # Multi-agent graph runner & SSE broadcaster
+│       ├── providers/           # Provider Adapters
+│       │   ├── geminiProvider.js# Google AI Studio Gemini adapter
+│       │   ├── nvidiaProvider.js# NVIDIA NIM Kimi K3 adapter
+│       │   ├── mistralProvider.js# Mistral AI Codestral adapter
+│       │   └── openrouterProvider.js# Legacy fallback adapter
+│       ├── routes/              # Express API Routes
+│       │   ├── api.js           # Orchestration, budget, models, and agent routes
+│       │   ├── projects.js      # Project workspace, file mutations, and revisions
+│       │   └── preview.js       # Sandboxed origin preview handler
+│       └── services/            # Core Business Logic
+│           ├── budgetService.js # Budget allocation engine & spend tracking
+│           ├── projectService.js# Dual storage engine (Filesystem / Mongo CAS)
+│           ├── documentSession.js# Document Analyst file inventory & excerpt manager
+│           ├── documentTextWorker.js# Worker threads for PDF (unpdf) & DOCX (mammoth)
+│           ├── importService.js # ZIP & multi-file folder ingestion
+│           └── validationService.js# Deterministic JS/DOM/Reference pre-audit
+├── scripts/                     # Verification test runners
+├── projects/                    # Local storage directory for isolated project files
+└── package.json                 # Project dependencies and test scripts
 ```
 
-`projectId` is optional for a new task without uploads. `taskType` defaults to `auto` and accepts `website` or `document`. `outputPath` is optional, must end in `.md`, and must be unused. Document responses contain `data.taskType`, `data.revision`, and `data.document` (`path`, `title`, `sources`, `warnings`). File content is available from the usual project-file read/download endpoint. Document SSE stages are `TASK_ROUTING_STARTED`, `TASK_ROUTED`, `DOCUMENT_STARTED`, `DOCUMENT_READING`, `DOCUMENT_COMPLETED`, and `TASK_FAILED`.
+---
+
+## 🔒 Security & Sandboxing
+
+1. **Origin Isolation**: Previews run on dedicated origins (`<projectId>.localhost:3001` or separate domains configured via `PREVIEW_ORIGIN`). Preview pages are strictly blocked from invoking Studio APIs via Origin header validation.
+2. **Content Security Policy (CSP)**: Sandboxed iframe headers restrict script execution to project resources and disallow privilege escalation.
+3. **Upload Sanitization**: Upload archives and folders are checked against path traversal (`../`), reserved filenames, symlinks, binary limits (10 MB/file, 50 MB total), and malicious file extensions.
+4. **Worker Thread Bounding**: PDF and DOCX extraction run inside isolated Node.js worker threads restricted to 30-second timeouts, 192 MB heap limits, and max 2,000,000 character extraction bounds to prevent memory denial-of-service.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).

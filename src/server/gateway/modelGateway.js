@@ -59,12 +59,27 @@ export class ModelGateway {
       const modelConfig = getModelConfig(currentModelId);
       const provider = this.providerRegistry.get(modelConfig.provider);
 
+      // Fast-fallback if provider has an explicit empty API key and a fallback model exists
+      if (typeof provider.apiKey === 'string' && !provider.apiKey && modelIndex < modelsToTry.length - 1) {
+        const nextModel = modelsToTry[modelIndex + 1];
+        console.warn(`[MODEL GATEWAY] Provider "${modelConfig.provider}" API key is missing. Immediately switching to fallback ${nextModel}...`);
+        lastError = new Error(`Provider "${modelConfig.provider}" API key is missing`);
+        if (onStateChange) {
+          onStateChange('fallback', {
+            from: currentModelId,
+            to: nextModel,
+            reason: lastError.message,
+          });
+        }
+        continue;
+      }
+
       const mergedParams = {
         ...modelConfig.defaultParameters,
         ...parameters,
       };
 
-      const maxAttempts = policy.retry.maxAttempts || 3;
+      const maxAttempts = policy.retry.maxAttempts || 2;
       let attempt = 0;
 
       while (attempt < maxAttempts) {
@@ -72,7 +87,7 @@ export class ModelGateway {
         const attemptStartTime = Date.now();
 
         // Setup timeout controller with streaming activity watchdog
-        const timeoutMs = policy.retry.timeoutMs || 120000;
+        const timeoutMs = policy.retry.timeoutMs || 25000;
         const abortController = new AbortController();
         let timeoutId = setTimeout(() => {
           abortController.abort(new Error(`Model Gateway request timed out after ${timeoutMs}ms (no initial response)`));
@@ -137,11 +152,18 @@ export class ModelGateway {
 
           const isRetryable = provider.isRetryableError(error);
           const isDailyQuotaExhausted = error.message?.includes('RESOURCE_EXHAUSTED') || error.message?.includes('Quota exceeded');
+          const isTimedOut = error.message?.includes('timed out') || error.name === 'AbortError';
 
           console.warn(`[MODEL GATEWAY] Attempt ${attempt} failed: ${error.message} (Retryable: ${isRetryable})`);
 
           if (isDailyQuotaExhausted) {
             console.warn(`[MODEL GATEWAY] Daily quota limit exhausted for ${currentModelId}. Immediately switching to fallback model...`);
+            break;
+          }
+
+          // If request timed out and we have a fallback model available, don't stall on retries
+          if (isTimedOut && modelIndex < modelsToTry.length - 1) {
+            console.warn(`[MODEL GATEWAY] Request for ${currentModelId} timed out. Immediately switching to fallback model...`);
             break;
           }
 

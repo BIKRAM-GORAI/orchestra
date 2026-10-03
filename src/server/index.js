@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../../');
 
 const app = express();
+app.set('trust proxy', true);
 
 // Preview documents run on another origin (or an opaque sandbox origin).
 // They must not be able to read or mutate the studio API.
@@ -53,6 +54,14 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Process-level resilience against unhandled rejections and socket aborts
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
+
 export function startServer() {
   const validation = validateConfig();
   if (validation.warnings.length > 0) {
@@ -65,9 +74,9 @@ export function startServer() {
   const previewServer = previewApp.listen(config.previewPort, config.host, () => {
     console.log(`[PREVIEW SERVER] Running at http://${config.host}:${config.previewPort}`);
   });
-  previewServer.on('error', err => { console.error('[PREVIEW SERVER]', err.message); server.close(); });
-  server.on('close', () => previewServer.close());
-  server.on('error', () => previewServer.close());
+  previewServer.on('error', err => { console.error('[PREVIEW SERVER]', err.message); });
+  server.on('close', () => { try { previewServer.close(); } catch (_) {} });
+  server.on('error', err => { console.error('[SERVER ERROR]', err.message); });
 
   if (config.mongoUri) {
     connectMongo().then(() => {
