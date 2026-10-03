@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniVerse — Simplified Quick Generator</title>
+  <meta name="description" content="Type a prompt, watch the agent orchestra build your website with live progress, and review your live sandbox instantly.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./simple.css?v=1">
+  <script src="./vendor/lucide.min.js"></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="./home.html" class="brand-link">
+        <div class="brand-icon">
+          <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
+        </div>
+        <span>OmniVerse</span>
+        <span class="badge-simple">Simple Mode</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="./home.html" class="btn-ghost">
+          <i data-lucide="home" style="width: 16px; height: 16px;"></i>
+          <span>Home</span>
+        </a>
+        <div id="navWorkingBadge" style="display: none; align-items: center; gap: 6px;" class="badge-simple">
+          <span class="ticker-dot" style="display: inline-block;"></span>
+          <span>Orchestrating...</span>
+        </div>
+        <a href="./index.html" id="navStudioBtn" class="btn-studio">
+          <i data-lucide="cpu" style="width: 16px; height: 16px;"></i>
+          <span>Normal UI (Full Workspace)</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- State 1: Prompt Input Box -->
+      <section id="promptSection">
+        <div class="hero-header">
+          <div class="hero-tag">
+            <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+            <span>Agentic Multi-File Architecture</span>
+          </div>
+          <h1 class="hero-title">What do you want to build?</h1>
+          <p class="hero-desc">
+            Describe your idea in plain English. The agent team will plan the architecture, draft styling contracts, generate modular source code, and run deterministic QA audits.
+          </p>
+        </div>
+
+        <form id="promptForm" class="prompt-card">
+          <textarea
+            id="promptInput"
+            class="prompt-textarea"
+            placeholder="e.g. Build a high-converting landing page for a decentralized cloud compute protocol with dark mode, interactive pricing tiers, latency calculator, and responsive navigation..."
+            required
+            rows="4"
+          ></textarea>
+
+          <div class="prompt-controls">
+            <div class="options-pill-row">
+              <div class="budget-select-wrap">
+                <i data-lucide="coins" style="width: 14px; height: 14px; color: var(--accent-cyan);"></i>
+                <span>Budget:</span>
+                <select id="budgetSelect" class="budget-select" aria-label="Agent Budget Allocation">
+                  <option value="1.00" selected>⚡ Max Model ($1.00 — Gemini Flash Max Context)</option>
+                  <option value="0.35">Standard ($0.35 — Balanced Pro)</option>
+                  <option value="0.00">Free Tier ($0.00 — Mistral Codestral)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" id="generateBtn" class="btn-generate">
+              <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+              <span>Generate Website</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Quick Idea Chips -->
+        <div class="idea-chips">
+          <span class="chip-label">Try an idea:</span>
+          <button type="button" class="idea-chip" data-prompt="Build a SaaS landing page for an AI audio enhancer with interactive before/after waveform player, feature grid, and pricing cards.">
+            🎙️ AI Audio Enhancer SaaS
+          </button>
+          <button type="button" class="idea-chip" data-prompt="Create a sleek developer portfolio for a full-stack Web3 engineer with project showcase, skills radar, and terminal contact form.">
+            💻 Developer Portfolio
+          </button>
+          <button type="button" class="idea-chip" data-prompt="Design a luxury real estate showcase for modern smart homes with interactive gallery, neighborhood map stats, and consultation booking.">
+            🏡 Luxury Real Estate
+          </button>
+          <button type="button" class="idea-chip" data-prompt="Build a fitness workout planner dashboard with weekly routine tracking, calorie calculator, and workout timer.">
+            ⚡ Fitness Workout Tracker
+          </button>
+        </div>
+      </section>
+
+      <!-- State 2: Live Progress & Agent Pipeline -->
+      <section id="progressCard" class="progress-card">
+        <div class="progress-header">
+          <div class="progress-title-wrap">
+            <div class="spinner-pulse"></div>
+            <h2 class="progress-title">Building Your Website...</h2>
+          </div>
+          <span id="progressPercent" class="progress-percent">0%</span>
+        </div>
+
+        <div class="progress-bar-track">
+          <div id="progressBarFill" class="progress-bar-fill"></div>
+        </div>
+
+        <!-- 5-Stage Agent Quorum Pipeline -->
+        <div class="pipeline-steps">
+          <div id="stepManager" class="step-item">
+            <div class="step-icon">
+              <i data-lucide="compass" style="width: 16px; height: 16px;"></i>
+            </div>
+            <span class="step-name">1. Architecture</span>
+            <span class="step-role">Atlas (Manager)</span>
+          </div>
+
+          <div id="stepSpecialists" class="step-item">
+            <div class="step-icon">
+              <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+            </div>
+            <span class="step-name">2. Specialists</span>
+            <span class="step-role">Design & Front Architect</span>
+          </div>
+
+          <div id="stepSynthesis" class="step-item">
+            <div class="step-icon">
+              <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+            </div>
+            <span class="step-name">3. Synthesis</span>
+            <span class="step-role">Unified Spec</span>
+          </div>
+
+          <div id="stepCoding" class="step-item">
+            <div class="step-icon">
+              <i data-lucide="code" style="width: 16px; height: 16px;"></i>
+            </div>
+            <span class="step-name">4. Implementation</span>
+            <span class="step-role">Matrix (Coder)</span>
+          </div>
+
+          <div id="stepQA" class="step-item">
+            <div class="step-icon">
+              <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+            </div>
+            <span class="step-name">5. QA & AST Audit</span>
+            <span class="step-role">Query (Auditor)</span>
+          </div>
+        </div>
+
+        <!-- Live Activity Ticker -->
+        <div id="activityTicker" class="activity-ticker">
+          <span class="ticker-dot"></span>
+          <span>Initializing autonomous agent quorum...</span>
+        </div>
+      </section>
+
+      <!-- State 3: Completed Deliverables & Live Preview Link -->
+      <section id="resultsCard" class="results-card">
+        <div class="results-hero">
+          <div class="success-badge">
+            <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
+            <span>Build Complete & Audited</span>
+          </div>
+          <h2 class="results-title">Your Website is Live & Ready!</h2>
+          <p class="results-desc">
+            All files passed syntax validation, AST resource verification, and responsive viewport checks.
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="deliverables-actions">
+          <a id="previewUrlBtn" href="#" target="_blank" class="btn-open-preview">
+            <i data-lucide="external-link" style="width: 18px; height: 18px;"></i>
+            <span>Open Live Preview</span>
+          </a>
+
+          <button type="button" id="toggleInlineBtn" class="btn-toggle-inline">
+            <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+            <span>Toggle Embedded Preview</span>
+          </button>
+
+          <a id="openStudioBtn" href="./index.html" target="_blank" class="btn-pro-studio">
+            <i data-lucide="layout" style="width: 18px; height: 18px;"></i>
+            <span>Open in Full Studio</span>
+          </a>
+
+          <button type="button" id="resetBtn" class="btn-ghost" style="margin-left: 8px;">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            <span>Build Another</span>
+          </button>
+        </div>
+
+        <!-- Inline Live Preview Frame -->
+        <div id="inlinePreviewWrap" class="inline-preview-wrap">
+          <div class="preview-toolbar">
+            <div class="viewport-btns">
+              <button type="button" id="vpDesktop" class="vp-btn active" data-viewport="desktop">
+                <i data-lucide="monitor" style="width: 14px; height: 14px;"></i>
+                <span>Desktop</span>
+              </button>
+              <button type="button" id="vpTablet" class="vp-btn" data-viewport="tablet">
+                <i data-lucide="tablet" style="width: 14px; height: 14px;"></i>
+                <span>Tablet</span>
+              </button>
+              <button type="button" id="vpMobile" class="vp-btn" data-viewport="mobile">
+                <i data-lucide="smartphone" style="width: 14px; height: 14px;"></i>
+                <span>Mobile</span>
+              </button>
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+              Interactive Sandbox Frame
+            </span>
+          </div>
+
+          <div id="previewIframeBox" class="preview-iframe-box desktop">
+            <iframe id="previewIframe" class="preview-iframe" title="Website Sandbox Live Preview"></iframe>
+          </div>
+        </div>
+
+        <!-- Generated Files Grid -->
+        <div class="files-section">
+          <div class="files-header">
+            <div class="files-heading">
+              <i data-lucide="folder-git-2" style="width: 18px; height: 18px; color: var(--accent-cyan);"></i>
+              <span>Generated Artifacts & Source Files</span>
+            </div>
+            <span id="fileCountBadge" class="file-count-badge">0 files</span>
+          </div>
+
+          <div id="filesGrid" class="files-grid">
+            <!-- Dynamically populated file cards -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal for inspecting source code -->
+  <div id="fileModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="modalFilename" class="modal-title">filename.js</span>
+        <button type="button" id="modalClose" class="modal-close" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <pre><code id="modalCode" class="code-viewer"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>OmniVerse © 2026 — Autonomous Multi-Agent Web Builder</span>
+      <div class="footer-links">
+        <a href="./home.html" class="footer-link">Landing Page</a>
+        <a href="./index.html" class="footer-link">Normal Studio</a>
+        <a href="./simple.html" class="footer-link">Simple Mode</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./js/simple.js?v=1"></script>
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

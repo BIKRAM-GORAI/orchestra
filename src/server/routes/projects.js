@@ -41,8 +41,11 @@ export function publicProject(project) {
 export function previewUrl(req, project) {
   const local = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(req.hostname);
   const hostname = local ? `${project.id}.localhost` : (req.hostname.includes(':') ? `[${req.hostname}]` : req.hostname);
-  const origin = config.previewOrigin ? config.previewOrigin.replaceAll('{projectId}', project.id) : `${req.protocol}://${hostname}:${config.previewPort}`;
-  if (new URL(origin).origin === `${req.protocol}://${req.get('host')}`) throw projectError('PREVIEW_ORIGIN must use a separate origin from the studio', 500);
+  const isCloudSinglePort = Boolean(process.env.RENDER || process.env.SINGLE_PORT === 'true');
+  const origin = config.previewOrigin
+    ? config.previewOrigin.replaceAll('{projectId}', project.id)
+    : (isCloudSinglePort ? `${req.protocol}://${req.get('host')}` : `${req.protocol}://${hostname}:${config.previewPort}`);
+  if (!isCloudSinglePort && new URL(origin).origin === `${req.protocol}://${req.get('host')}`) throw projectError('PREVIEW_ORIGIN must use a separate origin from the studio', 500);
   return `${origin.replace(/\/$/, '')}/p/${encodeURIComponent(project.id)}/${(project.entryPoint || 'index.html').split('/').map(encodeURIComponent).join('/')}`;
 }
 

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { config, validateConfig } from './config/env.js';
 import { router as apiRouter } from './routes/api.js';
 import { connectMongo } from './db/mongo.js';
-import { previewApp } from './routes/preview.js';
+import { previewApp, handlePreviewRequest } from './routes/preview.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +29,15 @@ app.use('/api', apiRouter);
 // Legacy workspace content is no longer executed on the studio origin.
 app.use('/workspace', (req, res) => res.redirect('/api/preview?starter=true'));
 
+// Preview route support for single-port deployments (Render)
+app.get('/p/:id/*', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Security-Policy', "sandbox allow-scripts allow-forms allow-modals allow-same-origin; object-src 'none'; base-uri 'self'");
+  handlePreviewRequest(req, res, next);
+});
+
 // Serve client frontend statically
 const clientDir = path.join(rootDir, 'src', 'client');
 app.use(express.static(clientDir));
@@ -37,9 +46,13 @@ app.get('/home', (req, res) => {
   res.sendFile(path.join(clientDir, 'home.html'));
 });
 
+app.get('/simple', (req, res) => {
+  res.sendFile(path.join(clientDir, 'simple.html'));
+});
+
 // Fallback to index.html for client SPA
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/workspace')) {
+  if (req.path.startsWith('/api') || req.path.startsWith('/workspace') || req.path.startsWith('/p/')) {
     return next();
   }
   res.sendFile(path.join(clientDir, 'index.html'));

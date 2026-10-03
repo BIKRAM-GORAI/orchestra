@@ -53,6 +53,19 @@ export class GeminiProvider extends BaseProvider {
       },
     };
 
+    // Constrain Gemini to strictly valid JSON when schema or JSON output is requested
+    const expectsJson = Boolean(
+      parameters.responseMimeType === 'application/json' ||
+      parameters.jsonMode ||
+      parameters.outputSchema ||
+      (systemInstruction && systemInstruction.parts?.some(p => p.text?.includes('valid JSON'))) ||
+      messages.some(m => typeof m.content === 'string' && m.content.includes('valid JSON conforming'))
+    );
+
+    if (expectsJson) {
+      payload.generationConfig.responseMimeType = 'application/json';
+    }
+
     if (systemInstruction) {
       payload.systemInstruction = systemInstruction;
     }

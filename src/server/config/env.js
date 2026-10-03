@@ -12,12 +12,12 @@ const dataDir = path.resolve(process.env.ORCHESTRA_DATA_DIR || rootDir);
 
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
-  host: process.env.HOST || 'localhost',
+  host: process.env.HOST || (process.env.RENDER ? '0.0.0.0' : 'localhost'),
   nvidiaApiKey: process.env.NVIDIA_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
   mistralApiKey: process.env.MISTRAL_API_KEY || '',
-  isProduction: process.env.NODE_ENV === 'production',
+  isProduction: process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER),
   rootDir,
   mongoUri: process.env.ORCHESTRA_STORAGE === 'filesystem' ? '' : (process.env.MONGO_URI || process.env.MONGODB_URI || ''),
   mongoDbName: process.env.MONGO_DB_NAME || process.env.MONGODB_DB_NAME || '',

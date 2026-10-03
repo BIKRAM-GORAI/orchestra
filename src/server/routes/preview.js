@@ -40,7 +40,7 @@ function rewriteRootUrls(content, file, base) {
   return serialize(doc);
 }
 
-previewApp.get('/p/:id/*', async (req, res, next) => {
+export async function handlePreviewRequest(req, res, next) {
   try {
     const project = await getProject(req.params.id);
     if (!project) throw projectError('Project not found', 404);
@@ -58,6 +58,8 @@ previewApp.get('/p/:id/*', async (req, res, next) => {
     const content = file.binary ? file.data : rewriteRootUrls(file.data.toString('utf8'), file, `/p/${encodeURIComponent(project.id)}/`);
     res.send(content);
   } catch (err) { next(err); }
-});
+}
+
+previewApp.get('/p/:id/*', handlePreviewRequest);
 previewApp.use((req, res) => res.status(404).type('text/plain').send('Preview resource not found'));
 previewApp.use((err, req, res, next) => res.status(err.status || 500).type('text/plain').send(err.message));

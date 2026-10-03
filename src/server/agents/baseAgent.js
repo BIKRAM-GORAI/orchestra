@@ -157,25 +157,49 @@ export class BaseAgent extends EventEmitter {
   parseStructuredOutput(rawText, outputSchema = this.outputSchema) {
     if (!outputSchema) return rawText;
 
-    let cleaned = rawText.trim();
-    // Strip markdown code fences if model returned ```json ... ```
+    let cleaned = (rawText || '').trim();
+
+    // 1. Cleanly strip markdown fences even if closing ``` is missing or preceded by text
     if (cleaned.startsWith('```')) {
-      const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (match) cleaned = match[1].trim();
+      cleaned = cleaned.replace(/^```(?:json)?\s*/i, '');
+      cleaned = cleaned.replace(/\s*```\s*$/i, '');
+      cleaned = cleaned.trim();
+    } else {
+      // Check if markdown code fence block is present inside conversational text
+      const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (fenceMatch) {
+        cleaned = fenceMatch[1].trim();
+      }
     }
 
+    // 2. Direct JSON Parse attempt
     try {
       return JSON.parse(cleaned);
     } catch (err) {
-      console.warn(`[AGENT ${this.id}] Failed to parse JSON output directly:`, err.message);
-      // Attempt to extract the first balanced { ... } object
+      console.warn(`[AGENT ${this.id}] Direct JSON parse failed, trying resilient extraction:`, err.message);
+
+      // 3. Fallback: extract the balanced outer { ... } or [ ... ] object
       const start = cleaned.indexOf('{');
       const end = cleaned.lastIndexOf('}');
       if (start !== -1 && end !== -1 && end > start) {
+        const candidate = cleaned.slice(start, end + 1);
         try {
-          return JSON.parse(cleaned.slice(start, end + 1));
-        } catch (_) {}
+          return JSON.parse(candidate);
+        } catch (_) {
+          // 4. Fallback: repair unescaped control characters in JSON strings
+          try {
+            const repaired = candidate.replace(/"(?:[^"\\]|\\.)*"/g, str => {
+              return str
+                .replace(/(?<!\\)\n/g, '\\n')
+                .replace(/(?<!\\)\r/g, '\\r')
+                .replace(/(?<!\\)\t/g, '\\t');
+            });
+            return JSON.parse(repaired);
+          } catch (_) {}
+        }
       }
+
+      console.warn(`[AGENT ${this.id}] Failed to parse JSON output:`, err.message);
       return { raw: rawText, parseError: err.message };
     }
   }
@@ -203,7 +227,11 @@ export class BaseAgent extends EventEmitter {
         modelId: this.modelId,
         fallbackModels: this.fallbackModels,
         messages,
-        parameters,
+        parameters: {
+          ...parameters,
+          jsonMode: Boolean(outputSchema),
+          outputSchema: outputSchema || undefined,
+        },
         onChunk: (chunk) => {
           if (this.state !== AGENT_STATES.STREAMING) {
             this.setState(AGENT_STATES.STREAMING, { model: this.modelId });
