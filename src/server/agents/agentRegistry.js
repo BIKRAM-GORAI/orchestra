@@ -127,27 +127,27 @@ export class AgentRegistry extends EventEmitter {
       new ManagerAgent('gemini-3.5-flash-lite', 'manager-1'),
 
       // 3 Designers
-      new DesignerAgentFree('qwen-3.8-27b', 'designer-1'),
+      new DesignerAgentFree('codestral-latest', 'designer-1'),
       new DesignerAgentPro('kimi-k3', 'designer-2'),
       new DesignerAgentMax('gemini-3.5-flash-lite', 'designer-3'),
 
       // 3 Frontend Architects
-      new FrontendArchitectAgentFree('qwen-3.8-27b', 'frontend-1'),
+      new FrontendArchitectAgentFree('codestral-latest', 'frontend-1'),
       new FrontendArchitectAgentPro('kimi-k3', 'frontend-2'),
       new FrontendArchitectAgentMax('gemini-3.5-flash-lite', 'frontend-3'),
 
       // 3 Feature Architects
-      new FeatureArchitectAgentFree('qwen-3.8-27b', 'feature-1'),
+      new FeatureArchitectAgentFree('codestral-latest', 'feature-1'),
       new FeatureArchitectAgentPro('kimi-k3', 'feature-2'),
       new FeatureArchitectAgentMax('gemini-3.5-flash-lite', 'feature-3'),
 
       // 3 Coders
-      new CodingAgentFree('qwen-3.8-27b', 'coder-1'),
+      new CodingAgentFree('codestral-latest', 'coder-1'),
       new CodingAgentPro('kimi-k3', 'coder-2'),
       new CodingAgentMax('gemini-3.5-flash-lite', 'coder-3'),
 
       // 3 QA Auditors
-      new QAAgentFree('qwen-3.8-27b', 'qa-1'),
+      new QAAgentFree('codestral-latest', 'qa-1'),
       new QAAgentPro('kimi-k3', 'qa-2'),
       new QAAgentMax('gemini-3.5-flash-lite', 'qa-3'),
     ];
@@ -167,7 +167,7 @@ export class AgentRegistry extends EventEmitter {
 
     // Lazy tier instantiation for all 15 specialists
     if (targetId === 'designer-1' || targetId === 'designer-free-1') {
-      const a = new DesignerAgentFree('qwen-3.8-27b', 'designer-1');
+      const a = new DesignerAgentFree('codestral-latest', 'designer-1');
       this.registerAgent(a);
       return a;
     }
@@ -183,7 +183,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (targetId === 'frontend-1' || targetId === 'frontend-free-1') {
-      const a = new FrontendArchitectAgentFree('qwen-3.8-27b', 'frontend-1');
+      const a = new FrontendArchitectAgentFree('codestral-latest', 'frontend-1');
       this.registerAgent(a);
       return a;
     }
@@ -199,7 +199,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (targetId === 'feature-1' || targetId === 'feature-free-1') {
-      const a = new FeatureArchitectAgentFree('qwen-3.8-27b', 'feature-1');
+      const a = new FeatureArchitectAgentFree('codestral-latest', 'feature-1');
       this.registerAgent(a);
       return a;
     }
@@ -215,7 +215,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (targetId === 'coder-1' || targetId === 'coder-free-1') {
-      const a = new CodingAgentFree('qwen-3.8-27b', 'coder-1');
+      const a = new CodingAgentFree('codestral-latest', 'coder-1');
       this.registerAgent(a);
       return a;
     }
@@ -231,7 +231,7 @@ export class AgentRegistry extends EventEmitter {
     }
 
     if (targetId === 'qa-1' || targetId === 'qa-free-1') {
-      const a = new QAAgentFree('qwen-3.8-27b', 'qa-1');
+      const a = new QAAgentFree('codestral-latest', 'qa-1');
       this.registerAgent(a);
       return a;
     }

@@ -8,7 +8,7 @@ export const BUDGET_TIERS = {
     id: 'free',
     label: 'Free Tier ($0.00)',
     maxBudget: 0.00,
-    defaultPrimary: 'qwen-3.8-27b',
+    defaultPrimary: 'codestral-latest',
     defaultFallbacks: ['kimi-k3', 'gemini-3.5-flash-lite'],
   },
   BALANCED: {
@@ -16,14 +16,14 @@ export const BUDGET_TIERS = {
     label: 'Balanced Tier ($0.25)',
     maxBudget: 0.25,
     defaultPrimary: 'kimi-k3',
-    defaultFallbacks: ['qwen-3.8-27b', 'gemini-3.5-flash-lite'],
+    defaultFallbacks: ['codestral-latest', 'gemini-3.5-flash-lite'],
   },
   PREMIUM: {
     id: 'premium',
     label: 'Premium Tier ($0.60)',
     maxBudget: 0.60,
     defaultPrimary: 'gemini-3.5-flash-lite',
-    defaultFallbacks: ['kimi-k3', 'qwen-3.8-27b'],
+    defaultFallbacks: ['kimi-k3', 'codestral-latest'],
   },
 };
 
@@ -169,60 +169,60 @@ export class BudgetService {
 
     for (const agent of activeAgents) {
       const id = (agent.id || '').toLowerCase();
-      let primary = 'qwen-3.8-27b';
+      let primary = 'codestral-latest';
       let fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
 
       if (isFullRoster) {
         // Prebuilt, locked model routing based on specialist tier
         if (id.endsWith('-1')) {
           // Free Tier (Pixel, Nova, Scout, Byte, Query)
-          primary = 'qwen-3.8-27b';
+          primary = 'codestral-latest';
           fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
         } else if (id.endsWith('-2')) {
           // Pro Tier (Chroma, Blueprint, Beacon, Cipher, Audit)
           primary = 'kimi-k3';
-          fallbacks = ['gemini-3.5-flash-lite', 'qwen-3.8-27b'];
+          fallbacks = ['gemini-3.5-flash-lite', 'codestral-latest'];
         } else if (id.endsWith('-3')) {
           // Max / Premium Tier (Canvas, Apex, Compass, Matrix, Sentinel)
           primary = 'gemini-3.5-flash-lite';
-          fallbacks = ['kimi-k3', 'qwen-3.8-27b'];
+          fallbacks = ['kimi-k3', 'codestral-latest'];
         } else if (id.startsWith('manager')) {
           // Manager (Atlas)
           primary = 'gemini-3.5-flash-lite';
-          fallbacks = ['kimi-k3', 'qwen-3.8-27b'];
+          fallbacks = ['kimi-k3', 'codestral-latest'];
         } else {
-          primary = agent.modelId || 'qwen-3.8-27b';
-          fallbacks = primary === 'qwen-3.8-27b'
+          primary = agent.modelId || 'codestral-latest';
+          fallbacks = primary === 'codestral-latest'
             ? ['kimi-k3', 'gemini-3.5-flash-lite']
-            : (primary === 'kimi-k3' ? ['gemini-3.5-flash-lite', 'qwen-3.8-27b'] : ['kimi-k3', 'qwen-3.8-27b']);
+            : (primary === 'kimi-k3' ? ['gemini-3.5-flash-lite', 'codestral-latest'] : ['kimi-k3', 'codestral-latest']);
         }
       } else {
         // Legacy 6-agent unit test compatibility harness
         if (tier === 'free') {
-          primary = 'qwen-3.8-27b';
+          primary = 'codestral-latest';
           fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
         } else if (tier === 'balanced') {
           if (id.startsWith('manager')) {
             primary = 'gemini-3.5-flash-lite';
-            fallbacks = ['kimi-k3', 'qwen-3.8-27b'];
+            fallbacks = ['kimi-k3', 'codestral-latest'];
           } else if (id.startsWith('coder')) {
             primary = id === 'coder-1' ? 'kimi-k3' : 'gemini-3.5-flash-lite';
-            fallbacks = ['qwen-3.8-27b', 'gemini-3.5-flash-lite'];
+            fallbacks = ['codestral-latest', 'gemini-3.5-flash-lite'];
           } else if (id.startsWith('qa') || id.startsWith('designer') || id.startsWith('frontend')) {
             primary = 'kimi-k3';
-            fallbacks = ['qwen-3.8-27b', 'gemini-3.5-flash-lite'];
+            fallbacks = ['codestral-latest', 'gemini-3.5-flash-lite'];
           } else {
-            primary = 'qwen-3.8-27b';
+            primary = 'codestral-latest';
             fallbacks = ['kimi-k3', 'gemini-3.5-flash-lite'];
           }
         } else {
           // Premium tier
           if (id.startsWith('manager') || id.startsWith('coder')) {
             primary = 'gemini-3.5-flash-lite';
-            fallbacks = ['kimi-k3', 'qwen-3.8-27b'];
+            fallbacks = ['kimi-k3', 'codestral-latest'];
           } else {
             primary = 'gemini-3.5-flash-lite';
-            fallbacks = ['kimi-k3', 'qwen-3.8-27b'];
+            fallbacks = ['kimi-k3', 'codestral-latest'];
           }
         }
       }
@@ -246,7 +246,7 @@ export class BudgetService {
     try {
       const coder1 = agentRegistry.getAgent('coder-1');
       if (coder1 && !isFullRoster && !assignments['coder-1']) {
-        if (tier === 'free') coder1.setModel('qwen-3.8-27b');
+        if (tier === 'free') coder1.setModel('codestral-latest');
         else if (tier === 'balanced') coder1.setModel('kimi-k3');
         else coder1.setModel('gemini-3.5-flash-lite');
       }

@@ -7,9 +7,9 @@
 
 export const PROVIDERS = {
   NVIDIA: 'nvidia',
-  // Future providers
   GEMINI: 'gemini',
   OPENROUTER: 'openrouter',
+  MISTRAL: 'mistral',
   OPENAI: 'openai',
   ANTHROPIC: 'anthropic',
   OLLAMA: 'ollama',
@@ -70,7 +70,25 @@ export const MODEL_REGISTRY = {
     },
     capabilities: ['chat', 'reasoning', 'coding', 'streaming'],
   },
-  // 1. OpenRouter (Slowest, Cheapest / Free Tier)
+  // 1. Mistral AI (Codestral Latest - Replaces OpenRouter for Budget / Free tier)
+  'codestral-latest': {
+    id: 'codestral-latest',
+    name: 'Codestral Latest (Mistral AI)',
+    provider: PROVIDERS.MISTRAL,
+    model: 'codestral-latest',
+    tier: 'budget',
+    speed: 'fast',
+    costPerCall: 0.00,
+    costDisplay: '$0.00 (Free/Eval)',
+    endpoint: 'https://api.mistral.ai/v1/chat/completions',
+    defaultParameters: {
+      max_tokens: 16384,
+      temperature: 0.7,
+      stream: true,
+    },
+    capabilities: ['chat', 'reasoning', 'coding', 'streaming'],
+  },
+  // Legacy OpenRouter definition preserved for fallback / compatibility
   'qwen-3.8-27b': {
     id: 'qwen-3.8-27b',
     name: 'Qwen 3.8 27B (OpenRouter Free)',
@@ -93,12 +111,12 @@ export const MODEL_REGISTRY = {
  * Model Routing & Fallback Policies
  * Primary: gemini-3.5-flash-lite (Fastest)
  * Fallback 1: kimi-k3 (NVIDIA NIM)
- * Fallback 2: qwen-3.8-27b (OpenRouter Free)
+ * Fallback 2: codestral-latest (Mistral AI)
  */
 export const MODEL_POLICIES = {
   default: {
     primary: 'gemini-3.5-flash-lite',
-    fallback: ['kimi-k3', 'qwen-3.8-27b'],
+    fallback: ['kimi-k3', 'codestral-latest'],
     retry: {
       maxAttempts: 3,
       initialDelayMs: 1000,
@@ -108,7 +126,7 @@ export const MODEL_POLICIES = {
     },
   },
   budget: {
-    primary: 'qwen-3.8-27b',
+    primary: 'codestral-latest',
     fallback: ['kimi-k3', 'gemini-3.5-flash-lite'],
     retry: {
       maxAttempts: 3,
@@ -120,7 +138,7 @@ export const MODEL_POLICIES = {
   },
   standard: {
     primary: 'kimi-k3',
-    fallback: ['gemini-3.5-flash-lite', 'qwen-3.8-27b'],
+    fallback: ['gemini-3.5-flash-lite', 'codestral-latest'],
     retry: {
       maxAttempts: 3,
       initialDelayMs: 1000,
@@ -131,7 +149,7 @@ export const MODEL_POLICIES = {
   },
   premium: {
     primary: 'gemini-3.5-flash-lite',
-    fallback: ['kimi-k3', 'qwen-3.8-27b'],
+    fallback: ['kimi-k3', 'codestral-latest'],
     retry: {
       maxAttempts: 3,
       initialDelayMs: 1000,
@@ -145,6 +163,7 @@ export const MODEL_POLICIES = {
 export function getModelConfig(modelId = 'gemini-3.5-flash-lite') {
   // Normalize alias
   const normalizedId = modelId === 'gemini-3.5-flash' || modelId === 'gemini' ? 'gemini-3.5-flash-lite'
+    : modelId === 'codestral' || modelId === 'mistral' ? 'codestral-latest'
     : modelId === 'qwen' || modelId === 'qwen3.8' ? 'qwen-3.8-27b'
     : modelId;
 

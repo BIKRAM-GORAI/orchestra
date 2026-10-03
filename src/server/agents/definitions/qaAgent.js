@@ -1,7 +1,7 @@
 import { ProjectAgent, resolveTier } from './projectAgent.js';
 
 export class QAAgentFree extends ProjectAgent {
-  constructor(model = 'qwen-3.8-27b', id = 'qa-1') { super('qa', 0, model, id); }
+  constructor(model = 'codestral-latest', id = 'qa-1') { super('qa', 0, model, id); }
 }
 export class QAAgentPro extends ProjectAgent {
   constructor(model = 'kimi-k3', id = 'qa-2') { super('qa', 1, model, id); }

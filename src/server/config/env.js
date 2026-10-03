@@ -16,6 +16,7 @@ export const config = {
   nvidiaApiKey: process.env.NVIDIA_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
+  mistralApiKey: process.env.MISTRAL_API_KEY || '',
   isProduction: process.env.NODE_ENV === 'production',
   rootDir,
   mongoUri: process.env.ORCHESTRA_STORAGE === 'filesystem' ? '' : (process.env.MONGO_URI || process.env.MONGODB_URI || ''),

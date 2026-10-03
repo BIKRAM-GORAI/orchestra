@@ -52,7 +52,7 @@ export const AGENT_DEFINITIONS = {
     role: 'Junior Designer (Free Tier)',
     color: '#C084FC', // Lavender
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Mistral $0.00)',
     room: 'Main Workspace',
     core: true,
     skills: ['Harmonious Palettes', 'Typography Hierarchy', 'Spacing Grids', 'Responsive Breakpoints'],
@@ -93,7 +93,7 @@ export const AGENT_DEFINITIONS = {
     role: 'Junior Frontend (Free Tier)',
     color: '#38BDF8', // Sky Blue
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Mistral $0.00)',
     room: 'Main Workspace',
     core: true,
     skills: ['Semantic HTML5', 'CSS Variables', 'Flexbox & Grid', 'Single-File Architecture'],
@@ -134,7 +134,7 @@ export const AGENT_DEFINITIONS = {
     role: 'Feature Analyst (Free Tier)',
     color: '#2DD4BF', // Teal
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Mistral $0.00)',
     room: 'Main Workspace',
     core: true,
     skills: ['Feature Decomposition', 'User Flow Definition', 'Search & Filtering', 'Form Validation'],
@@ -175,7 +175,7 @@ export const AGENT_DEFINITIONS = {
     role: 'Junior Coder (Free Tier)',
     color: '#34D399', // Mint Green
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Mistral $0.00)',
     room: 'Main Workspace',
     core: true,
     skills: ['Single-File index.html', 'Vanilla JavaScript', 'Event Handlers', 'Surgical Code Patching'],
@@ -216,7 +216,7 @@ export const AGENT_DEFINITIONS = {
     role: 'Junior QA (Free Tier)',
     color: '#FB923C', // Coral Orange
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Mistral $0.00)',
     room: 'Main Workspace',
     core: true,
     skills: ['Static Analysis', 'DOM Structure Inspection', 'JS Error Detection', 'Requirements Verification'],

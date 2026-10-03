@@ -205,7 +205,7 @@
                       <div class="route-fallback-steps" id="inspFallbackList">
                         <span class="route-step-chip">Kimi K3 <small>($0.05)</small></span>
                         <span class="route-arrow">→</span>
-                        <span class="route-step-chip">Qwen 3.8 27B <small>($0.00 Free)</small></span>
+                        <span class="route-step-chip">Codestral Latest <small>($0.00 Free)</small></span>
                       </div>
                     </div>
                   </div>
@@ -336,6 +336,11 @@
                     <button type="button" class="budget-pill" data-budget="1.00" title="All highest/lead models ($1.00+)">Max</button>
                   </div>
                   <input type="range" id="sidebarBudgetSlider" min="0" max="2.00" step="0.05" value="0.35" style="display: none;" />
+                </div>
+
+                <div class="budget-model-hint">
+                  <span class="hint-bullet">⚡</span>
+                  <span>Set budget higher to use higher models: <strong>Free ($0.00)</strong>: Mistral Codestral • <strong>Mid ($0.35)</strong>: NVIDIA Kimi K3 • <strong>Max ($1.00+)</strong>: Google Gemini Flash Lite</span>
                 </div>
 
                 <div class="prompt-textarea-wrap">
@@ -506,6 +511,11 @@
                   <input type="range" id="chatBudgetSlider" min="0" max="2.00" step="0.05" value="0.35" style="display: none;" />
                 </div>
 
+                <div class="budget-model-hint">
+                  <span class="hint-bullet">⚡</span>
+                  <span>Set budget higher to use higher models: <strong>Free ($0.00)</strong>: Mistral Codestral • <strong>Mid ($0.35)</strong>: NVIDIA Kimi K3 • <strong>Max ($1.00+)</strong>: Google Gemini Flash Lite</span>
+                </div>
+
                 <div class="prompt-textarea-wrap">
                   <textarea id="chatPromptInput" rows="3" class="chat-prompt-textarea" placeholder="What should the agents explain, summarize, write, or build? Include your preferred audience, format, and detail..."></textarea>
                   <div class="prompt-textarea-footer">
@@ -670,12 +680,35 @@
           </div>
 
           <div class="preview-feedback-strip" id="editsSection">
-            <div class="feedback-input-row">
-              <span class="feedback-badge">
+            <div class="feedback-strip-header">
+              <div class="feedback-badge">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                <span>Minimal-Change Edit:</span>
-              </span>
-              <input type="text" id="feedbackInput" placeholder="e.g. Change primary button color to emerald and add customer review cards..." />
+                <span>Targeted Modification & Human Feedback</span>
+              </div>
+              
+              <div class="feedback-budget-selector">
+                <span class="feedback-budget-label">Edit Model / Budget:</span>
+                <div class="budget-tiers-pills feedback-pills">
+                  <button type="button" class="budget-pill" data-budget="0.00" title="Free Tier: Byte (Mistral Codestral $0.00)">Free ($0.00)</button>
+                  <button type="button" class="budget-pill" data-budget="0.15" title="Lean / Coder Priority: Matrix (Gemini 3.5 Flash Lite $0.10)">Lean ($0.15)</button>
+                  <button type="button" class="budget-pill active" data-budget="0.35" title="All-Pro Tier: Matrix (Gemini 3.5 Flash Lite $0.10)">Mid ($0.35)</button>
+                  <button type="button" class="budget-pill" data-budget="1.00" title="Max Tier: Matrix (Gemini 3.5 Flash Lite $0.10)">Max ($1.00)</button>
+                </div>
+                <div class="budget-number-wrap feedback-budget-wrap">
+                  <span class="currency-symbol">$</span>
+                  <input type="number" id="feedbackBudgetNumberInput" class="budget-number-input" min="0" step="0.05" value="0.35" placeholder="0.35" title="Set edit budget" />
+                </div>
+                <span class="feedback-coder-tag tier-pro" id="feedbackCoderModelTag">Coder: Matrix (Gemini)</span>
+              </div>
+            </div>
+
+            <div class="feedback-model-guidance">
+              <span class="guidance-icon">💡</span>
+              <span><strong>Tip:</strong> Set your budget higher to use higher models (like <strong>Google Gemini Flash Lite</strong> or <strong>NVIDIA Kimi K3</strong>) to resolve stubborn layout, missing images, and complex script bugs.</span>
+            </div>
+
+            <div class="feedback-input-row">
+              <input type="text" id="feedbackInput" placeholder="e.g. 'Replace broken flower images with high-res photos from Unsplash, and center the hero card'..." />
               <button type="button" class="btn btn-primary" id="applyFeedbackBtn">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
                 <span>Apply Edit</span>
@@ -729,7 +762,7 @@
               <div class="form-group">
                 <label for="newAgentModel">Assigned Model:</label>
                 <select id="newAgentModel" class="modal-select">
-                  <option value="qwen-3.8-27b">Qwen 3.8 27B ($0.00 Free, Budget)</option>
+                  <option value="codestral-latest">Codestral Latest ($0.00 Free, Mistral)</option>
                   <option value="kimi-k3" selected>Kimi K3 ($0.05, Standard Reasoning)</option>
                   <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite ($0.10, Fast)</option>
                 </select>
@@ -757,12 +790,12 @@
                 Your project has reached its allocated budget limit (<strong id="budgetModalSpent">$0.25</strong> spent of <strong id="budgetModalLimit">$0.25</strong> limit).
               </p>
               <p style="font-size:0.75rem;color:#64748B;margin-top:6px;">
-                To run additional builds, audits, or prompt modifications, please increase your budget or switch to the Free tier (Qwen 3.8 27B).
+                To run additional builds, audits, or prompt modifications, please increase your budget or switch to the Free tier (Codestral Latest).
               </p>
               <div class="form-group" style="margin-top:8px;">
                 <label for="increaseBudgetSelect">Set New Budget:</label>
                 <select id="increaseBudgetSelect" class="modal-select">
-                  <option value="0.00">Switch to Free Tier ($0.00 / Qwen 3.8 27B)</option>
+                  <option value="0.00">Switch to Free Tier ($0.00 / Codestral Latest)</option>
                   <option value="0.25">Add $0.25 (Balanced Tier)</option>
                   <option value="0.50" selected>Add $0.50 ($0.50 Total)</option>
                   <option value="0.75">Premium Tier ($0.75 Total)</option>

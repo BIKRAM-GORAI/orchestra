@@ -86,7 +86,7 @@ export const AGENT_ROSTER = {
     tag: 'PX',
     color: '#C084FC',
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#7E22CE',
     hairColor: '#F472B6',
@@ -151,7 +151,7 @@ export const AGENT_ROSTER = {
     tag: 'NV',
     color: '#38BDF8',
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#0284C7',
     hairColor: '#0F172A',
@@ -216,7 +216,7 @@ export const AGENT_ROSTER = {
     tag: 'SC',
     color: '#2DD4BF',
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#0F766E',
     hairColor: '#475569',
@@ -281,7 +281,7 @@ export const AGENT_ROSTER = {
     tag: 'BY',
     color: '#34D399',
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#059669',
     hairColor: '#334155',
@@ -346,7 +346,7 @@ export const AGENT_ROSTER = {
     tag: 'QR',
     color: '#FB923C',
     tier: 'free',
-    model: 'Qwen 3.8 27B (Free $0.00)',
+    model: 'Codestral Latest (Free $0.00)',
     room: 'Main Workspace',
     suitColor: '#C2410C',
     hairColor: '#78350F',
@@ -692,6 +692,9 @@ export class PixiOffice {
       }
     };
 
+    // Particle Engine for live coding sparks, terminal scanlines & celebration stars
+    this.particles = [];
+
     // Initialize Agents from Central State
     this.agents = {};
     for (const [id, def] of Object.entries(AGENT_ROSTER)) {
@@ -711,6 +714,11 @@ export class PixiOffice {
         walkingFrame: 0,
         bubbleTimer: 0,
         bubbleText: '',
+        ambientTimer: 80 + Math.floor(Math.random() * 320),
+        isTaskAssigned: false,
+        completedTimer: 0,
+        completedLabel: '',
+        activeTaskSummary: '',
       };
     }
 
@@ -721,6 +729,7 @@ export class PixiOffice {
 
     // Bind workflow orchestration methods to instance
     this.sendAgentToDesk = this.sendAgentToDesk.bind(this);
+    this.markAgentDone = this.markAgentDone.bind(this);
     this.holdOneOnOneReview = this.holdOneOnOneReview.bind(this);
     this.callReviewMeeting = this.callReviewMeeting.bind(this);
     this.callQuorumMeeting = this.callQuorumMeeting.bind(this);
@@ -743,14 +752,15 @@ export class PixiOffice {
     agent.progress = agentState.progress;
 
     if (agentState.status === AGENT_STATUS.COMPLETED) {
-      agent.bubbleText = '✓ Task finished!';
-      agent.bubbleTimer = 220;
+      this.markAgentDone(agentState.id, 'Task Finished ✓');
     } else if (
       agentState.status === AGENT_STATUS.WORKING ||
       agentState.status === AGENT_STATUS.CODING ||
       agentState.status === AGENT_STATUS.THINKING ||
       agentState.status === AGENT_STATUS.RUNNING
     ) {
+      agent.isTaskAssigned = true;
+      agent.workflowState = WORKFLOW_STATE.WORKING;
       const actionDesc = agentState.lastAction || (agentState.status === AGENT_STATUS.CODING ? 'coding...' : 'working...');
       agent.bubbleText = actionDesc.length > 28 ? actionDesc.slice(0, 26) + '..' : actionDesc;
       agent.bubbleTimer = 280;
@@ -1051,6 +1061,8 @@ export class PixiOffice {
 
       agent.workflowState = WORKFLOW_STATE.GOING_TO_MEETING;
       agent.inChoreography = true;
+      agent.isTaskAssigned = true;
+      agent.waypoints = [];
       agent.isSeated = false;
       agent.bubbleText = 'To Meeting Room 👥';
       agent.bubbleTimer = 260;
@@ -1082,6 +1094,9 @@ export class PixiOffice {
       if (!agent) return;
 
       agent.workflowState = WORKFLOW_STATE.RETURNING_TO_DESK;
+      agent.inChoreography = true;
+      agent.isTaskAssigned = true;
+      agent.waypoints = [];
       agent.isSeated = false;
       agent.bubbleText = 'Returning to desk 🚶';
       agent.bubbleTimer = 240;
@@ -1116,6 +1131,10 @@ export class PixiOffice {
     worker.workflowState = WORKFLOW_STATE.GOING_TO_REVIEW;
     reviewer.inChoreography = true;
     worker.inChoreography = true;
+    reviewer.isTaskAssigned = true;
+    worker.isTaskAssigned = true;
+    reviewer.waypoints = [];
+    worker.waypoints = [];
     reviewer.isSeated = false;
     worker.isSeated = false;
 
@@ -1152,6 +1171,9 @@ export class PixiOffice {
     if (!reviewer) return Promise.resolve();
 
     reviewer.workflowState = WORKFLOW_STATE.GOING_TO_MEETING;
+    reviewer.inChoreography = true;
+    reviewer.isTaskAssigned = true;
+    reviewer.waypoints = [];
     reviewer.isSeated = false;
     reviewer.bubbleText = 'Reporting to Boss 🚶';
     reviewer.bubbleTimer = 260;
@@ -1173,6 +1195,9 @@ export class PixiOffice {
     const agent = this.agents[agentId];
     if (!agent) return Promise.resolve();
     agent.workflowState = WORKFLOW_STATE.RETURNING_TO_DESK;
+    agent.inChoreography = true;
+    agent.isTaskAssigned = true;
+    agent.activeTaskSummary = label || (agentId === 'byte' ? 'Coding HTML' : 'Working');
     agent.isSeated = false;
     agent.bubbleText = 'Returning to desk 🚶';
     agent.bubbleTimer = 220;
@@ -1180,6 +1205,7 @@ export class PixiOffice {
     return this.navigateToAsync(agent, agent.home.x, agent.home.y).then(() => {
       // Deterministically switch to WORKING state only upon physical desk arrival
       agent.workflowState = WORKFLOW_STATE.WORKING;
+      agent.isTaskAssigned = true;
       agent.x = agent.home.x;
       agent.y = agent.home.y;
       agent.isSeated = true;
@@ -1187,6 +1213,31 @@ export class PixiOffice {
       agent.bubbleText = label || (agentId === 'byte' ? 'Coding at desk 💻' : 'Working at desk ⚙️');
       agent.bubbleTimer = 350;
     });
+  }
+
+  markAgentDone(agentId, label = 'Done ✓') {
+    const agent = this.agents[agentId];
+    if (!agent) return;
+
+    agent.workflowState = WORKFLOW_STATE.TASK_COMPLETED;
+    agent.completedTimer = 240; // ~4 seconds of high-visibility celebration
+    agent.completedLabel = label.includes('✓') ? label : `${label} ✓`;
+    agent.bubbleText = agent.completedLabel;
+    agent.bubbleTimer = 240;
+
+    // Burst celebratory sparkle particles (green & gold stars)
+    for (let i = 0; i < 12; i++) {
+      this.particles.push({
+        x: agent.x + (Math.random() * 24 - 12),
+        y: agent.y - 28 + (Math.random() * 12 - 6),
+        vx: (Math.random() - 0.5) * 0.9,
+        vy: -0.7 - Math.random() * 0.9,
+        life: 30 + Math.random() * 25,
+        maxLife: 55,
+        color: i % 2 === 0 ? '#10B981' : '#F59E0B',
+        char: ['✓', '✨', '⚡', '★', '100%'][Math.floor(Math.random() * 5)]
+      });
+    }
   }
 
   holdOneOnOneReview(reviewerId = 'query', workerId = 'byte', topic = 'Code Review') {
@@ -1204,8 +1255,12 @@ export class PixiOffice {
   releaseChoreographyLocks(agentIds = null) {
     const ids = agentIds || Object.keys(this.agents);
     ids.forEach(id => {
-      if (this.agents[id]) {
-        this.agents[id].inChoreography = false;
+      const agent = this.agents[id];
+      if (agent) {
+        agent.inChoreography = false;
+        agent.isTaskAssigned = false;
+        // Stay seated comfortably at desk for 15-30s before ambient roaming
+        agent.ambientTimer = 600 + Math.floor(Math.random() * 800);
       }
     });
   }
@@ -1300,6 +1355,46 @@ export class PixiOffice {
   update() {
     this.tick++;
 
+    // 0. Update Particle Physics & Alpha Fades
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life--;
+      p.alpha = Math.max(0, p.life / p.maxLife);
+      if (p.life <= 0) {
+        this.particles.splice(i, 1);
+      }
+    }
+
+    // 0.1. Emit Active Code Spark Particles for Working Agents
+    if (this.tick % 7 === 0) {
+      for (const agent of Object.values(this.agents)) {
+        const isWorkingAtDesk = agent.isSeated && (
+          agent.workflowState === WORKFLOW_STATE.WORKING ||
+          agent.status === AGENT_STATUS.WORKING ||
+          agent.status === AGENT_STATUS.CODING ||
+          agent.status === AGENT_STATUS.THINKING ||
+          agent.status === AGENT_STATUS.RUNNING
+        );
+
+        if (isWorkingAtDesk) {
+          const glyphs = ['{ }', '</>', 'const', 'fn()', '*', '01', '#', '⚡', 'div', 'px'];
+          const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
+          this.particles.push({
+            x: agent.x + (Math.random() * 16 - 8),
+            y: agent.y - 18 - (Math.random() * 4),
+            vx: (Math.random() - 0.5) * 0.35,
+            vy: -0.45 - Math.random() * 0.45,
+            life: 30 + Math.random() * 20,
+            maxLife: 48,
+            color: agent.color || '#38BDF8',
+            char: glyph
+          });
+        }
+      }
+    }
+
     // 1. Smooth Camera Damping
     this.camera.x += (this.camera.targetX - this.camera.x) * 0.12;
     this.camera.y += (this.camera.targetY - this.camera.y) * 0.12;
@@ -1321,7 +1416,7 @@ export class PixiOffice {
       door.openProgress += (door.targetOpen - door.openProgress) * 0.16;
     }
 
-    // 3. Update Agents Movement & Avoidance
+    // 3. Update Agents Movement, Navigation & Ambient Life
     for (const agent of Object.values(this.agents)) {
       if (agent.waypoints.length > 0) {
         const nextWp = agent.waypoints[0];
@@ -1392,10 +1487,11 @@ export class PixiOffice {
         agent.walkingFrame = 0;
         agent.currentSpeed = 0;
 
-        // Station alignment: firmly align at workstation ONLY when returning to desk or working at desk in focus mode
+        // Station alignment: firmly align at workstation when returning to desk or assigned to task
         if (
           agent.workflowState === WORKFLOW_STATE.RETURNING_TO_DESK ||
-          (agent.workflowState === WORKFLOW_STATE.WORKING && this.currentPreset === 'focus')
+          agent.workflowState === WORKFLOW_STATE.WORKING ||
+          agent.isTaskAssigned
         ) {
           if (Math.hypot(agent.x - agent.home.x, agent.y - agent.home.y) < 22) {
             agent.x = agent.home.x;
@@ -1405,21 +1501,108 @@ export class PixiOffice {
           }
         }
 
-        // Autonomous Free Roam in Free Roam Preset
-        if (this.currentPreset === 'free' && !agent.inChoreography) {
-          agent.freeRoamCooldown = (agent.freeRoamCooldown || 0) - 1;
-          if (agent.freeRoamCooldown <= 0) {
-            const spot = FREE_ROAM_SPOTS[Math.floor(Math.random() * FREE_ROAM_SPOTS.length)];
-            agent.isSeated = false;
-            this.navigateTo(agent, spot.x, spot.y, {
-              onComplete: () => {
-                agent.bubbleText = spot.text;
-                agent.bubbleTimer = 240;
+        // ---------------------------------------------------------------------
+        // Natural Ambient Office Behavior (Organic Free Roam vs Casual Desk Seating)
+        // ---------------------------------------------------------------------
+        const isBusyWithTask = agent.inChoreography ||
+          agent.isTaskAssigned ||
+          agent.workflowState === WORKFLOW_STATE.WORKING ||
+          agent.workflowState === WORKFLOW_STATE.IN_MEETING ||
+          agent.workflowState === WORKFLOW_STATE.IN_REVIEW ||
+          agent.workflowState === WORKFLOW_STATE.GOING_TO_REVIEW ||
+          agent.workflowState === WORKFLOW_STATE.GOING_TO_MEETING ||
+          agent.workflowState === WORKFLOW_STATE.RETURNING_TO_DESK ||
+          agent.completedTimer > 0;
+
+        if (!isBusyWithTask) {
+          // If a forced all-office preset like 'coffee' or 'meeting' is active:
+          if (this.currentPreset === 'coffee' || this.currentPreset === 'meeting') {
+            // Handled by preset navigation
+          } else {
+            // Organic ambient office life:
+            // Staggered timers so agents naturally stroll to coffee/water/sofa/whiteboard
+            // and return to their desks, while others casually work/relax at desks.
+            agent.ambientTimer = (agent.ambientTimer || (120 + Math.floor(Math.random() * 300))) - 1;
+
+            if (agent.ambientTimer <= 0) {
+              const isAtDesk = Math.hypot(agent.x - agent.home.x, agent.y - agent.home.y) < 14;
+
+              if (isAtDesk) {
+                // Agent is currently at their desk.
+                // 38% chance to get up and roam (take a break, stretch legs, coffee, notes)
+                // 62% chance to remain seated at desk relaxing or casually browsing
+                const shouldRoam = Math.random() < (this.currentPreset === 'free' ? 0.85 : 0.38);
+
+                if (shouldRoam) {
+                  const spot = FREE_ROAM_SPOTS[Math.floor(Math.random() * FREE_ROAM_SPOTS.length)];
+                  const targetX = spot.x + Math.floor(Math.random() * 12 - 6);
+                  const targetY = spot.y + Math.floor(Math.random() * 12 - 6);
+                  agent.isSeated = false;
+                  this.navigateTo(agent, targetX, targetY, {
+                    onComplete: () => {
+                      agent.bubbleText = spot.text;
+                      agent.bubbleTimer = 220;
+                    }
+                  });
+                  // Stay at visited spot for 7 to 15 seconds before deciding next action
+                  agent.ambientTimer = 420 + Math.floor(Math.random() * 480);
+                } else {
+                  // Stay comfortably seated at desk for 15 to 35 seconds
+                  agent.x = agent.home.x;
+                  agent.y = agent.home.y;
+                  agent.isSeated = true;
+                  agent.facing = agent.home.facing;
+                  agent.ambientTimer = 800 + Math.floor(Math.random() * 1000);
+                  if (Math.random() < 0.25) {
+                    agent.bubbleText = 'Refining notes 📄';
+                    agent.bubbleTimer = 180;
+                  }
+                }
+              } else {
+                // Agent is currently out roaming (at cafe, water dispenser, lounge, etc.)
+                // 70% chance to walk back to their assigned workstation desk
+                // 30% chance to explore another spot first
+                const returnToDesk = Math.random() < 0.70;
+
+                if (returnToDesk) {
+                  this.navigateTo(agent, agent.home.x, agent.home.y, {
+                    onComplete: () => {
+                      agent.x = agent.home.x;
+                      agent.y = agent.home.y;
+                      agent.isSeated = true;
+                      agent.facing = agent.home.facing;
+                      agent.bubbleText = 'Back at desk 💻';
+                      agent.bubbleTimer = 180;
+                    }
+                  });
+                  // Once back at desk, stay seated for 18 to 40 seconds
+                  agent.ambientTimer = 1000 + Math.floor(Math.random() * 1200);
+                } else {
+                  // Stroll to another spot
+                  const spot = FREE_ROAM_SPOTS[Math.floor(Math.random() * FREE_ROAM_SPOTS.length)];
+                  const targetX = spot.x + Math.floor(Math.random() * 12 - 6);
+                  const targetY = spot.y + Math.floor(Math.random() * 12 - 6);
+                  this.navigateTo(agent, targetX, targetY, {
+                    onComplete: () => {
+                      agent.bubbleText = spot.text;
+                      agent.bubbleTimer = 200;
+                    }
+                  });
+                  agent.ambientTimer = 360 + Math.floor(Math.random() * 360);
+                }
               }
-            });
-            // Stay at visited spot for 6 to 12 seconds before strolling to next spot
-            agent.freeRoamCooldown = 360 + Math.floor(Math.random() * 360);
+            }
           }
+        }
+      }
+
+      if (agent.completedTimer > 0) {
+        agent.completedTimer--;
+        if (agent.completedTimer === 0) {
+          if (agent.workflowState === WORKFLOW_STATE.TASK_COMPLETED) {
+            agent.workflowState = WORKFLOW_STATE.IDLE;
+          }
+          agent.isTaskAssigned = false;
         }
       }
 
@@ -1467,6 +1650,25 @@ export class PixiOffice {
         this.drawSpeechBubble(ctx, agent);
       }
     }
+
+    // 8. Draw Floating Code Sparks & Celebration Particles
+    this.drawParticles(ctx);
+  }
+
+  drawParticles(ctx) {
+    if (!this.particles || this.particles.length === 0) return;
+    ctx.save();
+    ctx.font = 'bold 8px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const p of this.particles) {
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 4;
+      ctx.fillText(p.char, Math.round(p.x), Math.round(p.y));
+    }
+    ctx.restore();
   }
 
   // ============================================================================
@@ -1699,14 +1901,51 @@ export class PixiOffice {
     ctx.fillRect(77, 77, 86, 28);
 
     // Dual Monitors on Manager Desk
+    const atlasAgent = this.agents.atlas;
+    const atlasWorking = atlasAgent && (
+      atlasAgent.workflowState === WORKFLOW_STATE.WORKING ||
+      atlasAgent.status === AGENT_STATUS.WORKING ||
+      atlasAgent.status === AGENT_STATUS.QUEUED ||
+      atlasAgent.status === AGENT_STATUS.THINKING
+    );
+
     ctx.fillStyle = '#0F172A';
     ctx.fillRect(90, 68, 22, 14);
     ctx.fillRect(118, 68, 22, 14);
-    // Glowing code screens
-    ctx.fillStyle = (this.tick % 30 > 15) ? '#38BDF8' : '#0284C7';
-    ctx.fillRect(92, 70, 18, 10);
-    ctx.fillStyle = (this.tick % 40 > 20) ? '#10B981' : '#059669';
-    ctx.fillRect(120, 70, 18, 10);
+
+    if (atlasWorking) {
+      // Dynamic live charts & telemetry on Manager's dual screens
+      ctx.fillStyle = '#050814';
+      ctx.fillRect(92, 70, 18, 10);
+      ctx.fillRect(120, 70, 18, 10);
+
+      // Screen 1: Bar telemetry
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillRect(94, 73, 3, (this.tick % 30 > 15) ? 6 : 4);
+      ctx.fillStyle = '#10B981';
+      ctx.fillRect(99, 72, 3, (this.tick % 40 > 20) ? 7 : 5);
+      ctx.fillStyle = '#F59E0B';
+      ctx.fillRect(104, 74, 3, 4);
+
+      // Screen 2: System status line stream
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillRect(122, 72, 12, 1.5);
+      ctx.fillStyle = '#A855F7';
+      ctx.fillRect(122, 75, 10, 1.5);
+      ctx.fillStyle = '#10B981';
+      ctx.fillRect(122, 78, 14, 1.5);
+
+      // Glow halo
+      ctx.strokeStyle = '#F59E0B';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(91.5, 69.5, 19, 11);
+      ctx.strokeRect(119.5, 69.5, 19, 11);
+    } else {
+      ctx.fillStyle = (this.tick % 30 > 15) ? '#38BDF8' : '#0284C7';
+      ctx.fillRect(92, 70, 18, 10);
+      ctx.fillStyle = (this.tick % 40 > 20) ? '#10B981' : '#059669';
+      ctx.fillRect(120, 70, 18, 10);
+    }
 
     // Manager Bookshelf (x: 25, y: 35)
     ctx.fillStyle = '#78350F';
@@ -1772,12 +2011,26 @@ export class PixiOffice {
     }
 
     // Server Terminal Desk (Forge)
+    const forgeAgent = this.agents.forge;
+    const forgeWorking = forgeAgent && (
+      forgeAgent.workflowState === WORKFLOW_STATE.WORKING ||
+      forgeAgent.status === AGENT_STATUS.RUNNING ||
+      forgeAgent.status === AGENT_STATUS.WORKING
+    );
+
     ctx.fillStyle = '#334155';
     ctx.fillRect(650, 115, 45, 24);
     ctx.fillStyle = '#0F172A';
     ctx.fillRect(662, 107, 18, 12);
-    ctx.fillStyle = '#38BDF8';
+    ctx.fillStyle = forgeWorking ? '#022C22' : '#38BDF8';
     ctx.fillRect(664, 109, 14, 8);
+    if (forgeWorking) {
+      // Rapid devops green terminal scanlines
+      ctx.fillStyle = '#34D399';
+      const fLine = (this.tick * 0.9) % 6;
+      ctx.fillRect(666, 110 + (fLine % 5), 8, 1);
+      ctx.fillRect(666, 110 + ((fLine + 2) % 5), 10, 1);
+    }
 
     // 4. Coffee Lounge Amenities
     // Kitchen Counter & Sink
@@ -1846,6 +2099,17 @@ export class PixiOffice {
 
     for (let i = 0; i < desks.length; i++) {
       const d = desks[i];
+      const agentId = d.label.toLowerCase();
+      const agent = this.agents[agentId];
+      const isSeatedAtDesk = agent && agent.isSeated && Math.hypot(agent.x - (d.x + 22), agent.y - (d.y + 30)) < 16;
+      const isWorking = isSeatedAtDesk && (
+        agent.workflowState === WORKFLOW_STATE.WORKING ||
+        agent.status === AGENT_STATUS.WORKING ||
+        agent.status === AGENT_STATUS.CODING ||
+        agent.status === AGENT_STATUS.THINKING ||
+        agent.status === AGENT_STATUS.RUNNING
+      );
+
       // Ground Shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
       ctx.fillRect(d.x, d.y + 24, 46, 5);
@@ -1856,14 +2120,63 @@ export class PixiOffice {
       ctx.fillStyle = '#E7E5E4';
       ctx.fillRect(d.x + 2, d.y + 2, 42, 20);
 
-      // Computer Monitor
+      // Working Screen Desk Surface Cast-Light (illuminated glow cone)
+      if (isWorking) {
+        ctx.fillStyle = agent.color || d.glow || '#38BDF8';
+        ctx.globalAlpha = 0.18 + Math.sin(this.tick * 0.15) * 0.06;
+        ctx.beginPath();
+        ctx.moveTo(d.x + 16, d.y + 4);
+        ctx.lineTo(d.x + 30, d.y + 4);
+        ctx.lineTo(d.x + 36, d.y + 20);
+        ctx.lineTo(d.x + 10, d.y + 20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+
+      // Computer Monitor Stand & Bezel
       ctx.fillStyle = '#0F172A';
       ctx.fillRect(d.x + 14, d.y - 7, 18, 12);
       ctx.fillRect(d.x + 21, d.y + 5, 4, 3); // Stand
 
-      // Glowing Code Screen with role/tier theme color
-      ctx.fillStyle = d.glow || '#38BDF8';
-      ctx.fillRect(d.x + 16, d.y - 5, 14, 8);
+      // Monitor Screen Rendering
+      if (isWorking) {
+        // High-tech active terminal screen with scrolling code lines
+        ctx.fillStyle = '#050814';
+        ctx.fillRect(d.x + 16, d.y - 5, 14, 8);
+
+        // Animated Streaming Code Scanlines
+        const themeColor = agent.color || d.glow || '#38BDF8';
+        const scroll = (this.tick * 0.8) % 8;
+        
+        ctx.fillStyle = themeColor;
+        ctx.fillRect(d.x + 17, d.y - 4 + ((scroll) % 6), 6, 1);
+        ctx.fillStyle = '#10B981';
+        ctx.fillRect(d.x + 18, d.y - 4 + ((scroll + 2) % 6), 9, 1);
+        ctx.fillStyle = '#F59E0B';
+        ctx.fillRect(d.x + 17, d.y - 4 + ((scroll + 4) % 6), 7, 1);
+        ctx.fillStyle = '#C084FC';
+        ctx.fillRect(d.x + 19, d.y - 4 + ((scroll + 5) % 6), 8, 1);
+
+        // Neon Screen Glow Halo
+        ctx.strokeStyle = themeColor;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(d.x + 15.5, d.y - 5.5, 15, 9);
+      } else if (isSeatedAtDesk) {
+        // Seated casually at desk: Ambient standby screen
+        ctx.fillStyle = '#0F172A';
+        ctx.fillRect(d.x + 16, d.y - 5, 14, 8);
+        ctx.fillStyle = d.glow || '#38BDF8';
+        ctx.globalAlpha = 0.5 + Math.sin(this.tick * 0.08) * 0.25;
+        ctx.fillRect(d.x + 17, d.y - 3, 10, 2);
+        ctx.globalAlpha = 1.0;
+      } else {
+        // Desk is empty (agent roaming): Standby dark screen with power LED
+        ctx.fillStyle = '#1E293B';
+        ctx.fillRect(d.x + 16, d.y - 5, 14, 8);
+        ctx.fillStyle = (this.tick % 60 < 30) ? '#10B981' : '#047857';
+        ctx.fillRect(d.x + 28, d.y + 1, 1.5, 1.5); // Standby LED
+      }
 
       // Keyboard & Mouse
       ctx.fillStyle = '#475569';
@@ -1911,6 +2224,28 @@ export class PixiOffice {
     ctx.ellipse(x, y + 1, 9, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
+    const isWorking = agent.status === AGENT_STATUS.WORKING ||
+      agent.status === AGENT_STATUS.CODING ||
+      agent.status === AGENT_STATUS.THINKING ||
+      agent.status === AGENT_STATUS.RUNNING ||
+      agent.workflowState === WORKFLOW_STATE.WORKING;
+
+    const isCompleted = agent.status === AGENT_STATUS.COMPLETED ||
+      agent.workflowState === WORKFLOW_STATE.TASK_COMPLETED ||
+      agent.completedTimer > 0;
+
+    const isFailed = agent.status === AGENT_STATUS.FAILED;
+
+    // Working Focus Glow Aura under chair
+    if (isWorking && agent.isSeated) {
+      ctx.fillStyle = agent.color || '#38BDF8';
+      ctx.globalAlpha = 0.22 + Math.sin(this.tick * 0.16) * 0.10;
+      ctx.beginPath();
+      ctx.ellipse(x, y + 1, 14, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    }
+
     // Selection Ring Indicator
     if (isSelected) {
       ctx.strokeStyle = agent.color || '#2563EB';
@@ -1920,8 +2255,10 @@ export class PixiOffice {
       ctx.stroke();
     }
 
-    // Walking stride bob offset
-    const bob = (agent.waypoints.length > 0) ? (agent.walkingFrame % 2 === 0 ? 0 : -1.5) : 0;
+    // Walking stride bob offset + Focused work typing bob
+    const walkBob = (agent.waypoints.length > 0) ? (agent.walkingFrame % 2 === 0 ? 0 : -1.5) : 0;
+    const workBob = (agent.isSeated && isWorking) ? (Math.floor(this.tick / 5) % 2 === 0 ? -1 : 0) : 0;
+    const bob = walkBob + workBob;
     const legOffset = (agent.waypoints.length > 0) ? (agent.walkingFrame === 1 ? 2 : (agent.walkingFrame === 3 ? -2 : 0)) : 0;
 
     // Feet / Shoes
@@ -1968,21 +2305,24 @@ export class PixiOffice {
     ctx.fillRect(x - 6, y - 26 + bob, 2, 4);
     ctx.fillRect(x + 4, y - 26 + bob, 2, 4);
 
-    const isWorking = agent.status === AGENT_STATUS.WORKING || agent.status === AGENT_STATUS.CODING || agent.status === AGENT_STATUS.THINKING || agent.status === AGENT_STATUS.RUNNING;
-    const isCompleted = agent.status === AGENT_STATUS.COMPLETED;
-    const isFailed = agent.status === AGENT_STATUS.FAILED;
-
     // State-based Desk Typing / Seated Meeting Animations
-    if (agent.isSeated && (agent.workflowState === WORKFLOW_STATE.WORKING || isWorking)) {
+    if (agent.isSeated && isWorking) {
       // Seated at desk actively typing on keyboard (alternating tap cadence)
-      const typeAlt = (Math.floor(this.tick / 6) % 2 === 0);
+      const typeAlt = (Math.floor(this.tick / 4) % 2 === 0);
       ctx.fillStyle = agent.skinColor || '#FAD4C0';
       if (agent.facing === 'up') {
-        ctx.fillRect(x - 5, y - 20 - (typeAlt ? 1 : 0), 3, 2);
-        ctx.fillRect(x + 2, y - 20 - (typeAlt ? 0 : 1), 3, 2);
+        // Fast energetic typing onto keyboard
+        ctx.fillRect(x - 6, y - 20 - (typeAlt ? 1.5 : 0), 3.5, 2.5);
+        ctx.fillRect(x + 2.5, y - 20 - (typeAlt ? 0 : 1.5), 3.5, 2.5);
+
+        // Keyboard hit spark highlights
+        if (this.tick % 4 === 0) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(typeAlt ? (x - 5) : (x + 3), y - 21, 1.5, 1.5);
+        }
       } else {
-        ctx.fillRect(x - 5, y - 13 - (typeAlt ? 1 : 0), 2, 2);
-        ctx.fillRect(x + 3, y - 13 - (typeAlt ? 0 : 1), 2, 2);
+        ctx.fillRect(x - 5, y - 13 - (typeAlt ? 1 : 0), 3, 2);
+        ctx.fillRect(x + 2, y - 13 - (typeAlt ? 0 : 1), 3, 2);
       }
     } else if (agent.isSeated && (agent.workflowState === WORKFLOW_STATE.IN_MEETING || agent.workflowState === WORKFLOW_STATE.IN_REVIEW)) {
       // Seated attentively at conference table
@@ -1995,6 +2335,84 @@ export class PixiOffice {
         ctx.fillRect(x + 2, y - 18, 2, 2);
       } else {
         ctx.fillRect(x - 2, y - 14, 2, 2);
+      }
+    }
+
+    // Floating Status Indicators (Above Agent)
+    if (isCompleted) {
+      // 1. Celebratory DONE ✓ Pill with expanding pulse ring
+      const doneText = agent.completedLabel || '✓ Done!';
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      const doneWidth = ctx.measureText(doneText).width + 16;
+      const doneX = Math.round(x - doneWidth / 2);
+      const doneY = Math.round(y - 38);
+
+      // Expanding green pulse ring
+      const ringProgress = ((240 - (agent.completedTimer || 0)) % 60) / 60;
+      ctx.strokeStyle = `rgba(52, 211, 153, ${Math.max(0, 1 - ringProgress)})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, doneY + 7, 10 + ringProgress * 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Emerald badge pill
+      ctx.fillStyle = '#059669';
+      ctx.shadowColor = '#10B981';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(doneX, doneY, doneWidth, 14, 4);
+      else ctx.fillRect(doneX, doneY, doneWidth, 14);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.strokeStyle = '#6EE7B7';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.fillText(doneText, x, doneY + 10);
+    } else if (isWorking && agent.isSeated) {
+      // 2. High-Tech Active Working Pill with animated pulsing dots • • •
+      let taskSummary = agent.activeTaskSummary;
+      if (!taskSummary) {
+        if (agent.id === 'byte' || agent.id === 'cipher' || agent.id === 'matrix') taskSummary = 'Coding HTML';
+        else if (agent.id === 'pixel' || agent.id === 'chroma' || agent.id === 'canvas') taskSummary = 'UI Tokens';
+        else if (agent.id === 'nova' || agent.id === 'blueprint' || agent.id === 'apex') taskSummary = 'DOM Schema';
+        else if (agent.id === 'scout' || agent.id === 'beacon' || agent.id === 'compass') taskSummary = 'State Logic';
+        else if (agent.id === 'query' || agent.id === 'audit' || agent.id === 'sentinel') taskSummary = 'Auditing Code';
+        else if (agent.id === 'atlas') taskSummary = 'Directing Sprint';
+        else taskSummary = 'Working';
+      }
+
+      ctx.font = 'bold 8px "JetBrains Mono", monospace';
+      const textWidth = ctx.measureText(taskSummary).width;
+      const workWidth = textWidth + 24;
+      const workX = Math.round(x - workWidth / 2);
+      const workY = Math.round(y - 36);
+
+      // Dark glass pill with neon border
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(workX, workY, workWidth, 13, 3);
+      else ctx.fillRect(workX, workY, workWidth, 13);
+      ctx.fill();
+
+      ctx.strokeStyle = agent.color || '#38BDF8';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Text
+      ctx.fillStyle = '#F8FAFC';
+      ctx.textAlign = 'left';
+      ctx.fillText(taskSummary, workX + 5, workY + 9);
+
+      // Three animated pulsing dots
+      const dotPhase = Math.floor(this.tick / 8) % 4;
+      const dotBaseX = workX + textWidth + 8;
+      for (let d = 0; d < 3; d++) {
+        ctx.fillStyle = (dotPhase === d + 1) ? (agent.color || '#38BDF8') : 'rgba(255, 255, 255, 0.35)';
+        ctx.fillRect(dotBaseX + d * 4, workY + 6, 2, 2);
       }
     }
 
