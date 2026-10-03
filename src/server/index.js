@@ -38,11 +38,11 @@ app.get('/p/:id/*', (req, res, next) => {
   handlePreviewRequest(req, res, next);
 });
 
-// Serve client frontend statically
+// Serve client frontend statically with home.html as the primary landing page
 const clientDir = path.join(rootDir, 'src', 'client');
-app.use(express.static(clientDir));
 
-app.get('/home', (req, res) => {
+// Primary Landing Page at root
+app.get(['/', '/home'], (req, res) => {
   res.sendFile(path.join(clientDir, 'home.html'));
 });
 
@@ -50,7 +50,14 @@ app.get('/simple', (req, res) => {
   res.sendFile(path.join(clientDir, 'simple.html'));
 });
 
-// Fallback to index.html for client SPA
+app.get(['/studio', '/app'], (req, res) => {
+  res.sendFile(path.join(clientDir, 'index.html'));
+});
+
+// Serve client assets statically (index: false ensures '/' serves home.html)
+app.use(express.static(clientDir, { index: false }));
+
+// Fallback to index.html for client studio and deep links
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/workspace') || req.path.startsWith('/p/')) {
     return next();
