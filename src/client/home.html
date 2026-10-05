@@ -707,30 +707,37 @@
     </section>
 
     <!-- ==========================================================================
-         SECTION 6: TERMINAL / GET STARTED
+         SECTION 6: PRODUCT SHOWCASE / INTERACTIVE VIDEO
          ========================================================================== -->
-    <section class="section">
+    <section class="section video-showcase-section" id="showcase">
       <div class="container">
 
-        <div class="callout-card">
-          <span class="section-tag tag-green">Instant Deployment</span>
-          <h2 class="callout-heading">Deploy a complete agent studio.</h2>
-          <p class="callout-sub">Start managing your multi-agent workforce in minutes with a single command.</p>
+        <div class="section-header-block center-text">
+          <span class="section-tag tag-blue">Product Showcase</span>
+          <h2 class="section-title">See OmniVerse in Action.</h2>
+          <p class="section-desc center-desc">Watch autonomous agent swarms collaborate, write code, and ship complete web applications.</p>
+        </div>
 
-          <div class="terminal-pill">
-            <span class="terminal-text"><span>$</span>npm run dev</span>
-            <span class="terminal-ver">v2.4 local</span>
-          </div>
+        <div class="video-scroll-container">
+          <div class="callout-card video-callout-frame" id="zoom-video-frame">
+            <div class="video-frame-screen">
+              <video id="showcase-video" class="showcase-video-player" playsinline muted loop preload="auto">
+                <source src="./assets/demo.mp4" type="video/mp4">
+                Your browser does not support HTML5 video.
+              </video>
+              <div class="video-screen-glow" aria-hidden="true"></div>
+            </div>
 
-          <div class="callout-cta">
-            <a href="./simple.html" class="btn-hero-primary btn-callout">
-              <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
-              <span>Create Website</span>
-            </a>
-            <a href="./index.html" class="btn-hero-secondary btn-callout">
-              <i data-lucide="layout" style="width: 17px; height: 17px;"></i>
-              <span>Advanced Workspace</span>
-            </a>
+            <div class="callout-cta video-cta-row">
+              <a href="./simple.html" class="btn-hero-primary btn-callout">
+                <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
+                <span>Create Website</span>
+              </a>
+              <a href="./index.html" class="btn-hero-secondary btn-callout">
+                <i data-lucide="layout" style="width: 17px; height: 17px;"></i>
+                <span>Advanced Workspace</span>
+              </a>
+            </div>
           </div>
         </div>
 
