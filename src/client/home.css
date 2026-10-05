@@ -58,6 +58,8 @@ html {
   scroll-behavior: smooth;
   background-color: var(--bg-page);
   color-scheme: dark;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -68,6 +70,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 a {
@@ -339,7 +342,7 @@ p,
 
 .hero-split-container {
   display: grid;
-  grid-template-columns: minmax(420px, 470px) 1.05fr;
+  grid-template-columns: minmax(0, 470px) 1.05fr;
   gap: 52px;
   align-items: center;
   max-width: 1160px;
@@ -611,6 +614,8 @@ p,
   white-space: nowrap;
   flex-wrap: nowrap;
   max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .telemetry-item {
@@ -1723,14 +1728,18 @@ html, body {
 
 @media (max-width: 960px) {
   .hero-split-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 32px;
     text-align: center;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .hero-content-pane {
     align-items: center;
     text-align: center;
+    width: 100%;
+    max-width: 100%;
   }
 
   .hero-headline,
@@ -1738,6 +1747,8 @@ html, body {
     text-align: center;
     margin-left: auto;
     margin-right: auto;
+    max-width: 100%;
+    word-break: break-word;
   }
 
   .hero-actions-row {
@@ -1746,10 +1757,11 @@ html, body {
 
   .hero-telemetry {
     margin: 0 auto;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: center;
     max-width: 100%;
     overflow-x: auto;
+    white-space: normal;
   }
 
   .hero-image-stage {
@@ -1885,6 +1897,8 @@ html, body {
     font-size: 1.85rem !important;
     line-height: 1.15 !important;
     margin-bottom: 10px !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
   }
 
   .hero-lede {
@@ -1892,12 +1906,14 @@ html, body {
     line-height: 1.5 !important;
     margin-bottom: 18px !important;
     padding: 0 4px;
+    max-width: 100% !important;
   }
 
   .hero-actions-row {
     width: 100%;
     justify-content: center;
     margin-bottom: 18px !important;
+    flex-wrap: wrap !important;
   }
 
   .hero-actions-row .btn-create-website {
@@ -1907,13 +1923,16 @@ html, body {
   }
 
   .hero-telemetry {
-    padding: 6px 8px !important;
+    padding: 6px 12px !important;
     font-size: 0.72rem !important;
-    gap: 8px !important;
+    gap: 6px !important;
     max-width: 100% !important;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    justify-content: center !important;
   }
   .hero-telemetry::-webkit-scrollbar {
     display: none;
