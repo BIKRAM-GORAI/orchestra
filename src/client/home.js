@@ -48,9 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const videoFrame = document.getElementById('zoom-video-frame');
   const showcaseVideo = document.getElementById('showcase-video');
   const showcaseSection = document.getElementById('showcase');
+  const glowSpinner = document.getElementById('video-glow-spinner');
+  const hoverCursor = document.getElementById('video-hover-cursor');
 
   if (videoFrame && showcaseSection) {
     let ticking = false;
+    let activeScale = 0.28;
 
     // Freeze video initially until scrolled into view
     if (showcaseVideo) {
@@ -61,28 +64,43 @@ document.addEventListener('DOMContentLoaded', () => {
       const rect = showcaseSection.getBoundingClientRect();
       const windowHeight = window.innerHeight;
 
-      // Start scaling when top of section enters 100% of window
-      // Slowly and smoothly expand over a long scroll range until top reaches 15% of window
-      const startOffset = windowHeight * 1.0;
-      const endOffset = windowHeight * 0.15;
+      // Zooming starts AFTER more scrolling: starts when section top reaches 38% of window
+      // Expands gradually over a comfortable scroll distance until top reaches -12% of window
+      const startOffset = windowHeight * 0.38;
+      const endOffset = -windowHeight * 0.12;
 
       let progress = (startOffset - rect.top) / (startOffset - endOffset);
       progress = Math.max(0, Math.min(1, progress));
 
-      // At first much smaller (0.32) and slowly increases to 1.0 (max frame size)
-      const minScale = 0.32;
+      // At first small (0.28) and slowly increases to 1.0 (max frame size)
+      const minScale = 0.28;
       const maxScale = 1.0;
       const currentScale = minScale + (maxScale - minScale) * progress;
+      activeScale = currentScale;
 
       videoFrame.style.transform = `scale(${currentScale.toFixed(4)})`;
 
-      // Ambient glow scales with expansion
-      const glowOpacity = 0.06 + progress * 0.16;
-      videoFrame.style.boxShadow = `0 ${Math.round(16 + progress * 24)}px ${Math.round(32 + progress * 40)}px rgba(0, 0, 0, 0.85), 0 0 ${Math.round(15 + progress * 40)}px rgba(56, 189, 248, ${glowOpacity.toFixed(2)})`;
+      // Keep cursor unscale synced with frame scale
+      if (hoverCursor) {
+        const unscale = currentScale > 0 ? (1 / currentScale) : 1;
+        hoverCursor.style.setProperty('--frame-unscale', unscale.toFixed(3));
+      }
+
+      // Frame border glow rotates dynamically while zooming!
+      if (glowSpinner) {
+        const angle = progress * 720; // 2 complete revolutions while zooming
+        glowSpinner.style.transform = `rotate(${angle.toFixed(1)}deg)`;
+        const rotatorOpacity = 0.38 + progress * 0.58;
+        glowSpinner.style.opacity = rotatorOpacity.toFixed(2);
+      }
+
+      // Subtle, refined exterior white glow
+      const glowOpacity = 0.03 + progress * 0.06;
+      videoFrame.style.boxShadow = `0 ${Math.round(20 + progress * 24)}px ${Math.round(40 + progress * 36)}px rgba(0, 0, 0, 0.88), 0 0 ${Math.round(16 + progress * 24)}px rgba(255, 255, 255, ${glowOpacity.toFixed(2)})`;
 
       // Unfreeze / play when expanding into view, freeze/pause when small/above
       if (showcaseVideo) {
-        if (progress > 0.2) {
+        if (progress > 0.30) {
           if (showcaseVideo.paused) {
             showcaseVideo.play().catch(() => {});
           }
@@ -95,6 +113,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
       ticking = false;
     };
+
+    // 6. Interactive Floating Cursor Circle: Blooms smoothly from size 0 to max size on hover
+    if (hoverCursor) {
+      let isHovered = false;
+      let targetX = 0;
+      let targetY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let cursorRaf = null;
+
+      const renderCursor = () => {
+        // Ultra-fluid trailing interpolation (0.35 lerp)
+        currentX += (targetX - currentX) * 0.35;
+        currentY += (targetY - currentY) * 0.35;
+        hoverCursor.style.left = `${currentX.toFixed(1)}px`;
+        hoverCursor.style.top = `${currentY.toFixed(1)}px`;
+
+        if (isHovered || Math.abs(targetX - currentX) > 0.2 || Math.abs(targetY - currentY) > 0.2) {
+          cursorRaf = requestAnimationFrame(renderCursor);
+        } else {
+          cursorRaf = null;
+        }
+      };
+
+      videoFrame.addEventListener('mouseenter', (e) => {
+        isHovered = true;
+        const rect = videoFrame.getBoundingClientRect();
+        if (rect.width && rect.height) {
+          targetX = ((e.clientX - rect.left) / rect.width) * videoFrame.offsetWidth;
+          targetY = ((e.clientY - rect.top) / rect.height) * videoFrame.offsetHeight;
+          currentX = targetX;
+          currentY = targetY;
+          hoverCursor.style.left = `${currentX.toFixed(1)}px`;
+          hoverCursor.style.top = `${currentY.toFixed(1)}px`;
+        }
+        hoverCursor.classList.add('active');
+        if (!cursorRaf) {
+          cursorRaf = requestAnimationFrame(renderCursor);
+        }
+      });
+
+      videoFrame.addEventListener('mouseleave', () => {
+        isHovered = false;
+        hoverCursor.classList.remove('active');
+      });
+
+      videoFrame.addEventListener('mousemove', (e) => {
+        const rect = videoFrame.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        targetX = ((e.clientX - rect.left) / rect.width) * videoFrame.offsetWidth;
+        targetY = ((e.clientY - rect.top) / rect.height) * videoFrame.offsetHeight;
+        if (!cursorRaf) {
+          cursorRaf = requestAnimationFrame(renderCursor);
+        }
+      });
+    }
+
+    // Direct click navigation to simple mode
+    videoFrame.addEventListener('click', (e) => {
+      if (!e.ctrlKey && !e.metaKey && e.button === 0) {
+        window.location.href = './simple.html';
+      }
+    });
 
     window.addEventListener('scroll', () => {
       if (!ticking) {
