@@ -53,24 +53,30 @@
 
   <main>
     <!-- ==========================================================================
-         HERO SECTION: Minimal, Spacious, Balanced
+         HERO SECTION: 2-Column Showcase with Main Robot Hero Image
          ========================================================================== -->
     <section class="hero-section">
-      <div class="container">
+      <div class="container hero-split-container">
 
-        <!-- Paperclip Signature Pill Pillars -->
-        <div class="hero-capsules" aria-hidden="true">
-          <div class="capsule cap-1" title="Manager"></div>
-          <div class="capsule cap-2" title="Lead Coder"></div>
-          <div class="capsule cap-3" title="QA Auditor"></div>
-          <div class="capsule cap-4" title="UI Specialist"></div>
-          <div class="capsule cap-5" title="Feature Eng"></div>
-          <div class="capsule cap-6" title="Asset Designer"></div>
+        <!-- Left Column: Main Hero Image Showcase -->
+        <div class="hero-visual-pane">
+          <div class="hero-image-stage">
+            <div class="hero-ambient-glow" aria-hidden="true"></div>
+            <img src="./assets/logo.png" alt="OmniVerse Autonomous AI Assistant" class="hero-robot-image">
+            <div class="hero-image-status-pill">
+              <span class="status-live-dot"></span>
+              <span>OmniVerse Autonomous Core</span>
+            </div>
+          </div>
         </div>
 
-        <div class="hero-content">
+        <!-- Right Column: Content & Actions -->
+        <div class="hero-content-pane">
           <div class="hero-badge-wrap">
-            <span class="hero-version-badge">OmniVerse 2.0</span>
+            <span class="hero-version-badge">
+              <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+              OmniVerse 2.0
+            </span>
           </div>
 
           <h1 class="hero-headline">
@@ -78,16 +84,15 @@
           </h1>
 
           <p class="hero-lede">
-            Autonomous agent teams that coordinate in a virtual office, align in physical quorums, and ship production
-            software together.
+            Autonomous agent teams that coordinate in a virtual office, align in physical quorums, and ship production software together.
           </p>
 
-          <div class="hero-actions" style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: center;">
-            <a href="./simple.html" class="btn-pill-white btn-hero" style="background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); color: #020617; border: none; font-weight: 700; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.35); display: inline-flex; align-items: center; gap: 8px;">
+          <div class="hero-actions-row">
+            <a href="./simple.html" class="btn-pill-white btn-hero btn-hero-primary">
               <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
               <span>Simplified UI (Quick Build)</span>
             </a>
-            <a href="./index.html" class="btn-pill-white btn-hero" style="background: rgba(255, 255, 255, 0.08); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); display: inline-flex; align-items: center; gap: 8px;">
+            <a href="./index.html" class="btn-pill-white btn-hero btn-hero-secondary">
               <i data-lucide="layout" style="width: 18px; height: 18px;"></i>
               <span>Advanced Workspace</span>
             </a>

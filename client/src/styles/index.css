@@ -143,17 +143,18 @@ body {
 }
 
 .brand-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(37, 99, 235, 0.25);
-  border: 1.5px solid rgba(56, 189, 248, 0.4);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+  border: none !important;
+  outline: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
 }
 
 .brand-logo-img {
@@ -161,6 +162,7 @@ body {
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+  border: none !important;
   display: block;
 }
 
