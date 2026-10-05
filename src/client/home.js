@@ -61,28 +61,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const rect = showcaseSection.getBoundingClientRect();
       const windowHeight = window.innerHeight;
 
-      // Start scaling when top of section enters 95% of window
-      // Reach max scale (1.0) when top of section reaches 35% of window
-      const startOffset = windowHeight * 0.95;
-      const endOffset = windowHeight * 0.35;
+      // Start scaling when top of section enters 100% of window
+      // Slowly and smoothly expand over a long scroll range until top reaches 15% of window
+      const startOffset = windowHeight * 1.0;
+      const endOffset = windowHeight * 0.15;
 
       let progress = (startOffset - rect.top) / (startOffset - endOffset);
       progress = Math.max(0, Math.min(1, progress));
 
-      // Interpolate scale from 0.65 (very small & frozen) up to 1.0 (max frame size)
-      const minScale = 0.65;
+      // At first much smaller (0.32) and slowly increases to 1.0 (max frame size)
+      const minScale = 0.32;
       const maxScale = 1.0;
       const currentScale = minScale + (maxScale - minScale) * progress;
 
       videoFrame.style.transform = `scale(${currentScale.toFixed(4)})`;
 
-      // Glow intensity scales with expansion
-      const glowOpacity = 0.08 + progress * 0.12;
-      videoFrame.style.boxShadow = `0 ${Math.round(20 + progress * 16)}px ${Math.round(40 + progress * 32)}px rgba(0, 0, 0, 0.75), 0 0 ${Math.round(20 + progress * 30)}px rgba(56, 189, 248, ${glowOpacity.toFixed(2)})`;
+      // Ambient glow scales with expansion
+      const glowOpacity = 0.06 + progress * 0.16;
+      videoFrame.style.boxShadow = `0 ${Math.round(16 + progress * 24)}px ${Math.round(32 + progress * 40)}px rgba(0, 0, 0, 0.85), 0 0 ${Math.round(15 + progress * 40)}px rgba(56, 189, 248, ${glowOpacity.toFixed(2)})`;
 
       // Unfreeze / play when expanding into view, freeze/pause when small/above
       if (showcaseVideo) {
-        if (progress > 0.25) {
+        if (progress > 0.2) {
           if (showcaseVideo.paused) {
             showcaseVideo.play().catch(() => {});
           }

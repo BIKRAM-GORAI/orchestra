@@ -1180,7 +1180,7 @@ p,
 }
 
 /* ==========================================================================
-   SECTION 6: VIDEO SHOWCASE & SCROLL-DRIVEN ZOOM FRAME
+   SECTION 6: SINGLE VIDEO SHOWCASE FRAME & SLOW SCROLL ZOOM
    ========================================================================== */
 .video-showcase-section {
   position: relative;
@@ -1193,51 +1193,37 @@ p,
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 20px 0;
+  padding: 20px 0 36px;
+  perspective: 1200px;
 }
 
-.video-callout-frame {
-  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.55) 60%), #080c14;
-  border: 1px solid rgba(56, 189, 248, 0.22);
-  border-radius: 28px;
-  padding: 36px 36px 40px;
-  text-align: center;
-  width: 100%;
-  max-width: 860px;
-  margin: 0 auto;
+.single-video-frame {
   position: relative;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
+  background: #020617;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 40px rgba(56, 189, 248, 0.08);
-  /* Scroll Zoom initial state: small and frozen */
-  transform: scale(0.65);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.12);
+  margin: 0 auto;
+  /* At first much smaller and frozen */
+  transform: scale(0.35);
   transform-origin: center center;
-  transition: transform 0.08s ease-out, box-shadow 0.3s ease;
+  transition: transform 0.08s ease-out, box-shadow 0.25s ease;
   will-change: transform;
 }
 
-.video-callout-frame::before {
+.single-video-frame::before {
   content: '';
   position: absolute;
   top: 0;
   left: 20%;
   right: 20%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
-}
-
-.video-frame-screen {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #020617;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75), inset 0 0 24px rgba(0, 0, 0, 0.9);
-  margin-bottom: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.8), transparent);
+  z-index: 2;
 }
 
 .showcase-video-player {
@@ -1245,27 +1231,26 @@ p,
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 18px;
 }
 
 .video-screen-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.04) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 70%);
+  z-index: 1;
 }
 
-.video-cta-row {
+.video-action-center {
   display: flex;
-  gap: 14px;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
+  margin-top: 12px;
 }
 
 .btn-callout {
-  padding: 13px 26px;
-  font-size: 0.94rem;
+  padding: 13px 32px;
+  font-size: 0.96rem;
 }
 
 /* ==========================================================================
