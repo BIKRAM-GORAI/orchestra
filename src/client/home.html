@@ -14,7 +14,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="./home.css?v=6">
+  <link rel="stylesheet" href="./home.css?v=8">
   <script src="./vendor/lucide.min.js"></script>
 </head>
 
@@ -723,12 +723,12 @@
         </div>
 
         <div class="video-scroll-container">
-          <a href="./simple.html" class="single-video-frame" id="zoom-video-frame" aria-label="Create Website on OmniVerse">
+          <a href="./index.html" class="single-video-frame" id="zoom-video-frame" aria-label="See Workspace on OmniVerse">
             <!-- Floating interactive circle cursor badge with smooth scale bloom -->
             <div class="video-hover-cursor" id="video-hover-cursor" aria-hidden="true">
               <div class="cursor-circle-disc">
-                <i data-lucide="sparkles" style="width: 16px; height: 16px; margin-bottom: 2px;"></i>
-                <span>Create<br>Website</span>
+                <i data-lucide="layout" style="width: 16px; height: 16px; margin-bottom: 2px;"></i>
+                <span>See the<br>Workspace</span>
               </div>
             </div>
 
@@ -744,9 +744,12 @@
         </div>
 
         <div class="video-action-center" style="position: relative; z-index: 100;">
-          <a href="./index.html" class="btn-workspace-square btn-callout" style="position: relative; z-index: 101;">
-            <span>See the Workspace</span>
-            <i data-lucide="arrow-right" style="width: 17px; height: 17px;"></i>
+          <p class="video-action-tagline">
+            Turn your simple plain-text prompt into a fully functional, production-ready website and receive an instant live deployed preview URL with clean, audited source files.
+          </p>
+          <a href="./simple.html" class="btn-create-square btn-callout" style="position: relative; z-index: 101;">
+            <span>Create Website</span>
+            <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
           </a>
         </div>
 
@@ -844,13 +847,18 @@
             <li><a href="#mit">MIT License</a></li>
           </ul>
         </div>
+      </div>
 
+      <!-- Desktop Mode Notice for Workspace -->
+      <div class="footer-desktop-notice">
+        <i data-lucide="monitor" style="width: 16px; height: 16px; color: #38bdf8; flex-shrink: 0;"></i>
+        <span>To access the Advanced Multi-Agent Workspace, please open OmniVerse in Desktop mode on a larger display.</span>
       </div>
 
       <div class="footer-bottom-bar">
         <span>&copy; 2026 Agent Orchestra Labs. Open source under MIT License.</span>
         <div class="footer-bottom-actions">
-          <a href="./index.html" style="display: inline-flex; align-items: center; gap: 4px;">Open Workspace <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i></a>
+          <a href="./index.html" class="footer-workspace-link" style="display: inline-flex; align-items: center; gap: 4px;">Open Workspace <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i></a>
           <a href="#" style="display: inline-flex; align-items: center; gap: 4px;">Back to Top <i data-lucide="arrow-up" style="width: 14px; height: 14px;"></i></a>
         </div>
       </div>
@@ -858,7 +866,7 @@
     </div>
   </footer>
 
-  <script src="./home.js?v=6"></script>
+  <script src="./home.js?v=7"></script>
 </body>
 
 </html>

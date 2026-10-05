@@ -1352,6 +1352,29 @@ body {
     white-space: normal;
   }
 
+  .prompt-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .options-pill-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-generate {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Completely remove workspace access buttons on mobile view */
+  #navStudioBtn,
+  .btn-studio,
+  .footer-workspace-link {
+    display: none !important;
+  }
+
   .results-card {
     padding: 22px 14px;
   }
@@ -1387,6 +1410,27 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .footer-desktop-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    background: rgba(56, 189, 248, 0.05);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: var(--radius-md);
+    color: var(--text-sub);
+    font-size: 0.82rem;
+    text-align: center;
+    line-height: 1.5;
+    width: 100%;
+  }
+
+  .footer-desktop-notice span {
+    color: #475569;
+  }
+
   .footer-inner {
     flex-direction: column;
     gap: 12px;
@@ -1403,13 +1447,25 @@ body {
     font-size: 1rem;
   }
 
-  .btn-studio span {
-    display: none;
+  #navStudioBtn,
+  .btn-studio {
+    display: none !important;
   }
 
-  .btn-studio::after {
-    content: "Advanced";
-    display: inline;
+  .hero-title {
+    font-size: 1.6rem;
+    line-height: 1.25;
+  }
+
+  .hero-desc {
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .prompt-textarea {
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+    min-height: 110px;
+    padding: 14px 14px;
   }
 
   .hero-tag {

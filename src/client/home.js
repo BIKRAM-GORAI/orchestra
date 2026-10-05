@@ -170,10 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Direct click navigation to simple mode
+    // Click navigation: On desktop opens workspace, on mobile opens simple mode (workspace disabled on mobile)
     videoFrame.addEventListener('click', (e) => {
       if (!e.ctrlKey && !e.metaKey && e.button === 0) {
-        window.location.href = './simple.html';
+        if (window.innerWidth <= 768) {
+          window.location.href = './simple.html';
+        } else {
+          window.location.href = './index.html';
+        }
       }
     });
 

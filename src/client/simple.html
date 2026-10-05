@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./simple.css?v=5">
+  <link rel="stylesheet" href="./simple.css?v=6">
   <script src="./vendor/lucide.min.js"></script>
 </head>
 <body>
@@ -315,12 +315,18 @@
 
   <!-- Footer -->
   <footer class="site-footer">
-    <div class="container footer-inner">
-      <span>OmniVerse © 2026 — Autonomous Multi-Agent Web Builder</span>
-      <div class="footer-links">
-        <a href="./home.html" class="footer-link">Landing Page</a>
-        <a href="./index.html" class="footer-link">Advanced Workspace</a>
-        <a href="./simple.html" class="footer-link">Simple Mode</a>
+    <div class="container">
+      <div class="footer-desktop-notice">
+        <i data-lucide="monitor" style="width: 16px; height: 16px; color: #38bdf8; flex-shrink: 0;"></i>
+        <span>To access the Advanced Multi-Agent Workspace, please open OmniVerse in Desktop mode on a larger display.</span>
+      </div>
+      <div class="footer-inner">
+        <span>OmniVerse © 2026 — Autonomous Multi-Agent Web Builder</span>
+        <div class="footer-links">
+          <a href="./home.html" class="footer-link">Landing Page</a>
+          <a href="./index.html" class="footer-link footer-workspace-link">Advanced Workspace</a>
+          <a href="./simple.html" class="footer-link">Simple Mode</a>
+        </div>
       </div>
     </div>
   </footer>
