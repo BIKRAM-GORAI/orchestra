@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OmniVerse — AI Website Generator</title>
   <meta name="description" content="Type what website you need. An autonomous multi-agent team designs, codes, and audits full production-ready websites in seconds.">
+  <link rel="icon" type="image/png" href="./assets/logo.png">
+  <link rel="apple-touch-icon" href="./assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./simple.css?v=3">
+  <link rel="stylesheet" href="./simple.css?v=5">
   <script src="./vendor/lucide.min.js"></script>
 </head>
 <body>
@@ -19,7 +21,7 @@
     <div class="container header-inner">
       <a href="./home.html" class="brand-link">
         <div class="brand-icon">
-          <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
+          <img src="./assets/logo.png" alt="OMNIVERSE Logo" class="brand-logo-img">
         </div>
         <span>OmniVerse</span>
         <span class="badge-simple">Simple Mode</span>
@@ -36,7 +38,7 @@
         </div>
         <a href="./index.html" id="navStudioBtn" class="btn-studio">
           <i data-lucide="cpu" style="width: 16px; height: 16px;"></i>
-          <span>Normal UI (Full Workspace)</span>
+          <span>Advanced Workspace</span>
         </a>
       </div>
     </div>
@@ -79,7 +81,7 @@
 
         <form id="promptForm" class="prompt-card">
           <label for="promptInput" class="prompt-label">
-            <i data-lucide="terminal" style="width: 16px; height: 16px; color: var(--color-terracotta);"></i>
+            <i data-lucide="terminal" style="width: 16px; height: 16px; color: var(--color-forest);"></i>
             <span>Describe the website you want to generate:</span>
           </label>
           <textarea
@@ -93,19 +95,19 @@
           <div class="prompt-controls">
             <div class="options-pill-row">
               <div class="budget-select-wrap">
-                <i data-lucide="cpu" style="width: 15px; height: 15px; color: var(--color-cobalt);"></i>
-                <span>Model Engine:</span>
+                <i data-lucide="wallet" style="width: 15px; height: 15px; color: var(--color-forest);"></i>
+                <label for="budgetSelect" class="budget-label">Budget:</label>
                 <select id="budgetSelect" class="budget-select" aria-label="Agent Budget Allocation">
-                  <option value="1.00" selected>⚡ Max Tier ($1.00 — Gemini Flash Max Context)</option>
-                  <option value="0.35">Standard ($0.35 — Balanced Pro)</option>
-                  <option value="0.00">Free Tier ($0.00 — Mistral Codestral)</option>
+                  <option value="1.00" selected>⚡ Max ($1.00 / run)</option>
+                  <option value="0.35">⚖️ Balanced ($0.35 / run)</option>
+                  <option value="0.00">🌱 Free ($0.00 / run)</option>
                 </select>
               </div>
             </div>
 
             <button type="submit" id="generateBtn" class="btn-generate">
-              <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
-              <span>Generate Production Website</span>
+              <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+              <span>Generate Website</span>
             </button>
           </div>
         </form>
@@ -243,7 +245,7 @@
 
           <a id="openStudioBtn" href="./index.html" target="_blank" class="btn-pro-studio">
             <i data-lucide="layout" style="width: 18px; height: 18px;"></i>
-            <span>Open in Full Studio</span>
+            <span>Open Advanced Workspace</span>
           </a>
 
           <button type="button" id="resetBtn" class="btn-ghost" style="margin-left: 8px;">
@@ -317,7 +319,7 @@
       <span>OmniVerse © 2026 — Autonomous Multi-Agent Web Builder</span>
       <div class="footer-links">
         <a href="./home.html" class="footer-link">Landing Page</a>
-        <a href="./index.html" class="footer-link">Normal Studio</a>
+        <a href="./index.html" class="footer-link">Advanced Workspace</a>
         <a href="./simple.html" class="footer-link">Simple Mode</a>
       </div>
     </div>

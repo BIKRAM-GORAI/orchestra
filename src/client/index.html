@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Orchestra — Autonomous Multi-Agent Workspace & Studio</title>
+  <title>OmniVerse — Autonomous Multi-Agent Workspace & Studio</title>
   <meta name="description" content="Autonomous multi-agent virtual workplace with 2.5D animated office and professional developer operations.">
+  <link rel="icon" type="image/png" href="./assets/logo.png">
+  <link rel="apple-touch-icon" href="./assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,14 +21,12 @@
     <!-- Top Navigation Bar -->
     <header class="app-header">
       <div class="header-left">
-        <a href="./home.html" class="brand-wrap" title="Explore Agent Orchestra Homepage & Documentation">
+        <a href="./home.html" class="brand-wrap" title="OmniVerse Workspace & Homepage">
           <div class="brand-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
+            <img src="./assets/logo.png" alt="OMNIVERSE Logo" class="brand-logo-img">
           </div>
           <div class="brand-text">
-            <span class="brand-title">OMNI-VERSE</span>
+            <span class="brand-title">OMNIVERSE</span>
             <span class="brand-badge">Agents</span>
           </div>
         </a>
@@ -37,43 +37,43 @@
         <nav class="top-nav-tabs" role="tablist">
           <button class="nav-tab-btn active" data-tab="office" id="navOffice">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+              <i data-lucide="building-2" style="width: 15px; height: 15px;"></i>
             </span>
             <span>Office</span>
           </button>
           <button class="nav-tab-btn" data-tab="tasks" id="navTasks">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v11"/><path d="M12 5v6"/><path d="M18 5v14"/></svg>
+              <i data-lucide="kanban" style="width: 15px; height: 15px;"></i>
             </span>
             <span>Tasks</span>
           </button>
           <button class="nav-tab-btn" data-tab="chat" id="navChat">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <i data-lucide="message-square" style="width: 15px; height: 15px;"></i>
             </span>
             <span>Chat</span>
           </button>
           <button class="nav-tab-btn" data-tab="ide" id="navIde">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/></svg>
+              <i data-lucide="folder-code" style="width: 15px; height: 15px;"></i>
             </span>
             <span>IDE</span>
           </button>
           <button class="nav-tab-btn" data-tab="preview" id="navPreview">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+              <i data-lucide="monitor" style="width: 15px; height: 15px;"></i>
             </span>
             <span>Preview</span>
           </button>
           <button class="nav-tab-btn" data-tab="agents" id="navAgents">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <i data-lucide="users" style="width: 15px; height: 15px;"></i>
             </span>
             <span>Agents</span>
           </button>
           <button class="nav-tab-btn" data-tab="activity" id="navActivity">
             <span class="tab-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <i data-lucide="activity" style="width: 15px; height: 15px;"></i>
             </span>
             <span>Activity</span>
           </button>
@@ -119,19 +119,19 @@
               <div class="office-presets-wrap">
                 <span class="bar-label">Modes:</span>
                 <button class="preset-btn active" data-preset="focus" id="presetFocus">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                  <i data-lucide="target" style="width: 14px; height: 14px;"></i>
                   <span>Focus Work</span>
                 </button>
                 <button class="preset-btn" data-preset="coffee" id="presetCoffee">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+                  <i data-lucide="coffee" style="width: 14px; height: 14px;"></i>
                   <span>Coffee Break</span>
                 </button>
                 <button class="preset-btn" data-preset="meeting" id="presetMeeting">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <i data-lucide="users" style="width: 14px; height: 14px;"></i>
                   <span>All-Hands</span>
                 </button>
                 <button class="preset-btn" data-preset="free" id="presetFree">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                  <i data-lucide="compass" style="width: 14px; height: 14px;"></i>
                   <span>Free Roam</span>
                 </button>
               </div>
@@ -152,7 +152,7 @@
               <div class="inspector-header">
                 <div class="inspector-identity">
                   <div class="inspector-avatar" id="inspAvatar">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                    <i data-lucide="code-2" style="width: 18px; height: 18px;"></i>
                   </div>
                   <div class="inspector-title-wrap">
                     <div class="name-row">
@@ -222,19 +222,19 @@
 
                 <div class="inspector-actions">
                   <button class="btn btn-xs btn-outline" id="inspBtnDesk">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+                    <i data-lucide="laptop" style="width: 12px; height: 12px;"></i>
                     <span>Desk</span>
                   </button>
                   <button class="btn btn-xs btn-outline" id="inspBtnCoffee">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/></svg>
+                    <i data-lucide="coffee" style="width: 12px; height: 12px;"></i>
                     <span>Coffee</span>
                   </button>
                   <button class="btn btn-xs btn-outline" id="inspBtnMeeting">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <i data-lucide="users" style="width: 12px; height: 12px;"></i>
                     <span>Meet</span>
                   </button>
                   <button class="btn btn-xs btn-primary" id="inspBtnBriefing">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+                    <i data-lucide="briefcase" style="width: 12px; height: 12px;"></i>
                     <span>Boss Brief</span>
                   </button>
                 </div>
@@ -253,11 +253,11 @@
                   <span class="term-dot maximize" title="Expand"></span>
                 </div>
                 <div class="terminal-title-center">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="term-title-icon"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+                  <i data-lucide="terminal" class="term-title-icon" style="width: 13px; height: 13px;"></i>
                   <span class="terminal-title-text">zsh — orchestra-telemetry ~ 80×24</span>
                 </div>
                 <button class="btn-clear-logs" id="sidebarClearLogsBtn" title="Clear terminal logs">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
                   <span>Clear</span>
                 </button>
               </div>
@@ -290,7 +290,7 @@
               <div class="sidebar-chat-header">
                 <div class="block-title-wrap">
                   <span class="chat-header-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+                    <i data-lucide="messages-square" style="width: 14px; height: 14px;"></i>
                   </span>
                   <h3 class="block-title">TEAM DIRECTIVES & CHAT</h3>
                 </div>
@@ -304,7 +304,7 @@
               <div class="sidebar-chat-stream" id="sidebarChatStream">
                 <div class="chat-msg system">
                   <div class="msg-avatar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                    <i data-lucide="bot" style="width: 14px; height: 14px;"></i>
                   </div>
                   <div class="msg-content">
                     <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
@@ -349,7 +349,7 @@
                     <span class="prompt-hint-kbd">Enter ↵ newline</span>
                     <button class="btn-prompt-send-inline" id="sidebarSendInlineBtn" title="Send Directive (Click to send)">
                       <span>Send</span>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                      <i data-lucide="send" style="width: 13px; height: 13px;"></i>
                     </button>
                     <button id="sidebarLaunchBtn" style="display: none;"></button>
                   </div>
@@ -372,7 +372,7 @@
             </div>
             <div class="toolbar-right">
               <button class="btn btn-sm btn-primary" id="addTaskBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                 <span>Create Task</span>
               </button>
             </div>
@@ -464,7 +464,7 @@
               <div class="chat-messages-stream" id="chatMessagesStream">
                 <div class="chat-msg system">
                   <div class="msg-avatar">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                    <i data-lucide="bot" style="width: 15px; height: 15px;"></i>
                   </div>
                   <div class="msg-content">
                     <div class="msg-header"><span class="msg-sender">SYSTEM</span><span class="msg-time">Ready</span></div>
@@ -522,7 +522,7 @@
                     <span class="prompt-hint-kbd">Enter ↵ newline</span>
                     <button class="btn-prompt-send-inline" id="chatSendInlineBtn" title="Send Directive (Click to send)">
                       <span>Send Objective</span>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                      <i data-lucide="send" style="width: 13px; height: 13px;"></i>
                     </button>
                     <button id="chatSendBtn" style="display: none;"></button>
                   </div>
@@ -549,7 +549,7 @@
               <div class="interagent-stream" id="chatInteragentStream">
                 <div class="interagent-empty-state">
                   <div class="wire-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <i data-lucide="zap" style="width: 24px; height: 24px;"></i>
                   </div>
                   <p>Inter-agent communication channel is open. Dispatched task directives and specialist responses will stream here in real-time.</p>
                 </div>
@@ -568,7 +568,7 @@
             <div class="toolbar-left">
               <div class="ide-title-wrap">
                 <span class="toolbar-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/></svg>
+                  <i data-lucide="folder-code" style="width: 18px; height: 18px;"></i>
                 </span>
                 <div>
                   <h2 class="tab-heading">Project Files & Revisions</h2>
@@ -586,7 +586,7 @@
                 </select>
               </div>
               <button class="btn btn-sm btn-outline" id="refreshFilesBtn" title="Refresh files list">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                <i data-lucide="rotate-cw" style="width: 13px; height: 13px;"></i>
                 <span>Refresh</span>
               </button>
             </div>
@@ -618,7 +618,7 @@
               <div class="viewer-header">
                 <div class="viewer-file-info">
                   <span class="file-icon" id="ideActiveFileIcon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/></svg>
+                    <i data-lucide="file-text" style="width: 15px; height: 15px;"></i>
                   </span>
                   <span class="viewer-filename" id="ideActiveFilename">Select a file from the explorer</span>
                   <span class="viewer-badge" id="ideActiveFileExt"></span>
@@ -629,7 +629,7 @@
                   <button class="btn btn-xs btn-primary" id="saveFileBtn" hidden>Save</button>
                   <button class="btn btn-xs btn-outline" id="cancelFileEditBtn" hidden>Cancel</button>
                   <button class="btn btn-xs btn-outline" id="copyCodeBtn" title="Copy file content">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
                     <span>Copy</span>
                   </button>
                 </div>
@@ -651,7 +651,7 @@
           <div class="preview-top-toolbar">
             <div class="preview-toolbar-left">
               <span class="preview-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+                <i data-lucide="monitor" style="width: 16px; height: 16px;"></i>
               </span>
               <h2 class="tab-heading">Live Preview</h2>
               <span class="preview-url-badge" id="previewUrlBadge">/api/preview</span>
@@ -665,10 +665,10 @@
               </div>
               <button class="btn btn-action-pill" id="openNewTabBtn">
                 <span>Open Tab</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
               </button>
               <button class="btn btn-action-icon" id="refreshPreviewBtn" title="Refresh Live Preview">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                <i data-lucide="rotate-cw" style="width: 13px; height: 13px;"></i>
               </button>
             </div>
           </div>
@@ -682,7 +682,7 @@
           <div class="preview-feedback-strip" id="editsSection">
             <div class="feedback-strip-header">
               <div class="feedback-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
                 <span>Targeted Modification & Human Feedback</span>
               </div>
               
@@ -710,7 +710,7 @@
             <div class="feedback-input-row">
               <input type="text" id="feedbackInput" placeholder="e.g. 'Replace broken flower images with high-res photos from Unsplash, and center the hero card'..." />
               <button type="button" class="btn btn-primary" id="applyFeedbackBtn">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
                 <span>Apply Edit</span>
               </button>
             </div>
@@ -730,7 +730,7 @@
             </div>
             <div class="toolbar-right">
               <button class="btn btn-primary btn-sm" id="spawnAgentBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                 <span>+ Spawn Agent</span>
               </button>
             </div>
@@ -836,7 +836,7 @@
             <div class="timeline-list" id="activityTimelineList">
               <div class="timeline-empty-state">
                 <span class="empty-icon">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  <i data-lucide="activity" style="width: 28px; height: 28px;"></i>
                 </span>
                 <p>No activity recorded yet. Run a prompt or project action to generate audit logs.</p>
               </div>
@@ -872,5 +872,10 @@
     <pre id="revisionDiff" tabindex="0" aria-label="Revision diff"></pre>
   </dialog>
   <script type="module" src="./js/app.js?v=6"></script>
+  <script>
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  </script>
 </body>
 </html>

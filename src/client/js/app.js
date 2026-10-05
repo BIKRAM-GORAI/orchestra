@@ -500,6 +500,10 @@ export function switchTab(tabId) {
   } else if (tabId === 'agents') {
     renderAgentRosters();
   }
+
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
 }
 
 navButtons.forEach(btn => {
@@ -2508,7 +2512,11 @@ function bootstrap() {
   }
 
   updateHeaderStats();
-  addLog('Agent Orchestra Workspace initialized. 10 AI specialist agents ready on duty.', 'info', 'SYS', 'READY');
+  addLog('OmniVerse Workspace initialized. 10 AI specialist agents ready on duty.', 'info', 'SYS', 'READY');
+
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
 }
 
 if (document.readyState === 'loading') {

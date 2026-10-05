@@ -149,8 +149,24 @@ p,
   transition: opacity 0.15s ease;
 }
 
+.brand-logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  display: block;
+}
+
 .nav-brand:hover {
-  opacity: 0.9;
+  opacity: 0.95;
+}
+
+.nav-brand:hover .brand-logo-img {
+  transform: scale(1.08) rotate(2deg);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.7);
 }
 
 .nav-links {
