@@ -61,8 +61,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const updateVideoZoom = () => {
-      const rect = showcaseSection.getBoundingClientRect();
       const windowHeight = window.innerHeight;
+      const rect = showcaseSection.getBoundingClientRect();
+
+      // On mobile devices, keep video 100% fitted to the phone screen with no scale transform
+      if (window.innerWidth <= 768) {
+        videoFrame.style.transform = 'none';
+        videoFrame.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.7)';
+        if (showcaseVideo) {
+          if (rect.top < windowHeight * 0.85 && rect.bottom > windowHeight * 0.15) {
+            if (showcaseVideo.paused) showcaseVideo.play().catch(() => {});
+          } else {
+            if (!showcaseVideo.paused) showcaseVideo.pause();
+          }
+        }
+        ticking = false;
+        return;
+      }
 
       // Zooming starts AFTER more scrolling: starts when section top reaches 38% of window
       // Expands gradually over a comfortable scroll distance until top reaches -12% of window

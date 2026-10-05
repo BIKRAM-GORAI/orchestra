@@ -1713,12 +1713,18 @@ p,
 }
 
 /* ==========================================================================
-   RESPONSIVE & MOBILE POLISH
+   RESPONSIVE & MOBILE POLISH (Pixel-Perfect Phone Fitting & Space Optimization)
    ========================================================================== */
+html, body {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
 @media (max-width: 960px) {
   .hero-split-container {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 32px;
     text-align: center;
   }
 
@@ -1747,13 +1753,14 @@ p,
   }
 
   .hero-image-stage {
-    max-width: 320px;
+    max-width: 280px;
+    height: 280px;
     margin: 0 auto;
   }
 
   .split-layout {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 40px;
   }
 
   .capabilities-grid,
@@ -1763,7 +1770,7 @@ p,
 
   .footer-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 36px;
+    gap: 32px;
   }
 
   .nav-links {
@@ -1771,85 +1778,301 @@ p,
   }
 
   .section {
-    padding: 72px 0;
+    padding: 60px 0;
   }
 }
 
-/* Mobile Devices & Tablets (Portrait): Remove Workspace Access Buttons */
+/* Mobile Devices & Smartphones (<= 768px): Tight Spacing & Clean Fit */
 @media (max-width: 768px) {
-  /* Completely remove all workspace access buttons on mobile view */
+  /* 1. Remove all workspace entry buttons entirely on mobile */
   .site-nav .btn-workspace-transparent,
   .hero-actions-row .btn-workspace-transparent,
   .btn-workspace-callout,
   .btn-workspace-square,
   .footer-workspace-link,
+  .video-hover-cursor,
   .video-hover-disc {
     display: none !important;
   }
 
-  .site-nav {
-    height: 56px;
+  /* 2. Remove desktop-only stem connectors that break when pills wrap */
+  .tree-stem-wrap,
+  .goal-line,
+  .video-border-rotator {
+    display: none !important;
   }
 
-  .nav-inner {
-    padding: 0 16px;
-  }
-
-  .nav-brand span {
-    font-size: 1.05rem;
-  }
-
-  .brand-logo-img {
-    width: 36px;
-    height: 36px;
-  }
-
-  .nav-btn-action {
-    padding: 7px 14px;
-    font-size: 0.8rem;
+  /* 3. Tighter Section Vertical Spacing (No giant empty voids) */
+  .section {
+    padding: 36px 0 !important;
   }
 
   .hero-section {
-    padding: 44px 0 60px;
+    padding: 24px 0 32px !important;
+  }
+
+  .video-showcase-section {
+    padding: 28px 0 32px !important;
+  }
+
+  .video-scroll-container {
+    padding: 0 !important;
+  }
+
+  .split-layout {
+    gap: 24px !important;
+  }
+
+  .site-footer {
+    padding: 36px 0 24px !important;
+  }
+
+  /* 4. Compact Mobile Navigation */
+  .site-nav {
+    height: 54px;
+  }
+
+  .nav-inner {
+    padding: 0 14px;
+  }
+
+  .nav-brand span {
+    font-size: 1rem;
+  }
+
+  .brand-logo-img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-btn-action {
+    padding: 6px 13px;
+    font-size: 0.78rem;
+  }
+
+  /* 5. Mobile Hero Stage */
+  .hero-split-container {
+    gap: 18px !important;
+  }
+
+  .hero-image-stage {
+    width: 200px !important;
+    max-width: 200px !important;
+    height: 200px !important;
+    margin: 0 auto !important;
+  }
+
+  .hero-ambient-glow {
+    width: 170px !important;
+    height: 170px !important;
+    filter: blur(24px) !important;
+  }
+
+  .hero-floor-reflection {
+    width: 130px !important;
+    height: 12px !important;
+    bottom: 4px !important;
+  }
+
+  .hero-badge-wrap {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .hero-headline {
+    font-size: 1.85rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .hero-lede {
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 18px !important;
+    padding: 0 4px;
   }
 
   .hero-actions-row {
     width: 100%;
     justify-content: center;
+    margin-bottom: 18px !important;
   }
 
   .hero-actions-row .btn-create-website {
     width: 100%;
-    max-width: 320px;
+    max-width: 280px;
+    padding: 11px 20px;
   }
 
-  .video-frame-container {
-    padding: 0 12px;
+  .hero-telemetry {
+    padding: 6px 8px !important;
+    font-size: 0.72rem !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .hero-telemetry::-webkit-scrollbar {
+    display: none;
   }
 
-  .video-frame-shell {
-    max-width: 100%;
-    border-radius: 12px;
+  /* 6. Section 1 Org Chart — Perfectly Stacked for Mobile Screens */
+  .tree-display-panel {
+    padding: 18px 12px !important;
+    border-radius: var(--radius-lg) !important;
+    width: 100% !important;
+  }
+
+  .tree-display-inner {
+    gap: 12px !important;
+  }
+
+  .tree-tier {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: center !important;
+  }
+
+  .agent-pill {
+    padding: 5px 12px !important;
+    gap: 7px !important;
+  }
+
+  .agent-role {
+    font-size: 0.72rem !important;
+  }
+
+  .agent-name {
+    font-size: 0.65rem !important;
+  }
+
+  .agent-avatar-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .active-badge {
+    font-size: 0.5rem !important;
+    padding: 1px 5px !important;
+    top: -6px !important;
+    right: 8px !important;
+  }
+
+  .model-ecosystem {
+    margin-top: 24px !important;
+    padding-top: 20px !important;
+  }
+
+  .model-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .model-badge {
+    padding: 6px 8px !important;
+    font-size: 0.76rem !important;
+  }
+
+  /* 7. Section 2 Goals — Clean Stacked Mobile Flow */
+  .goal-flow {
+    gap: 8px !important;
+  }
+
+  .goal-node {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+
+  .node-text {
+    font-size: 0.88rem !important;
+  }
+
+  .pillars-col {
+    gap: 12px !important;
+  }
+
+  .pillar-card {
+    padding: 16px 14px !important;
+  }
+
+  /* 8. Section 3 Tickets & Chat */
+  .value-list {
+    gap: 16px !important;
+  }
+
+  .ticket-card {
+    max-width: 100% !important;
+  }
+
+  .ticket-top {
+    padding: 12px 14px !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ticket-chat {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .chat-bubble {
+    padding: 10px 12px !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* 9. Section 4 & 5 Capabilities & Workflow */
+  .capabilities-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .cap-card {
+    padding: 18px 16px !important;
+  }
+
+  .workflow-steps {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .workflow-step {
+    padding: 20px 18px !important;
+  }
+
+  /* 10. Section 6 Video Frame: Full Responsive Width Without Transform Overflow */
+  .single-video-frame {
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
   }
 
   .video-action-center {
-    margin-top: 20px;
-    padding: 0 12px;
+    margin-top: 16px !important;
+    padding: 0 8px !important;
   }
 
   .video-action-tagline {
-    font-size: 0.9rem;
-    line-height: 1.5;
+    font-size: 0.86rem !important;
+    line-height: 1.5 !important;
+    padding: 0 4px;
   }
 
   .btn-create-square {
     width: 100%;
-    max-width: 280px;
+    max-width: 260px;
+    padding: 10px 18px;
   }
 
+  /* 11. Footer: Compact Single Column */
   .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+    margin-bottom: 24px !important;
   }
 
   .footer-brand-pane {
@@ -1859,6 +2082,11 @@ p,
 
   .footer-blurb {
     max-width: 100%;
+    text-align: center;
+  }
+
+  .footer-socials {
+    justify-content: center;
   }
 
   .footer-links-col {
@@ -1867,7 +2095,7 @@ p,
 
   .footer-bottom-bar {
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     text-align: center;
   }
 
@@ -1876,57 +2104,47 @@ p,
   }
 
   .footer-desktop-notice {
-    margin: 20px 0 16px;
-    padding: 12px 14px;
-    font-size: 0.82rem;
+    margin: 16px 0 14px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
   }
 }
 
 /* Small Smartphone Displays (<= 480px) */
 @media (max-width: 480px) {
   .container {
-    padding: 0 16px;
-  }
-
-  .section {
-    padding: 50px 0;
+    padding: 0 14px !important;
   }
 
   .hero-headline {
-    font-size: 1.95rem;
-    line-height: 1.18;
+    font-size: 1.75rem !important;
+    line-height: 1.15 !important;
   }
 
   .hero-lede {
-    font-size: 0.9rem;
-    line-height: 1.55;
-  }
-
-  .hero-badge-wrap {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
+    font-size: 0.86rem !important;
+    line-height: 1.48 !important;
   }
 
   .hero-image-stage {
-    max-width: 230px;
+    width: 180px !important;
+    max-width: 180px !important;
+    height: 180px !important;
   }
 
-  .hero-telemetry {
-    font-size: 0.72rem;
-    padding: 6px 10px;
-    gap: 8px;
+  .hero-ambient-glow {
+    width: 150px !important;
+    height: 150px !important;
   }
 
   .pillar-card,
   .feature-card,
   .workflow-card,
   .audit-card {
-    padding: 16px 14px;
+    padding: 14px 12px !important;
   }
 
   .video-action-tagline {
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: 0.82rem !important;
   }
 }
