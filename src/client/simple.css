@@ -100,7 +100,7 @@ body {
   border-bottom: 2px solid var(--border-beige);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 500;
   box-shadow: 0 2px 8px rgba(68, 64, 60, 0.04);
 }
 
