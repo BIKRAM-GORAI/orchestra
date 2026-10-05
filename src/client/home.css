@@ -58,8 +58,9 @@ html {
   scroll-behavior: smooth;
   background-color: var(--bg-page);
   color-scheme: dark;
-  overflow-x: hidden;
-  max-width: 100%;
+  /* overflow-x: clip prevents horizontal scroll WITHOUT creating a scroll container,
+     so position: sticky on the navbar continues to work correctly */
+  overflow-x: clip;
 }
 
 body {
@@ -69,8 +70,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  max-width: 100%;
+  overflow-x: clip;
 }
 
 a {
