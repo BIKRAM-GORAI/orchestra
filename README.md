@@ -1,14 +1,29 @@
-# Agent Orchestra 🎼
+# OmniVerse (Agent Orchestra) 🎼
 
-> **Autonomous Multi-Agent Web & Document Engineering Platform** featuring a **16-Agent Multi-Tier Staff Roster**, **Pixi.js 2.5D Animated Virtual Office**, **Multi-Provider AI Gateway** (Gemini 3.5 Flash, NVIDIA NIM Kimi K3, Mistral Codestral), **Intelligent Budget Allocation Engine**, **Sandboxed Live Preview**, and **Atomic Versioned Storage** (Filesystem or MongoDB + GridFS).
+> **Autonomous Multi-Agent Web & Document Engineering Platform** featuring a **16-Agent Multi-Tier Staff Roster**, **Pixi.js 2.5D Animated Virtual Office**, **Simple Mode (1-Click Instant Deploy)**, **Multi-Provider AI Gateway** (NVIDIA NIM Kimi K3, Gemini 3.5 Flash, Mistral Codestral), **Intelligent Budget Allocation Engine**, **Sandboxed Live Preview**, and **Atomic Versioned Storage** (Filesystem or MongoDB + GridFS).
+
+---
+
+## 📚 Quick Documentation Links
+
+| Resource | Description | Location |
+| :--- | :--- | :--- |
+| 📖 **Technical Documentation (A to Z)** | Comprehensive architecture, agent roles, and guides | [`src/client/docs.html`](src/client/docs.html) / [`/docs`](http://localhost:3000/docs.html) |
+| 📡 **API Reference** | Full REST endpoints, SSE streams, payload schemas & cURL | [`API_REFERENCE.md`](API_REFERENCE.md) |
+| 🚀 **Releases & Changelog** | v1.0.0 (Hackathon Launch) & v2.0.0 (Production) | [`RELEASES.md`](RELEASES.md) |
+| 📜 **Terms of Service** | Usage policy, code ownership, and platform terms | [`TERMS.md`](TERMS.md) |
+| 🔒 **Privacy Policy** | Data handling, model gateway transmission, and security | [`PRIVACY.md`](PRIVACY.md) |
+| 📄 **MIT License** | Open-source software license | [`LICENSE`](LICENSE) |
 
 ---
 
 ## 🌟 Overview
 
-**Agent Orchestra** transforms natural-language requests into production-grade multi-file websites or comprehensive, source-grounded Markdown documents. It pairs a **16-agent team of specialists** with an intelligent **Manager (Atlas)**, coordinating visual design, frontend architecture, interaction behavior, implementation, deterministic validation, and QA audits.
+**OmniVerse (Agent Orchestra)** transforms natural-language requests into production-grade multi-file websites or comprehensive, source-grounded Markdown documents. It pairs a **16-agent team of specialists** with an intelligent **Manager (Atlas)**, coordinating visual design, frontend architecture, interaction behavior, implementation, deterministic validation, and QA audits.
 
-Inside the **Studio Atelier**, watch your agents collaborate in real-time within a **Pixi.js 2.5D isometric virtual office simulation**, follow real-time streaming telemetry across a 4-quadrant layout, test your applications in a multi-device simulator, and collaborate via targeted human feedback.
+The platform provides two complementary ways to create and inspect software:
+1. **Simple Mode (`simple.html`)**: Instant 1-prompt generation with live deployed sandbox previews (`/p/:id`), downloadable code zips, and mobile-friendly controls.
+2. **Studio Atelier (`index.html`)**: Watch your agents collaborate in real-time inside a **Pixi.js 2.5D isometric virtual office simulation**, follow real-time streaming telemetry across a 4-quadrant layout, test your applications in a multi-device simulator, and collaborate via targeted human feedback.
 
 ```
                             ┌─────────────────────────┐
@@ -280,11 +295,17 @@ npm run test:mongo
 orchestra/
 ├── src/
 │   ├── client/                  # Frontend UI Assets
-│   │   ├── home.html            # Ultra-minimal Paperclip-inspired landing page
+│   │   ├── home.html            # Landing page with glassmorphic navbar & Section 6 showcase
+│   │   ├── simple.html          # Simple Mode (1-prompt web app generator)
+│   │   ├── docs.html            # Complete A to Z technical documentation
 │   │   ├── index.html           # 4-Quadrant Atelier studio application
+│   │   ├── home.css             # Landing page styles & mobile responsive media queries
+│   │   ├── simple.css           # Simple Mode stylesheet
 │   │   ├── index.css            # Atelier design system & dark theme tokens
 │   │   └── js/
 │   │       ├── app.js           # Studio client controller & SSE stream coordinator
+│   │       ├── simple.js        # Simple Mode client pipeline controller
+│   │       ├── home.js          # Interactive video scale & cursor interpolation
 │   │       ├── pixi-office.js   # Pixi.js 2.5D isometric virtual office simulation
 │   │       ├── office.js        # Office telemetry, agent desk mapping & state sync
 │   │       ├── agent-state.js   # Real-time state machine & activity feeds
@@ -292,35 +313,19 @@ orchestra/
 │   └── server/                  # Backend Node.js Services (ESM)
 │       ├── index.js             # Express application & preview server listeners
 │       ├── agents/              # Agent Registry & Logical Personas
-│       │   ├── agentRegistry.js # 16-agent staff roster & dynamic instantiation
-│       │   ├── baseAgent.js     # Base state machine & fallback event emitter
-│       │   └── definitions/     # Manager, Designer, Frontend, Feature, Coder, QA, Doc
-│       ├── config/              # Central Configuration
-│       │   ├── env.js           # Environment parser & validation
-│       │   └── models.js        # Tri-provider model registry, pricing, & retry policies
-│       ├── db/                  # Persistence Layer
-│       │   └── mongo.js         # MongoDB connection & GridFS bucket setup
-│       ├── gateway/             # Multi-Model AI Gateway
-│       │   └── modelGateway.js  # Streaming, exponential retry backoff, & fallback engine
-│       ├── orchestrator/        # Pipeline Coordination
-│       │   └── orchestrator.js  # Multi-agent graph runner & SSE broadcaster
-│       ├── providers/           # Provider Adapters
-│       │   ├── geminiProvider.js# Google AI Studio Gemini adapter
-│       │   ├── nvidiaProvider.js# NVIDIA NIM Kimi K3 adapter
-│       │   ├── mistralProvider.js# Mistral AI Codestral adapter
-│       │   └── openrouterProvider.js# Legacy fallback adapter
-│       ├── routes/              # Express API Routes
-│       │   ├── api.js           # Orchestration, budget, models, and agent routes
-│       │   ├── projects.js      # Project workspace, file mutations, and revisions
-│       │   └── preview.js       # Sandboxed origin preview handler
-│       └── services/            # Core Business Logic
-│           ├── budgetService.js # Budget allocation engine & spend tracking
-│           ├── projectService.js# Dual storage engine (Filesystem / Mongo CAS)
-│           ├── documentSession.js# Document Analyst file inventory & excerpt manager
-│           ├── documentTextWorker.js# Worker threads for PDF (unpdf) & DOCX (mammoth)
-│           ├── importService.js # ZIP & multi-file folder ingestion
-│           └── validationService.js# Deterministic JS/DOM/Reference pre-audit
-├── scripts/                     # Verification test runners
+│       ├── config/              # Central Configuration (env, models, pricing)
+│       ├── db/                  # Persistence Layer (MongoDB / GridFS)
+│       ├── gateway/             # Multi-Model AI Gateway (Kimi, Gemini, Codestral)
+│       ├── orchestrator/        # Multi-agent graph runner & SSE broadcaster
+│       ├── providers/           # Provider Adapters (NVIDIA NIM, Gemini, Mistral)
+│       ├── routes/              # Express API Routes (orchestrate, projects, preview)
+│       └── services/            # Budget, storage, document text parsing & validation
+├── API_REFERENCE.md             # Complete REST & SSE API specification
+├── RELEASES.md                  # Release notes for v1.0.0, v2.0.0 & future roadmap
+├── TERMS.md                     # Platform terms of service & code ownership
+├── PRIVACY.md                   # Privacy policy & model gateway transmission
+├── LICENSE                      # Official MIT License
+├── scripts/                     # Automated test suites (55 verified cases)
 ├── projects/                    # Local storage directory for isolated project files
 └── package.json                 # Project dependencies and test scripts
 ```

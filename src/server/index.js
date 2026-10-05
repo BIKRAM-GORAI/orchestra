@@ -50,6 +50,10 @@ app.get('/simple', (req, res) => {
   res.sendFile(path.join(clientDir, 'simple.html'));
 });
 
+app.get(['/docs', '/documentation'], (req, res) => {
+  res.sendFile(path.join(clientDir, 'docs.html'));
+});
+
 app.get(['/studio', '/app'], (req, res) => {
   res.sendFile(path.join(clientDir, 'index.html'));
 });

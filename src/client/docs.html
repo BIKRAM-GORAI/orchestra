@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniVerse Documentation — Complete A to Z Guide</title>
+  <meta name="description"
+    content="Complete A to Z technical documentation for OmniVerse (Agent Orchestra) — Autonomous Multi-Agent Web & Document Engineering Platform.">
+  <link rel="icon" type="image/png" href="./assets/logo.png">
+  <link rel="apple-touch-icon" href="./assets/logo.png">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./home.css?v=8">
+  <script src="./vendor/lucide.min.js"></script>
+
+  <style>
+    /* Documentation Specific Layout Styles */
+    :root {
+      --docs-sidebar-w: 280px;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+    }
+
+    .docs-layout {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 28px 80px;
+      gap: 48px;
+      position: relative;
+    }
+
+    /* Sticky Sidebar Navigation */
+    .docs-sidebar {
+      width: var(--docs-sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: 96px;
+      height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 18px;
+      border-right: 1px solid var(--border-subtle);
+    }
+
+    .docs-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .docs-sidebar::-webkit-scrollbar-thumb {
+      background: var(--border-hover);
+      border-radius: 4px;
+    }
+
+    .docs-sidebar-group {
+      margin-bottom: 24px;
+    }
+
+    .docs-sidebar-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      padding-left: 10px;
+    }
+
+    .docs-sidebar-nav {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .docs-sidebar-nav a {
+      display: block;
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+      line-height: 1.4;
+      border-left: 2px solid transparent;
+    }
+
+    .docs-sidebar-nav a:hover,
+    .docs-sidebar-nav a.active {
+      color: var(--text-white);
+      background: rgba(255, 255, 255, 0.04);
+      border-left-color: #38bdf8;
+    }
+
+    /* Main Documentation Content Area */
+    .docs-content {
+      flex: 1;
+      min-width: 0;
+      max-width: 920px;
+    }
+
+    .docs-hero {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .docs-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #38bdf8;
+      margin-bottom: 16px;
+    }
+
+    .docs-title {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-white);
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .docs-lede {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* Documentation Section Styling */
+    .docs-section {
+      margin-bottom: 64px;
+      scroll-margin-top: 100px;
+    }
+
+    .docs-section h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-white);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .docs-section h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-white);
+      margin: 28px 0 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .docs-section p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .docs-section ul,
+    .docs-section ol {
+      margin: 0 0 20px 24px;
+      color: var(--text-secondary);
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+
+    .docs-section li {
+      margin-bottom: 8px;
+    }
+
+    /* Code Snippets & Terminal Blocks */
+    .code-box {
+      background: #08090c;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-card);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .code-pre {
+      padding: 18px 20px;
+      margin: 0;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      line-height: 1.65;
+      color: #e2e8f0;
+    }
+
+    .code-pre code {
+      font-family: inherit;
+    }
+
+    /* Alert / Callout Boxes */
+    .docs-alert {
+      display: flex;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin: 24px 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .docs-alert-info {
+      background: rgba(56, 189, 248, 0.06);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #93c5fd;
+    }
+
+    .docs-alert-tip {
+      background: rgba(34, 197, 94, 0.06);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #86efac;
+    }
+
+    .docs-alert-warn {
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #fde68a;
+    }
+
+    /* Comparison & Spec Tables */
+    .docs-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 20px 0;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+    }
+
+    .docs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+
+    .docs-table th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 18px;
+      font-weight: 700;
+      color: var(--text-white);
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .docs-table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-card);
+      color: var(--text-secondary);
+    }
+
+    .docs-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tag-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+    .tag-green { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .tag-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .tag-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    /* Responsive Docs */
+    @media (max-width: 960px) {
+      .docs-layout {
+        flex-direction: column;
+        padding: 20px 16px 60px;
+      }
+      .docs-sidebar {
+        width: 100%;
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-subtle);
+        padding-bottom: 24px;
+        margin-bottom: 32px;
+      }
+      .docs-title {
+        font-size: 2.1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="site-header">
+    <nav class="site-nav" aria-label="Main Navigation">
+      <div class="container nav-inner">
+        <a href="./home.html" class="nav-brand">
+          <img src="./assets/logo.png" alt="OMNIVERSE Logo" class="brand-logo-img">
+          <span>OmniVerse <small style="font-size: 0.72rem; color: #38bdf8; font-weight: 600; margin-left: 4px;">DOCS</small></span>
+        </a>
+
+        <div class="nav-links">
+          <a href="./home.html" class="nav-link">Home</a>
+          <a href="#overview" class="nav-link">Overview</a>
+          <a href="#agents" class="nav-link">Agents</a>
+          <a href="#models" class="nav-link">Models</a>
+          <a href="#api" class="nav-link">API</a>
+          <a href="https://github.com/BIKRAM-GORAI/orchestra" target="_blank" rel="noopener" class="nav-link">GitHub</a>
+        </div>
+
+        <div class="nav-actions">
+          <a href="./simple.html" class="btn-create-website nav-btn-action">
+            <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+            <span>Simple Mode</span>
+          </a>
+          <a href="./index.html" class="btn-workspace-transparent nav-btn-action">
+            <i data-lucide="layout" style="width: 15px; height: 15px;"></i>
+            <span>Studio Workspace</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="docs-layout">
+
+    <!-- Sticky Sidebar Navigation -->
+    <aside class="docs-sidebar">
+      <div class="docs-sidebar-group">
+        <div class="docs-sidebar-title">Getting Started</div>
+        <ul class="docs-sidebar-nav">
+          <li><a href="#overview" class="active">Overview & Philosophy</a></li>
+          <li><a href="#quickstart">Quickstart Installation</a></li>
+          <li><a href="#modes">Workspace Modes</a></li>
+        </ul>
+      </div>
+
+      <div class="docs-sidebar-group">
+        <div class="docs-sidebar-title">Core Architecture</div>
+        <ul class="docs-sidebar-nav">
+          <li><a href="#agents">16-Agent Roster & Roles</a></li>
+          <li><a href="#models">Multi-Model Gateway</a></li>
+          <li><a href="#budget">Budget Allocation Tiers</a></li>
+          <li><a href="#safety">Deterministic QA & AST Safety</a></li>
+        </ul>
+      </div>
+
+      <div class="docs-sidebar-group">
+        <div class="docs-sidebar-title">Reference & API</div>
+        <ul class="docs-sidebar-nav">
+          <li><a href="#api">REST & Streaming SSE API</a></li>
+          <li><a href="#storage">Storage & Persistence</a></li>
+          <li><a href="#deployment">Deployment (Render / Docker)</a></li>
+          <li><a href="#releases">Releases & Roadmap</a></li>
+        </ul>
+      </div>
+
+      <div class="docs-sidebar-group">
+        <div class="docs-sidebar-title">Repository Links</div>
+        <ul class="docs-sidebar-nav">
+          <li><a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/API_REFERENCE.md" target="_blank">API_REFERENCE.md ↗</a></li>
+          <li><a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/RELEASES.md" target="_blank">RELEASES.md ↗</a></li>
+          <li><a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/TERMS.md" target="_blank">TERMS.md ↗</a></li>
+          <li><a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/PRIVACY.md" target="_blank">PRIVACY.md ↗</a></li>
+          <li><a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/LICENSE" target="_blank">LICENSE (MIT) ↗</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="docs-content">
+
+      <!-- Docs Hero Header -->
+      <section class="docs-hero">
+        <div class="docs-badge">
+          <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
+          OmniVerse Complete Technical Documentation (A to Z)
+        </div>
+        <h1 class="docs-title">Agent Orchestra Engine</h1>
+        <p class="docs-lede">
+          Everything you need to build, run, configure, and extend the autonomous multi-agent platform for real-time web application engineering and multimodal analysis.
+        </p>
+      </section>
+
+      <!-- Section 1: Overview -->
+      <section id="overview" class="docs-section">
+        <h2><i data-lucide="compass" style="width: 22px; height: 22px; color: #38bdf8;"></i> 1. Overview & Philosophy</h2>
+        <p>
+          <strong>OmniVerse (Agent Orchestra)</strong> is an autonomous multi-agent engineering platform designed to turn simple human intent into verified, auditable, production-ready software. Instead of relying on a single monolithic prompt, OmniVerse distributes responsibilities across specialized AI roles — coordinating design systems, frontend hierarchy, application logic, AST code parsing, and deterministic QA validation in parallel.
+        </p>
+
+        <div class="docs-alert docs-alert-info">
+          <i data-lucide="info" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+          <div>
+            <strong>Core Tenet: Zero Broken Commits.</strong> Code produced by agent specialists is compiled through an Acorn Abstract Syntax Tree (AST) validator and verified against automated QA safety gates before ever touching the project sandbox or live preview.
+          </div>
+        </div>
+
+        <h3>System Architecture Diagram</h3>
+        <div class="code-box">
+          <div class="code-header">ARCHITECTURE TOPOLOGY</div>
+          <pre class="code-pre"><code>[User Directive / Prompt]
+         │
+         ▼
+[Manager Agent: Atlas] ───► Decomposes task into Architecture Specification
+         │
+         ├──────────────────────┬──────────────────────┐
+         ▼                      ▼                      ▼
+  [Design Specialist]    [Frontend Specialist]   [Feature Specialist]
+  (Color/Tokens/Fonts)    (Layout/DOM Hierarchy)  (State/APIs/Events)
+         │                      │                      │
+         └──────────────────────┼──────────────────────┘
+                                │
+                                ▼
+                       [Synthesis & Assembly]
+                                │
+                                ▼
+                     [Lead Coder: Byte / Matrix]
+                                │
+                                ▼
+                 [Deterministic AST + QA Review]
+                                │
+                                ▼
+                 [Live Web Sandbox & Instant Deploy]</code></pre>
+        </div>
+      </section>
+
+      <!-- Section 2: Quickstart -->
+      <section id="quickstart" class="docs-section">
+        <h2><i data-lucide="terminal" style="width: 22px; height: 22px; color: #38bdf8;"></i> 2. Quickstart Installation</h2>
+        <p>
+          OmniVerse runs on Node.js 18+ and can operate entirely offline or connected to live model providers (NVIDIA NIM, Google Gemini, Mistral, OpenRouter).
+        </p>
+
+        <h3>1. Clone and Install Dependencies</h3>
+        <div class="code-box">
+          <div class="code-header">BASH</div>
+          <pre class="code-pre"><code># Clone repository
+git clone https://github.com/BIKRAM-GORAI/orchestra.git
+cd orchestra
+
+# Install dependencies
+npm install</code></pre>
+        </div>
+
+        <h3>2. Configure Environment (.env)</h3>
+        <p>Copy the example environment configuration and supply your API keys (optional if running in mock/offline test mode):</p>
+        <div class="code-box">
+          <div class="code-header">ENV</div>
+          <pre class="code-pre"><code>cp .env.example .env
+
+# Configure one or more providers:
+NVIDIA_API_KEY=nvapi-your-key-here
+GEMINI_API_KEY=AIzaSy-your-key-here
+MISTRAL_API_KEY=your-mistral-key-here
+OPENROUTER_API_KEY=sk-or-your-key-here
+
+PORT=3000
+NODE_ENV=development</code></pre>
+        </div>
+
+        <h3>3. Launch Local Server & Verify Tests</h3>
+        <div class="code-box">
+          <div class="code-header">BASH</div>
+          <pre class="code-pre"><code># Run the unit and integration test suite (55 automated checks)
+npm test
+
+# Start the dev server with file watcher
+npm run dev
+
+# Open browser:
+# Landing Page:   http://localhost:3000
+# Simple Mode:    http://localhost:3000/simple.html
+# 2.5D Studio:    http://localhost:3000/index.html</code></pre>
+        </div>
+      </section>
+
+      <!-- Section 3: Workspace Modes -->
+      <section id="modes" class="docs-section">
+        <h2><i data-lucide="layout" style="width: 22px; height: 22px; color: #38bdf8;"></i> 3. Dual Workspace Modes</h2>
+        <p>
+          OmniVerse offers two primary workspace interfaces catering to different user profiles and devices:
+        </p>
+
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Target Viewport</th>
+                <th>Core Workflow</th>
+                <th>Ideal For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Simple Mode (<code>simple.html</code>)</strong></td>
+                <td>Desktop, Tablet & Mobile</td>
+                <td>Single prompt input, automated budget selection, instantaneous live preview sandbox, downloadable source code.</td>
+                <td>Rapid prototyping, one-click deployments, mobile users.</td>
+              </tr>
+              <tr>
+                <td><strong>Studio Atelier (<code>index.html</code>)</strong></td>
+                <td>Desktop Displays (&ge; 1024px)</td>
+                <td>2.5D Pixi.js virtual office simulation, multi-file Monaco code tree editor, live device framing simulator, direct terminal controls.</td>
+                <td>Full-stack developers, engineering leads, deep inspection.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 4: 16-Agent Roster -->
+      <section id="agents" class="docs-section">
+        <h2><i data-lucide="users" style="width: 22px; height: 22px; color: #38bdf8;"></i> 4. The 16-Agent Roster & Roles</h2>
+        <p>
+          OmniVerse organizes agents by specialized skill sets and cost tiers. Every agent has an immutable system prompt, defined input/output schemas, and deterministic state transitions:
+        </p>
+
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Role Category</th>
+                <th>Tier</th>
+                <th>Primary Responsibility</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Atlas</strong></td>
+                <td>Manager / Coordinator</td>
+                <td>Executive</td>
+                <td>Analyzes user prompt, performs quorum alignment, decomposes task, synthesizes specialist specs.</td>
+              </tr>
+              <tr>
+                <td><strong>Byte</strong></td>
+                <td>Lead Coder</td>
+                <td>Free ($0.00)</td>
+                <td>Writes HTML/CSS/JS using Codestral Free; fast, zero-cost generation.</td>
+              </tr>
+              <tr>
+                <td><strong>Cipher</strong></td>
+                <td>Lead Coder</td>
+                <td>Balanced ($0.25)</td>
+                <td>Intermediate complex coding using balanced high-speed models.</td>
+              </tr>
+              <tr>
+                <td><strong>Matrix</strong></td>
+                <td>Lead Coder</td>
+                <td>Premium ($0.60)</td>
+                <td>Advanced full-stack implementation powered by Kimi K3 & Gemini 3.5.</td>
+              </tr>
+              <tr>
+                <td><strong>Pixel / Palette / Prisma</strong></td>
+                <td>Design Specialists</td>
+                <td>Multi-Tier</td>
+                <td>Establishes color palettes, typography tokens, glassmorphism, responsive grid geometry.</td>
+              </tr>
+              <tr>
+                <td><strong>Nova / Orbit / Stella</strong></td>
+                <td>Frontend Specialists</td>
+                <td>Multi-Tier</td>
+                <td>Constructs clean HTML semantic structure, accessible navigation, responsive layouts.</td>
+              </tr>
+              <tr>
+                <td><strong>Spark / Flux / Apex</strong></td>
+                <td>Feature Specialists</td>
+                <td>Multi-Tier</td>
+                <td>Implements JavaScript interaction logic, state management, client APIs, animations.</td>
+              </tr>
+              <tr>
+                <td><strong>Sentinel / Query / Aegis</strong></td>
+                <td>QA & AST Auditors</td>
+                <td>Multi-Tier</td>
+                <td>Parses AST syntax, checks link integrity, verifies mobile responsiveness and CSP safety.</td>
+              </tr>
+              <tr>
+                <td><strong>Scribe</strong></td>
+                <td>Document Analyst</td>
+                <td>Multimodal</td>
+                <td>Parses PDF and DOCX attachments, generates comprehensive source-grounded Markdown briefs.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Models & Fallback -->
+      <section id="models" class="docs-section">
+        <h2><i data-lucide="cpu" style="width: 22px; height: 22px; color: #38bdf8;"></i> 5. Multi-Model Gateway & Dynamic Fallback</h2>
+        <p>
+          The <code>ModelGateway</code> acts as a unified abstraction layer over heterogeneous LLM providers, ensuring high availability even during upstream rate limits or outages:
+        </p>
+
+        <div class="code-box">
+          <div class="code-header">FALLBACK CHAIN LOGIC</div>
+          <pre class="code-pre"><code>Primary Model (e.g. Kimi K3 via NVIDIA NIM)
+       │
+       ▼ (If 429 Rate Limit / Transient 500)
+Exponential Backoff Retry (Up to 2 Attempts)
+       │
+       ▼ (If Outage Persists)
+Secondary Model (e.g. Qwen 2.5 72B via OpenRouter)
+       │
+       ▼ (If Degraded)
+Local Deterministic Fallback Template (Always Returns Verified Code)</code></pre>
+        </div>
+
+        <div class="docs-alert docs-alert-tip">
+          <i data-lucide="zap" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+          <div>
+            <strong>Stream Accumulation:</strong> Server-Sent Events (SSE) stream agent tokens to the frontend in real time while maintaining complete buffer copies on the backend for AST validation.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6: API Reference -->
+      <section id="api" class="docs-section">
+        <h2><i data-lucide="code" style="width: 22px; height: 22px; color: #38bdf8;"></i> 6. REST & Streaming SSE API Reference</h2>
+        <p>All core orchestration operations are accessible via HTTP endpoints:</p>
+
+        <h3>POST /api/orchestrate</h3>
+        <p>Trigger autonomous multi-agent code generation.</p>
+        <div class="code-box">
+          <div class="code-header">REQUEST PAYLOAD (JSON)</div>
+          <pre class="code-pre"><code>{
+  "prompt": "Create a high-contrast dark cyberpunk portfolio with project modal previews",
+  "budgetTier": "balanced",   // "free" | "balanced" | "premium"
+  "stream": true
+}</code></pre>
+        </div>
+
+        <h3>GET /api/projects/:id</h3>
+        <p>Inspect project metadata, agent logs, file revisions, and audit scores.</p>
+
+        <h3>GET /p/:id</h3>
+        <p>Isolated sandbox live iframe preview of the generated project with strict CSP containment.</p>
+
+        <div class="docs-alert docs-alert-info">
+          <i data-lucide="shield" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+          <div>
+            For complete JSON schemas, headers, error response payloads, and code examples, consult the root repository <a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/API_REFERENCE.md" style="color: #38bdf8; text-decoration: underline;">API_REFERENCE.md</a>.
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 7: Releases -->
+      <section id="releases" class="docs-section">
+        <h2><i data-lucide="tag" style="width: 22px; height: 22px; color: #38bdf8;"></i> 7. Releases & Roadmap</h2>
+        <p>
+          OmniVerse follows semantic versioning and has reached two major milestone releases, with exciting upcoming capabilities on the roadmap:
+        </p>
+
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Release Stage</th>
+                <th>Highlights</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag-badge tag-green">v1.0.0</span></td>
+                <td><strong>Hackathon Launch Edition</strong></td>
+                <td>Initial release built during the Hackathon. Core 16-agent team, 2.5D Pixi.js Studio Atelier, AST validator, Kimi K3 & Gemini Gateway.</td>
+              </tr>
+              <tr>
+                <td><span class="tag-badge tag-blue">v2.0.0</span></td>
+                <td><strong>Production Release (2 Days Later)</strong></td>
+                <td>Simple Mode (1-prompt web app builder), One-Click instant live deploy link, full mobile responsiveness, glassmorphic capsule navbar, budget tiers ($0.00, $0.25, $0.60).</td>
+              </tr>
+              <tr>
+                <td><span class="tag-badge tag-purple">v2.1+</span></td>
+                <td><strong>Upcoming Roadmap</strong></td>
+                <td>Custom domain DNS provisioning, GitHub pull request exporter, audio voice directives, custom agent personality designer.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Read the comprehensive release notes in <a href="https://github.com/BIKRAM-GORAI/orchestra/blob/main/RELEASES.md" style="color: #38bdf8; text-decoration: underline;">RELEASES.md</a>.</p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-desktop-notice">
+        <i data-lucide="monitor" style="width: 16px; height: 16px; color: #38bdf8; flex-shrink: 0;"></i>
+        <span>To access the Advanced Multi-Agent Workspace, please open OmniVerse in Desktop mode on a larger display.</span>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <span>&copy; 2026 Agent Orchestra Labs. Open source under MIT License.</span>
+        <div class="footer-bottom-actions">
+          <a href="./home.html">Landing Page</a>
+          <a href="./simple.html">Simple Mode</a>
+          <a href="https://github.com/BIKRAM-GORAI/orchestra" target="_blank">GitHub Repository</a>
+          <a href="#" style="display: inline-flex; align-items: center; gap: 4px;">Back to Top <i data-lucide="arrow-up" style="width: 14px; height: 14px;"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+
+</html>
