@@ -58,9 +58,6 @@ html {
   scroll-behavior: smooth;
   background-color: var(--bg-page);
   color-scheme: dark;
-  /* overflow-x: clip prevents horizontal scroll WITHOUT creating a scroll container,
-     so position: sticky on the navbar continues to work correctly */
-  overflow-x: clip;
 }
 
 body {
@@ -70,6 +67,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* clip prevents horizontal scroll without creating a scroll container */
   overflow-x: clip;
 }
 
@@ -118,16 +116,24 @@ p,
 }
 
 /* ==========================================================================
-   SITE HEADER & NAV
+   SITE HEADER & NAV — Fixed so it always sits at the top of the viewport
    ========================================================================== */
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Offset main content so it doesn't sit under the fixed header */
+body > main,
+main {
+  padding-top: 64px;
 }
 
 .site-nav {
@@ -1842,6 +1848,10 @@ html, body {
   /* 4. Compact Mobile Navigation */
   .site-nav {
     height: 54px;
+  }
+
+  main {
+    padding-top: 54px;
   }
 
   .nav-inner {
